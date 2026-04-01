@@ -1,3 +1,9 @@
+import { Button } from "@/components/ui/button";
+
 export default function HomePage() {
-  return <main>WealthWise Landing Page</main>;
+  return (
+    <main className="flex min-h-screen items-center justify-center">
+      <Button>Wealth Wise</Button>
+    </main>
+  );
 }
