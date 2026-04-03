@@ -1,32 +1,37 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import Logo from "@/components/common/logo";
+"use client";
 
-export default function MarketingNavbar() {
+import Logo from "@/components/common/logo";
+import { Button } from "@/components/ui/button";
+
+type MarketingNavbarProps = {
+  onOpenLogin: () => void;
+  onOpenRegister: () => void;
+};
+
+export default function MarketingNavbar({
+  onOpenLogin,
+  onOpenRegister,
+}: MarketingNavbarProps) {
   return (
-    <header className="border-b">
-      <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
+    <header className="border-b border-border bg-white">
+      <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Logo />
 
-        <nav className="hidden items-center gap-6 md:flex">
-          <Link href="#features" className="text-sm font-medium">
-            Features
-          </Link>
-          <Link href="#benefits" className="text-sm font-medium">
-            Benefits
-          </Link>
-          <Link href="#pricing" className="text-sm font-medium">
-            Pricing
-          </Link>
-        </nav>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenLogin}
+            className="cursor-pointer text-sm font-semibold text-slate-900 transition hover:text-emerald-600"
+          >
+            Log In
+          </button>
 
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost">
-            <Link href="/login">Log in</Link>
-          </Button>
-
-          <Button asChild>
-            <Link href="/register">Get Started</Link>
+          <Button
+            type="button"
+            onClick={onOpenRegister}
+            className="h-12 rounded-2xl bg-emerald-600 px-6 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700"
+          >
+            Get Started Free
           </Button>
         </div>
       </div>
