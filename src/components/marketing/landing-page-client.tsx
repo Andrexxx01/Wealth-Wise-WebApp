@@ -5,6 +5,7 @@ import LoginDialog from "@/components/auth/login-dialog";
 import RegisterDialog from "@/components/auth/register-dialog";
 import MarketingNavbar from "@/components/marketing/navbar";
 import { Button } from "@/components/ui/button";
+import FeaturesSection from "@/components/marketing/features-section";
 
 type AuthModalType = "login" | "register" | null;
 
@@ -60,6 +61,13 @@ export default function LandingPageClient() {
             <div className="h-105 w-full rounded-[32px] border border-slate-200 bg-white shadow-xl" />
           </div>
         </section>
+      </main>
+      <main>
+        <section className="mx-auto grid min-h-[calc(100vh-80px)] max-w-7xl grid-cols-1 items-center gap-12 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-20">
+          {/* hero lama kamu tetap di sini */}
+        </section>
+
+        <FeaturesSection />
       </main>
 
       <LoginDialog
