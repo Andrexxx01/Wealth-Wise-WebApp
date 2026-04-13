@@ -7,6 +7,8 @@ import MarketingNavbar from "@/components/marketing/navbar";
 import { Button } from "@/components/ui/button";
 import FeaturesSection from "@/components/marketing/features-section";
 import BenefitsSection from "@/components/marketing/benefits-section";
+import CtaSection from "@/components/marketing/cta-section";
+import Footer from "@/components/marketing/footer";
 
 type AuthModalType = "login" | "register" | null;
 
@@ -64,7 +66,13 @@ export default function LandingPageClient() {
         </section>
         <FeaturesSection />
         <BenefitsSection />
+        <CtaSection
+          onOpenLogin={() => setActiveModal("login")}
+          onOpenRegister={() => setActiveModal("register")}
+        />
       </main>
+
+      <Footer />
 
       <LoginDialog
         open={activeModal === "login"}
