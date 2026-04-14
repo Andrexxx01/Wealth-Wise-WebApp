@@ -9,6 +9,8 @@ import FeaturesSection from "@/components/marketing/features-section";
 import BenefitsSection from "@/components/marketing/benefits-section";
 import CtaSection from "@/components/marketing/cta-section";
 import Footer from "@/components/marketing/footer";
+import HeroSection from "@/components/marketing/hero-section";
+import StatsStrip from "@/components/marketing/stats-strip";
 
 type AuthModalType = "login" | "register" | null;
 
@@ -64,6 +66,12 @@ export default function LandingPageClient() {
             <div className="h-105 w-full rounded-[32px] border border-slate-200 bg-white shadow-xl" />
           </div>
         </section>
+        <HeroSection
+          onOpenLogin={() => setActiveModal("login")}
+          onOpenRegister={() => setActiveModal("register")}
+        />
+
+        <StatsStrip />
         <FeaturesSection />
         <BenefitsSection />
         <CtaSection
