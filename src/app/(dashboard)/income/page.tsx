@@ -1,87 +1,81 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  mockIncomeItems,
+  mockIncomeSummary,
+  mockMonthlyIncomeBars,
+} from "@/lib/mock-data/income";
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatIncomeCategory(category: string) {
+  return category
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function formatIncomeFrequency(frequency: string) {
+  if (frequency === "ONE_TIME") return "Irregular";
+
+  return frequency
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
 
 const incomeSummaryCards = [
   {
     label: "Total Income",
-    value: "$8,200.00",
+    value: mockIncomeSummary.totalIncome,
     helper: "This month",
   },
   {
     label: "Recurring Income",
-    value: "$6,500.00",
+    value: mockIncomeSummary.recurringIncome,
     helper: "Salary & fixed sources",
   },
   {
     label: "Extra Income",
-    value: "$1,700.00",
+    value: mockIncomeSummary.extraIncome,
     helper: "Freelance & side projects",
   },
   {
     label: "Projected Annual",
-    value: "$98,400.00",
+    value: mockIncomeSummary.projectedAnnualIncome,
     helper: "Estimated yearly income",
   },
 ];
 
-const incomeSources = [
-  {
-    name: "Primary Salary",
-    amount: "$5,500.00",
-    frequency: "Monthly",
-  },
-  {
-    name: "Freelance Design",
-    amount: "$1,200.00",
-    frequency: "Irregular",
-  },
-  {
-    name: "Consulting",
-    amount: "$800.00",
-    frequency: "Monthly",
-  },
-  {
-    name: "Affiliate Revenue",
-    amount: "$700.00",
-    frequency: "Irregular",
-  },
-];
+const incomeSources = mockIncomeItems.map((item) => ({
+  id: item.id,
+  name: item.title,
+  amount: item.amount,
+  frequency: formatIncomeFrequency(item.frequency),
+}));
 
-const recentIncome = [
-  {
-    source: "Primary Salary",
-    category: "Salary",
-    date: "Apr 01, 2026",
-    amount: "$5,500.00",
-  },
-  {
-    source: "Freelance Website Project",
-    category: "Freelance",
-    date: "Apr 05, 2026",
-    amount: "$900.00",
-  },
-  {
-    source: "Consulting Session",
-    category: "Consulting",
-    date: "Apr 09, 2026",
-    amount: "$500.00",
-  },
-  {
-    source: "Affiliate Commission",
-    category: "Passive Income",
-    date: "Apr 12, 2026",
-    amount: "$300.00",
-  },
-];
-
-const monthlyIncomeBars = [
-  { month: "Jan", value: "68%" },
-  { month: "Feb", value: "74%" },
-  { month: "Mar", value: "62%" },
-  { month: "Apr", value: "86%" },
-  { month: "May", value: "78%" },
-  { month: "Jun", value: "92%" },
-];
+const recentIncome = [...mockIncomeItems]
+  .sort(
+    (a, b) =>
+      new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime(),
+  )
+  .slice(0, 4);
 
 export default function IncomePage() {
   return (
@@ -117,7 +111,7 @@ export default function IncomePage() {
             <CardContent className="p-6">
               <p className="text-sm font-medium text-slate-500">{card.label}</p>
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {card.value}
+                {formatCurrency(card.value)}
               </h2>
               <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
             </CardContent>
@@ -145,7 +139,7 @@ export default function IncomePage() {
 
             <div className="rounded-[28px] bg-slate-50 p-6">
               <div className="flex h-72 items-end gap-4">
-                {monthlyIncomeBars.map((bar) => (
+                {mockMonthlyIncomeBars.map((bar) => (
                   <div
                     key={bar.month}
                     className="flex flex-1 flex-col items-center gap-3"
@@ -153,7 +147,7 @@ export default function IncomePage() {
                     <div className="flex h-full w-full items-end">
                       <div
                         className="w-full rounded-t-2xl bg-emerald-500"
-                        style={{ height: bar.value }}
+                        style={{ height: `${bar.value}%` }}
                       />
                     </div>
                     <span className="text-sm font-medium text-slate-500">
@@ -175,7 +169,7 @@ export default function IncomePage() {
 
             <div className="mt-6 space-y-4">
               {incomeSources.map((item) => (
-                <div key={item.name} className="rounded-3xl bg-slate-50 p-4">
+                <div key={item.id} className="rounded-3xl bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-base font-semibold text-slate-900">
@@ -187,7 +181,7 @@ export default function IncomePage() {
                     </div>
 
                     <p className="text-lg font-bold text-slate-900">
-                      {item.amount}
+                      {formatCurrency(item.amount)}
                     </p>
                   </div>
                 </div>
@@ -221,23 +215,25 @@ export default function IncomePage() {
             <div className="space-y-4">
               {recentIncome.map((item) => (
                 <div
-                  key={`${item.source}-${item.date}`}
+                  key={item.id}
                   className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="text-base font-semibold text-slate-900">
-                      {item.source}
+                      {item.title}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      {item.category}
+                      {formatIncomeCategory(item.category)}
                     </p>
                   </div>
 
                   <div className="text-left sm:text-right">
                     <p className="text-base font-semibold text-slate-900">
-                      {item.amount}
+                      {formatCurrency(item.amount)}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">{item.date}</p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {formatDate(item.receivedAt)}
+                    </p>
                   </div>
                 </div>
               ))}
