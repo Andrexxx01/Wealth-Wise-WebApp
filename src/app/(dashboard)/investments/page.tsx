@@ -1,92 +1,76 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  mockInvestmentItems,
+  mockInvestmentPerformanceBars,
+  mockInvestmentSummary,
+  mockPortfolioAllocation,
+} from "@/lib/mock-data/investment";
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatPercentage(value: number) {
+  return `${value.toFixed(2)}%`;
+}
+
+function formatInvestmentCategory(category: string) {
+  const categoryLabels: Record<string, string> = {
+    STOCK: "Stock",
+    CRYPTO: "Crypto",
+    MUTUAL_FUND: "Mutual Fund",
+    BOND: "Bond",
+    GOLD: "Gold",
+    PROPERTY: "Property",
+    CASH: "Cash",
+    OTHER: "Other",
+  };
+
+  return categoryLabels[category] ?? category;
+}
 
 const investmentSummaryCards = [
   {
     label: "Portfolio Value",
-    value: "$12,900.00",
+    value: mockInvestmentSummary.portfolioValue,
     helper: "Current total value",
   },
   {
     label: "Total Invested",
-    value: "$11,200.00",
+    value: mockInvestmentSummary.totalInvested,
     helper: "Total capital deployed",
   },
   {
     label: "Net Gain",
-    value: "+$1,700.00",
-    helper: "+15.18% overall return",
+    value: mockInvestmentSummary.netGain,
+    helper: "Overall return",
   },
   {
     label: "Monthly Growth",
-    value: "+4.8%",
+    value: mockInvestmentSummary.monthlyGrowthRate,
     helper: "Compared to last month",
+    isPercentage: true,
   },
 ];
 
-const portfolioAllocation = [
-  {
-    name: "Stocks",
-    amount: "$6,200.00",
-    percentage: "48%",
-  },
-  {
-    name: "Crypto",
-    amount: "$2,300.00",
-    percentage: "18%",
-  },
-  {
-    name: "Mutual Funds",
-    amount: "$2,100.00",
-    percentage: "16%",
-  },
-  {
-    name: "Bonds",
-    amount: "$1,400.00",
-    percentage: "11%",
-  },
-  {
-    name: "Cash Reserve",
-    amount: "$900.00",
-    percentage: "7%",
-  },
-];
+const holdings = mockInvestmentItems.map((item) => {
+  const gain = item.currentValue - item.investedAmount;
+  const gainPercentage =
+    item.investedAmount > 0 ? (gain / item.investedAmount) * 100 : 0;
 
-const holdings = [
-  {
-    asset: "Apple Inc.",
-    type: "Stock",
-    currentValue: "$3,100.00",
-    change: "+8.2%",
-  },
-  {
-    asset: "Bitcoin",
-    type: "Crypto",
-    currentValue: "$1,650.00",
-    change: "+12.4%",
-  },
-  {
-    asset: "S&P 500 Index Fund",
-    type: "Fund",
-    currentValue: "$2,100.00",
-    change: "+5.6%",
-  },
-  {
-    asset: "Government Bonds",
-    type: "Bond",
-    currentValue: "$1,400.00",
-    change: "+2.1%",
-  },
-];
-
-const performanceBars = [
-  { month: "Jan", value: "54%" },
-  { month: "Feb", value: "62%" },
-  { month: "Mar", value: "58%" },
-  { month: "Apr", value: "74%" },
-  { month: "May", value: "80%" },
-  { month: "Jun", value: "88%" },
-];
+  return {
+    id: item.id,
+    asset: item.assetName,
+    type: formatInvestmentCategory(item.category),
+    currentValue: item.currentValue,
+    gainPercentage,
+  };
+});
 
 export default function InvestmentsPage() {
   return (
@@ -121,9 +105,13 @@ export default function InvestmentsPage() {
           >
             <CardContent className="p-6">
               <p className="text-sm font-medium text-slate-500">{card.label}</p>
+
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {card.value}
+                {card.isPercentage
+                  ? formatPercentage(card.value)
+                  : formatCurrency(card.value)}
               </h2>
+
               <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
             </CardContent>
           </Card>
@@ -150,7 +138,7 @@ export default function InvestmentsPage() {
 
             <div className="rounded-[28px] bg-slate-50 p-6">
               <div className="flex h-72 items-end gap-4">
-                {performanceBars.map((bar) => (
+                {mockInvestmentPerformanceBars.map((bar) => (
                   <div
                     key={bar.month}
                     className="flex flex-1 flex-col items-center gap-3"
@@ -158,9 +146,10 @@ export default function InvestmentsPage() {
                     <div className="flex h-full w-full items-end">
                       <div
                         className="w-full rounded-t-2xl bg-emerald-500"
-                        style={{ height: bar.value }}
+                        style={{ height: `${bar.value}%` }}
                       />
                     </div>
+
                     <span className="text-sm font-medium text-slate-500">
                       {bar.month}
                     </span>
@@ -176,25 +165,27 @@ export default function InvestmentsPage() {
             <p className="text-sm font-medium text-slate-500">
               Portfolio Allocation
             </p>
+
             <h3 className="mt-2 text-2xl font-bold text-slate-900">
               Asset Breakdown
             </h3>
 
             <div className="mt-6 space-y-4">
-              {portfolioAllocation.map((item) => (
+              {mockPortfolioAllocation.map((item) => (
                 <div key={item.name} className="rounded-3xl bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-base font-semibold text-slate-900">
                         {item.name}
                       </p>
+
                       <p className="mt-1 text-sm text-slate-500">
-                        {item.percentage} of portfolio
+                        {item.percentage}% of portfolio
                       </p>
                     </div>
 
                     <p className="text-lg font-bold text-slate-900">
-                      {item.amount}
+                      {formatCurrency(item.amount)}
                     </p>
                   </div>
                 </div>
@@ -212,6 +203,7 @@ export default function InvestmentsPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Current Holdings
                 </p>
+
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">
                   Portfolio Positions
                 </h3>
@@ -228,22 +220,31 @@ export default function InvestmentsPage() {
             <div className="space-y-4">
               {holdings.map((item) => (
                 <div
-                  key={item.asset}
+                  key={item.id}
                   className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="text-base font-semibold text-slate-900">
                       {item.asset}
                     </p>
+
                     <p className="mt-1 text-sm text-slate-500">{item.type}</p>
                   </div>
 
                   <div className="text-left sm:text-right">
                     <p className="text-base font-semibold text-slate-900">
-                      {item.currentValue}
+                      {formatCurrency(item.currentValue)}
                     </p>
-                    <p className="mt-1 text-sm font-medium text-emerald-600">
-                      {item.change}
+
+                    <p
+                      className={
+                        item.gainPercentage >= 0
+                          ? "mt-1 text-sm font-medium text-emerald-600"
+                          : "mt-1 text-sm font-medium text-red-600"
+                      }
+                    >
+                      {item.gainPercentage >= 0 ? "+" : ""}
+                      {formatPercentage(item.gainPercentage)}
                     </p>
                   </div>
                 </div>
