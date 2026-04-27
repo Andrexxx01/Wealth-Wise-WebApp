@@ -1,82 +1,105 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  mockLoanItems,
+  mockLoanPayoffBars,
+  mockLoanSummary,
+} from "@/lib/mock-data/loan";
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+  }).format(value);
+}
+
+function formatPercentage(value: number) {
+  return `${value.toFixed(1)}%`;
+}
+
+function formatDate(value: string | null) {
+  if (!value) return "No due date";
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "2-digit",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function formatLoanCategory(category: string) {
+  const categoryLabels: Record<string, string> = {
+    PERSONAL: "Personal Loan",
+    CONSUMER: "Consumer Loan",
+    VEHICLE: "Vehicle Loan",
+    MORTGAGE: "Mortgage",
+    STUDENT: "Student Loan",
+    BUSINESS: "Business Loan",
+    OTHER: "Other Loan",
+  };
+
+  return categoryLabels[category] ?? category;
+}
+
+function formatLoanStatus(status: string) {
+  const statusLabels: Record<string, string> = {
+    ACTIVE: "Active",
+    PAID_OFF: "Paid Off",
+    OVERDUE: "Overdue",
+  };
+
+  return statusLabels[status] ?? status;
+}
 
 const loanSummaryCards = [
   {
     label: "Total Loan Balance",
-    value: "$1,200.00",
+    value: mockLoanSummary.totalLoanBalance,
     helper: "Outstanding debt balance",
   },
   {
     label: "Monthly Payment",
-    value: "$320.00",
+    value: mockLoanSummary.monthlyPaymentTotal,
     helper: "Required this month",
   },
   {
     label: "Paid Off",
-    value: "$4,800.00",
+    value: mockLoanSummary.totalPaidOff,
     helper: "Total repaid so far",
   },
   {
     label: "Debt Ratio",
-    value: "14.6%",
+    value: mockLoanSummary.debtToIncomeRatio,
     helper: "Based on current income",
+    isPercentage: true,
   },
 ];
 
-const loanAccounts = [
-  {
-    name: "Laptop Installment",
-    type: "Consumer Loan",
-    balance: "$650.00",
-    payment: "$120.00/mo",
-    progress: "68%",
-  },
-  {
-    name: "Motorcycle Loan",
-    type: "Vehicle Loan",
-    balance: "$420.00",
-    payment: "$150.00/mo",
-    progress: "74%",
-  },
-  {
-    name: "Friend Borrowing",
-    type: "Personal Debt",
-    balance: "$130.00",
-    payment: "$50.00/mo",
-    progress: "35%",
-  },
-];
+const loanAccounts = mockLoanItems.map((item) => {
+  const paidAmount = item.principalAmount - item.remainingBalance;
+  const progress =
+    item.principalAmount > 0 ? (paidAmount / item.principalAmount) * 100 : 0;
 
-const recentLoanActivity = [
-  {
-    title: "Motorcycle Loan Payment",
-    date: "Apr 03, 2026",
-    amount: "$150.00",
-    status: "Paid",
-  },
-  {
-    title: "Laptop Installment Payment",
-    date: "Apr 07, 2026",
-    amount: "$120.00",
-    status: "Paid",
-  },
-  {
-    title: "Friend Borrowing Repayment",
-    date: "Apr 10, 2026",
-    amount: "$50.00",
-    status: "Upcoming",
-  },
-];
+  return {
+    id: item.id,
+    title: item.title,
+    category: formatLoanCategory(item.category),
+    remainingBalance: item.remainingBalance,
+    monthlyPayment: item.monthlyPayment,
+    progress,
+    status: formatLoanStatus(item.status),
+  };
+});
 
-const payoffBars = [
-  { month: "Jan", value: "22%" },
-  { month: "Feb", value: "34%" },
-  { month: "Mar", value: "46%" },
-  { month: "Apr", value: "58%" },
-  { month: "May", value: "70%" },
-  { month: "Jun", value: "82%" },
-];
+const upcomingPayments = [...mockLoanItems]
+  .sort((a, b) => {
+    if (!a.dueDate) return 1;
+    if (!b.dueDate) return -1;
+
+    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+  })
+  .slice(0, 4);
 
 export default function LoansPage() {
   return (
@@ -110,9 +133,13 @@ export default function LoansPage() {
           >
             <CardContent className="p-6">
               <p className="text-sm font-medium text-slate-500">{card.label}</p>
+
               <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {card.value}
+                {card.isPercentage
+                  ? formatPercentage(card.value)
+                  : formatCurrency(card.value)}
               </h2>
+
               <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
             </CardContent>
           </Card>
@@ -127,6 +154,7 @@ export default function LoansPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Loan Payoff Progress
                 </p>
+
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">
                   Repayment Trend
                 </h3>
@@ -139,7 +167,7 @@ export default function LoansPage() {
 
             <div className="rounded-[28px] bg-slate-50 p-6">
               <div className="flex h-72 items-end gap-4">
-                {payoffBars.map((bar) => (
+                {mockLoanPayoffBars.map((bar) => (
                   <div
                     key={bar.month}
                     className="flex flex-1 flex-col items-center gap-3"
@@ -147,9 +175,10 @@ export default function LoansPage() {
                     <div className="flex h-full w-full items-end">
                       <div
                         className="w-full rounded-t-2xl bg-emerald-500"
-                        style={{ height: bar.value }}
+                        style={{ height: `${bar.value}%` }}
                       />
                     </div>
+
                     <span className="text-sm font-medium text-slate-500">
                       {bar.month}
                     </span>
@@ -163,27 +192,32 @@ export default function LoansPage() {
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-slate-500">Loan Accounts</p>
+
             <h3 className="mt-2 text-2xl font-bold text-slate-900">
               Active Debt List
             </h3>
 
             <div className="mt-6 space-y-4">
               {loanAccounts.map((item) => (
-                <div key={item.name} className="rounded-3xl bg-slate-50 p-4">
+                <div key={item.id} className="rounded-3xl bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-base font-semibold text-slate-900">
-                        {item.name}
+                        {item.title}
                       </p>
-                      <p className="mt-1 text-sm text-slate-500">{item.type}</p>
+
+                      <p className="mt-1 text-sm text-slate-500">
+                        {item.category}
+                      </p>
                     </div>
 
                     <div className="text-right">
                       <p className="text-lg font-bold text-slate-900">
-                        {item.balance}
+                        {formatCurrency(item.remainingBalance)}
                       </p>
+
                       <p className="mt-1 text-sm text-slate-500">
-                        {item.payment}
+                        {formatCurrency(item.monthlyPayment)}/mo
                       </p>
                     </div>
                   </div>
@@ -192,17 +226,21 @@ export default function LoansPage() {
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <span className="text-slate-500">Payoff progress</span>
                       <span className="font-semibold text-slate-900">
-                        {item.progress}
+                        {formatPercentage(item.progress)}
                       </span>
                     </div>
 
                     <div className="h-3 rounded-full bg-slate-200">
                       <div
                         className="h-3 rounded-full bg-emerald-500"
-                        style={{ width: item.progress }}
+                        style={{ width: `${item.progress}%` }}
                       />
                     </div>
                   </div>
+
+                  <p className="mt-3 text-sm font-medium text-emerald-600">
+                    {item.status}
+                  </p>
                 </div>
               ))}
             </div>
@@ -216,10 +254,11 @@ export default function LoansPage() {
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-sm font-medium text-slate-500">
-                  Recent Activity
+                  Upcoming Payments
                 </p>
+
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                  Latest Loan Payments
+                  Next Loan Obligations
                 </h3>
               </div>
 
@@ -232,30 +271,28 @@ export default function LoansPage() {
             </div>
 
             <div className="space-y-4">
-              {recentLoanActivity.map((item) => (
+              {upcomingPayments.map((item) => (
                 <div
-                  key={`${item.title}-${item.date}`}
+                  key={item.id}
                   className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <p className="text-base font-semibold text-slate-900">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-sm text-slate-500">{item.date}</p>
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      {item.lenderName}
+                    </p>
                   </div>
 
                   <div className="text-left sm:text-right">
                     <p className="text-base font-semibold text-slate-900">
-                      {item.amount}
+                      {formatCurrency(item.monthlyPayment)}
                     </p>
-                    <p
-                      className={`mt-1 text-sm font-medium ${
-                        item.status === "Paid"
-                          ? "text-emerald-600"
-                          : "text-amber-600"
-                      }`}
-                    >
-                      {item.status}
+
+                    <p className="mt-1 text-sm text-slate-500">
+                      Due {formatDate(item.dueDate)}
                     </p>
                   </div>
                 </div>
