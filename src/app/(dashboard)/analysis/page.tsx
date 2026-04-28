@@ -1,86 +1,21 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
 
-const healthMetrics = [
-  {
-    label: "Savings Rate",
-    value: "34%",
-    helper: "Healthy and consistent",
-  },
-  {
-    label: "Debt-to-Income Ratio",
-    value: "14.6%",
-    helper: "Still in a safe zone",
-  },
-  {
-    label: "Investment Allocation",
-    value: "48%",
-    helper: "Good growth exposure",
-  },
-  {
-    label: "Expense Load",
-    value: "42%",
-    helper: "Below income threshold",
-  },
-];
-
-const insights = [
-  {
-    title: "Strong savings behavior",
-    description:
-      "Your current savings rate is above a healthy baseline, which gives you room to grow investments and handle emergencies better.",
-    tone: "positive",
-  },
-  {
-    title: "Debt remains manageable",
-    description:
-      "Your debt-to-income ratio is still under control, which means your current loan commitments are not putting too much pressure on your cash flow.",
-    tone: "positive",
-  },
-  {
-    title: "Lifestyle spending should be watched",
-    description:
-      "Dining, shopping, and entertainment are rising faster than essential spending. Keep an eye on these categories before they become a pattern.",
-    tone: "warning",
-  },
-  {
-    title: "Portfolio growth is promising",
-    description:
-      "Your investments are growing steadily, but your portfolio is still concentrated in a few categories. More diversification may reduce risk.",
-    tone: "neutral",
-  },
-];
-
-const actionItems = [
-  "Keep your savings rate above 30% for the next 3 months.",
-  "Reduce lifestyle expenses by 8% to improve monthly surplus.",
-  "Maintain on-time loan payments to keep debt pressure low.",
-  "Review portfolio allocation and add more diversification.",
-];
-
-const monthlyReview = [
-  {
-    title: "Cash Flow Health",
-    value: "Positive",
-    helper: "Income remains higher than monthly spending",
-  },
-  {
-    title: "Spending Discipline",
-    value: "Moderate",
-    helper: "Lifestyle categories increased this month",
-  },
-  {
-    title: "Debt Pressure",
-    value: "Low",
-    helper: "Loan burden is still well-managed",
-  },
-  {
-    title: "Investment Momentum",
-    value: "Good",
-    helper: "Portfolio continues to grow month by month",
-  },
-];
+function getInsightToneClass(tone: string) {
+  if (tone === "positive") return "bg-emerald-500";
+  if (tone === "warning") return "bg-amber-500";
+  return "bg-slate-400";
+}
 
 export default function AnalysisPage() {
+  const {
+    healthScore,
+    healthMetrics,
+    monthlyReview,
+    insights,
+    recommendedActions,
+  } = mockAnalysisSummary;
+
   return (
     <div className="space-y-8">
       <section className="flex flex-col gap-3">
@@ -107,9 +42,12 @@ export default function AnalysisPage() {
             </p>
 
             <div className="mt-5 rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-8 text-white">
-              <h2 className="text-6xl font-bold tracking-tight">82%</h2>
+              <h2 className="text-6xl font-bold tracking-tight">
+                {healthScore.score}%
+              </h2>
+
               <p className="mt-3 text-base text-emerald-50">
-                Your financial condition looks strong overall this month.
+                {healthScore.summary}
               </p>
             </div>
 
@@ -119,7 +57,7 @@ export default function AnalysisPage() {
                   Current Assessment
                 </p>
                 <p className="mt-2 text-2xl font-bold text-slate-900">
-                  Excellent Progress
+                  {healthScore.label}
                 </p>
               </div>
 
@@ -154,9 +92,11 @@ export default function AnalysisPage() {
                 <p className="text-sm font-medium text-slate-500">
                   {metric.label}
                 </p>
+
                 <h3 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
                   {metric.value}
                 </h3>
+
                 <p className="mt-3 text-sm text-slate-500">{metric.helper}</p>
               </CardContent>
             </Card>
@@ -171,6 +111,7 @@ export default function AnalysisPage() {
               <p className="text-sm font-medium text-slate-500">
                 Monthly Review
               </p>
+
               <h3 className="mt-2 text-2xl font-bold text-slate-900">
                 Key Financial Signals
               </h3>
@@ -185,9 +126,11 @@ export default function AnalysisPage() {
                   <p className="text-sm font-medium text-slate-500">
                     {item.title}
                   </p>
+
                   <h4 className="mt-3 text-2xl font-bold text-slate-900">
                     {item.value}
                   </h4>
+
                   <p className="mt-3 text-sm leading-6 text-slate-500">
                     {item.helper}
                   </p>
@@ -203,6 +146,7 @@ export default function AnalysisPage() {
           <CardContent className="p-6">
             <div className="mb-6">
               <p className="text-sm font-medium text-slate-500">Insights</p>
+
               <h3 className="mt-2 text-2xl font-bold text-slate-900">
                 What your data is saying
               </h3>
@@ -211,24 +155,21 @@ export default function AnalysisPage() {
             <div className="space-y-4">
               {insights.map((item) => (
                 <div
-                  key={item.title}
+                  key={item.id}
                   className="rounded-[28px] border border-slate-200 p-5"
                 >
                   <div className="flex items-start gap-4">
                     <div
-                      className={`mt-1 h-3 w-3 rounded-full ${
-                        item.tone === "positive"
-                          ? "bg-emerald-500"
-                          : item.tone === "warning"
-                            ? "bg-amber-500"
-                            : "bg-slate-400"
-                      }`}
+                      className={`mt-1 h-3 w-3 rounded-full ${getInsightToneClass(
+                        item.tone,
+                      )}`}
                     />
 
                     <div>
                       <h4 className="text-lg font-semibold text-slate-900">
                         {item.title}
                       </h4>
+
                       <p className="mt-2 text-sm leading-7 text-slate-600">
                         {item.description}
                       </p>
@@ -246,19 +187,29 @@ export default function AnalysisPage() {
               <p className="text-sm font-medium text-slate-500">
                 Recommended Actions
               </p>
+
               <h3 className="mt-2 text-2xl font-bold text-slate-900">
                 Next best steps
               </h3>
             </div>
 
             <div className="space-y-4">
-              {actionItems.map((item) => (
+              {recommendedActions.map((item) => (
                 <div
-                  key={item}
+                  key={item.id}
                   className="flex gap-4 rounded-[28px] bg-slate-50 p-5"
                 >
                   <div className="mt-1 h-8 w-8 shrink-0 rounded-2xl bg-emerald-100" />
-                  <p className="text-sm leading-7 text-slate-700">{item}</p>
+
+                  <div>
+                    <h4 className="text-base font-semibold text-slate-900">
+                      {item.title}
+                    </h4>
+
+                    <p className="mt-2 text-sm leading-7 text-slate-600">
+                      {item.description}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
