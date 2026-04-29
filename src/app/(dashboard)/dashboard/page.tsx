@@ -5,26 +5,7 @@ import { mockIncomeItems, mockIncomeSummary } from "@/lib/mock-data/income";
 import { mockInvestmentSummary } from "@/lib/mock-data/investment";
 import { mockLoanSummary } from "@/lib/mock-data/loan";
 import { mockUserProfile } from "@/lib/mock-data/user";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatPercentage(value: number) {
-  return `${value.toFixed(1)}%`;
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
+import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 
 function getFirstName(fullName: string) {
   return fullName.split(" ")[0] ?? fullName;

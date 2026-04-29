@@ -5,30 +5,7 @@ import {
   mockIncomeSummary,
   mockMonthlyIncomeBars,
 } from "@/lib/mock-data/income";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-function formatIncomeCategory(category: string) {
-  return category
-    .toLowerCase()
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
+import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 
 function formatIncomeFrequency(frequency: string) {
   if (frequency === "ONE_TIME") return "Irregular";
@@ -223,7 +200,7 @@ export default function IncomePage() {
                       {item.title}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      {formatIncomeCategory(item.category)}
+                      {formatEnumLabel(item.category)}
                     </p>
                   </div>
 

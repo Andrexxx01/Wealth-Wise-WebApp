@@ -5,28 +5,12 @@ import {
   mockLoanPayoffBars,
   mockLoanSummary,
 } from "@/lib/mock-data/loan";
-
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatPercentage(value: number) {
-  return `${value.toFixed(1)}%`;
-}
-
-function formatDate(value: string | null) {
-  if (!value) return "No due date";
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
+import {
+  formatCurrency,
+  formatDate,
+  formatPercentage,
+  formatEnumLabel,
+} from "@/lib/formatters";
 
 function formatLoanCategory(category: string) {
   const categoryLabels: Record<string, string> = {
@@ -39,7 +23,7 @@ function formatLoanCategory(category: string) {
     OTHER: "Other Loan",
   };
 
-  return categoryLabels[category] ?? category;
+  return categoryLabels[category] ?? formatEnumLabel(category);
 }
 
 function formatLoanStatus(status: string) {

@@ -6,22 +6,8 @@ import {
   mockExpenseSummary,
   mockMonthlyExpenseBars,
 } from "@/lib/mock-data/expense";
+import { formatCurrency, formatDate } from "@/lib/formatters";
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  }).format(new Date(value));
-}
 
 function formatExpenseCategory(category: string) {
   const categoryLabels: Record<string, string> = {

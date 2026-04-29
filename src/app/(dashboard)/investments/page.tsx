@@ -6,18 +6,12 @@ import {
   mockInvestmentSummary,
   mockPortfolioAllocation,
 } from "@/lib/mock-data/investment";
+import {
+  formatCurrency,
+  formatPercentage,
+  formatEnumLabel,
+} from "@/lib/formatters";
 
-function formatCurrency(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatPercentage(value: number) {
-  return `${value.toFixed(2)}%`;
-}
 
 function formatInvestmentCategory(category: string) {
   const categoryLabels: Record<string, string> = {
@@ -31,7 +25,7 @@ function formatInvestmentCategory(category: string) {
     OTHER: "Other",
   };
 
-  return categoryLabels[category] ?? category;
+  return categoryLabels[category] ?? formatEnumLabel(category);
 }
 
 const investmentSummaryCards = [
