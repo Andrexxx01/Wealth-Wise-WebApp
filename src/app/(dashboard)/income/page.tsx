@@ -6,6 +6,8 @@ import {
   mockMonthlyIncomeBars,
 } from "@/lib/mock-data/income";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
+import SectionHeader from "@/components/dashboard/section-header";
+import SummaryCard from "@/components/dashboard/summary-card";
 
 function formatIncomeFrequency(frequency: string) {
   if (frequency === "ONE_TIME") return "Irregular";
@@ -57,42 +59,25 @@ const recentIncome = [...mockIncomeItems]
 export default function IncomePage() {
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-3">
-          <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-            Income Overview
-          </span>
-
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Track your income clearly
-          </h1>
-
-          <p className="max-w-2xl text-base leading-7 text-slate-600">
-            Monitor salary, freelance payments, consulting revenue, and other
-            income sources in one place so your financial analysis stays
-            accurate.
-          </p>
-        </div>
-
-        <Button className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
-          Add Income
-        </Button>
-      </section>
+      <SectionHeader
+        eyebrow="Income Overview"
+        title="Track your income clearly"
+        description="Monitor salary, freelance payments, consulting revenue, and other income sources in one place so your financial analysis stays accurate."
+        action={
+          <Button className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+            Add Income
+          </Button>
+        }
+      />
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {incomeSummaryCards.map((card) => (
-          <Card
+          <SummaryCard
             key={card.label}
-            className="rounded-[28px] border-slate-200 bg-white shadow-none"
-          >
-            <CardContent className="p-6">
-              <p className="text-sm font-medium text-slate-500">{card.label}</p>
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {formatCurrency(card.value)}
-              </h2>
-              <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
-            </CardContent>
-          </Card>
+            label={card.label}
+            value={formatCurrency(card.value)}
+            helper={card.helper}
+          />
         ))}
       </section>
 
