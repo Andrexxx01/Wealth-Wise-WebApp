@@ -1,17 +1,18 @@
+import SectionHeader from "@/components/dashboard/section-header";
+import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  formatCurrency,
+  formatEnumLabel,
+  formatPercentage,
+} from "@/lib/formatters";
 import {
   mockInvestmentItems,
   mockInvestmentPerformanceBars,
   mockInvestmentSummary,
   mockPortfolioAllocation,
 } from "@/lib/mock-data/investment";
-import {
-  formatCurrency,
-  formatPercentage,
-  formatEnumLabel,
-} from "@/lib/formatters";
-
 
 function formatInvestmentCategory(category: string) {
   const categoryLabels: Record<string, string> = {
@@ -31,24 +32,25 @@ function formatInvestmentCategory(category: string) {
 const investmentSummaryCards = [
   {
     label: "Portfolio Value",
-    value: mockInvestmentSummary.portfolioValue,
+    value: formatCurrency(mockInvestmentSummary.portfolioValue),
     helper: "Current total value",
   },
   {
     label: "Total Invested",
-    value: mockInvestmentSummary.totalInvested,
+    value: formatCurrency(mockInvestmentSummary.totalInvested),
     helper: "Total capital deployed",
   },
   {
     label: "Net Gain",
-    value: mockInvestmentSummary.netGain,
+    value: formatCurrency(mockInvestmentSummary.netGain),
     helper: "Overall return",
+    tone: "positive" as const,
   },
   {
     label: "Monthly Growth",
-    value: mockInvestmentSummary.monthlyGrowthRate,
+    value: formatPercentage(mockInvestmentSummary.monthlyGrowthRate),
     helper: "Compared to last month",
-    isPercentage: true,
+    tone: "positive" as const,
   },
 ];
 
@@ -69,46 +71,26 @@ const holdings = mockInvestmentItems.map((item) => {
 export default function InvestmentsPage() {
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-3">
-          <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-            Investment Overview
-          </span>
-
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Grow and monitor your portfolio
-          </h1>
-
-          <p className="max-w-2xl text-base leading-7 text-slate-600">
-            Track your asset allocation, portfolio value, and investment growth
-            in one place so you can understand how your money is performing over
-            time.
-          </p>
-        </div>
-
-        <Button className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
-          Add Investment
-        </Button>
-      </section>
+      <SectionHeader
+        eyebrow="Investment Overview"
+        title="Grow and monitor your portfolio"
+        description="Track your asset allocation, portfolio value, and investment growth in one place so you can understand how your money is performing over time."
+        action={
+          <Button className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+            Add Investment
+          </Button>
+        }
+      />
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {investmentSummaryCards.map((card) => (
-          <Card
+          <SummaryCard
             key={card.label}
-            className="rounded-[28px] border-slate-200 bg-white shadow-none"
-          >
-            <CardContent className="p-6">
-              <p className="text-sm font-medium text-slate-500">{card.label}</p>
-
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {card.isPercentage
-                  ? formatPercentage(card.value)
-                  : formatCurrency(card.value)}
-              </h2>
-
-              <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
-            </CardContent>
-          </Card>
+            label={card.label}
+            value={card.value}
+            helper={card.helper}
+            tone={card.tone}
+          />
         ))}
       </section>
 
@@ -120,6 +102,7 @@ export default function InvestmentsPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Portfolio Performance
                 </p>
+
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">
                   Growth Over Time
                 </h3>
