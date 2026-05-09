@@ -1,16 +1,18 @@
+import SectionHeader from "@/components/dashboard/section-header";
+import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  formatCurrency,
+  formatDate,
+  formatEnumLabel,
+  formatPercentage,
+} from "@/lib/formatters";
 import {
   mockLoanItems,
   mockLoanPayoffBars,
   mockLoanSummary,
 } from "@/lib/mock-data/loan";
-import {
-  formatCurrency,
-  formatDate,
-  formatPercentage,
-  formatEnumLabel,
-} from "@/lib/formatters";
 
 function formatLoanCategory(category: string) {
   const categoryLabels: Record<string, string> = {
@@ -33,30 +35,30 @@ function formatLoanStatus(status: string) {
     OVERDUE: "Overdue",
   };
 
-  return statusLabels[status] ?? status;
+  return statusLabels[status] ?? formatEnumLabel(status);
 }
 
 const loanSummaryCards = [
   {
     label: "Total Loan Balance",
-    value: mockLoanSummary.totalLoanBalance,
+    value: formatCurrency(mockLoanSummary.totalLoanBalance),
     helper: "Outstanding debt balance",
   },
   {
     label: "Monthly Payment",
-    value: mockLoanSummary.monthlyPaymentTotal,
+    value: formatCurrency(mockLoanSummary.monthlyPaymentTotal),
     helper: "Required this month",
   },
   {
     label: "Paid Off",
-    value: mockLoanSummary.totalPaidOff,
+    value: formatCurrency(mockLoanSummary.totalPaidOff),
     helper: "Total repaid so far",
+    tone: "positive" as const,
   },
   {
     label: "Debt Ratio",
-    value: mockLoanSummary.debtToIncomeRatio,
+    value: formatPercentage(mockLoanSummary.debtToIncomeRatio),
     helper: "Based on current income",
-    isPercentage: true,
   },
 ];
 
@@ -88,45 +90,26 @@ const upcomingPayments = [...mockLoanItems]
 export default function LoansPage() {
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-3">
-          <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-            Loan Overview
-          </span>
-
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-            Manage debt with more clarity
-          </h1>
-
-          <p className="max-w-2xl text-base leading-7 text-slate-600">
-            Keep track of outstanding balances, monthly obligations, and payoff
-            progress so your debt stays visible and under control.
-          </p>
-        </div>
-
-        <Button className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
-          Add Loan
-        </Button>
-      </section>
+      <SectionHeader
+        eyebrow="Loan Overview"
+        title="Manage debt with more clarity"
+        description="Keep track of outstanding balances, monthly obligations, and payoff progress so your debt stays visible and under control."
+        action={
+          <Button className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+            Add Loan
+          </Button>
+        }
+      />
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {loanSummaryCards.map((card) => (
-          <Card
+          <SummaryCard
             key={card.label}
-            className="rounded-[28px] border-slate-200 bg-white shadow-none"
-          >
-            <CardContent className="p-6">
-              <p className="text-sm font-medium text-slate-500">{card.label}</p>
-
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {card.isPercentage
-                  ? formatPercentage(card.value)
-                  : formatCurrency(card.value)}
-              </h2>
-
-              <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
-            </CardContent>
-          </Card>
+            label={card.label}
+            value={card.value}
+            helper={card.helper}
+            tone={card.tone}
+          />
         ))}
       </section>
 
