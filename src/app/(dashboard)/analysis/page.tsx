@@ -1,3 +1,5 @@
+import SectionHeader from "@/components/dashboard/section-header";
+import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
 
@@ -18,21 +20,11 @@ export default function AnalysisPage() {
 
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-3">
-        <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-          Financial Analysis
-        </span>
-
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-          Understand your financial health more clearly
-        </h1>
-
-        <p className="max-w-3xl text-base leading-7 text-slate-600">
-          WealthWise turns your income, expenses, investments, and loans into a
-          clearer financial story so you can make smarter decisions with more
-          confidence.
-        </p>
-      </section>
+      <SectionHeader
+        eyebrow="Financial Analysis"
+        title="Understand your financial health more clearly"
+        description="WealthWise turns your income, expenses, investments, and loans into a clearer financial story so you can make smarter decisions with more confidence."
+      />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
@@ -56,6 +48,7 @@ export default function AnalysisPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Current Assessment
                 </p>
+
                 <p className="mt-2 text-2xl font-bold text-slate-900">
                   {healthScore.label}
                 </p>
@@ -65,6 +58,7 @@ export default function AnalysisPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Biggest Strength
                 </p>
+
                 <p className="mt-2 text-2xl font-bold text-slate-900">
                   Strong Savings Rate
                 </p>
@@ -74,6 +68,7 @@ export default function AnalysisPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Main Watch Area
                 </p>
+
                 <p className="mt-2 text-2xl font-bold text-slate-900">
                   Lifestyle Spending
                 </p>
@@ -84,22 +79,12 @@ export default function AnalysisPage() {
 
         <section className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {healthMetrics.map((metric) => (
-            <Card
+            <SummaryCard
               key={metric.label}
-              className="rounded-[28px] border-slate-200 bg-white shadow-none"
-            >
-              <CardContent className="p-6">
-                <p className="text-sm font-medium text-slate-500">
-                  {metric.label}
-                </p>
-
-                <h3 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                  {metric.value}
-                </h3>
-
-                <p className="mt-3 text-sm text-slate-500">{metric.helper}</p>
-              </CardContent>
-            </Card>
+              label={metric.label}
+              value={String(metric.value)}
+              helper={metric.helper}
+            />
           ))}
         </section>
       </section>
