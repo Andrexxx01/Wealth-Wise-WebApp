@@ -1,11 +1,14 @@
+import SectionHeader from "@/components/dashboard/section-header";
+import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
 import { mockExpenseItems, mockExpenseSummary } from "@/lib/mock-data/expense";
 import { mockIncomeItems, mockIncomeSummary } from "@/lib/mock-data/income";
 import { mockInvestmentSummary } from "@/lib/mock-data/investment";
 import { mockLoanSummary } from "@/lib/mock-data/loan";
 import { mockUserProfile } from "@/lib/mock-data/user";
-import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
+import type { SummaryCardProps } from "@/types/ui";
 
 function getFirstName(fullName: string) {
   return fullName.split(" ")[0] ?? fullName;
@@ -24,16 +27,18 @@ const savingsRate =
     ? (monthlySurplus / mockIncomeSummary.totalIncome) * 100
     : 0;
 
-const summaryCards = [
+const summaryCards: SummaryCardProps[] = [
   {
     label: "Net Worth",
     value: formatCurrency(netWorth),
     helper: "Assets minus liabilities",
+    tone: "positive",
   },
   {
     label: "Monthly Income",
     value: formatCurrency(mockIncomeSummary.totalIncome),
     helper: "Total income this month",
+    tone: "positive",
   },
   {
     label: "Monthly Expenses",
@@ -44,6 +49,7 @@ const summaryCards = [
     label: "Portfolio Value",
     value: formatCurrency(mockInvestmentSummary.portfolioValue),
     helper: "Current investment value",
+    tone: "positive",
   },
 ];
 
@@ -79,37 +85,21 @@ const cashFlowBars = [
 export default function DashboardPage() {
   return (
     <div className="space-y-8">
-      <section className="flex flex-col gap-3">
-        <span className="inline-flex w-fit rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-          Overview
-        </span>
-
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900">
-          Welcome back, {getFirstName(mockUserProfile.fullName)}
-        </h1>
-
-        <p className="max-w-2xl text-base leading-7 text-slate-600">
-          Here&apos;s a quick view of your financial health, monthly cash flow,
-          investment performance, and current debt position.
-        </p>
-      </section>
+      <SectionHeader
+        eyebrow="Overview"
+        title={`Welcome back, ${getFirstName(mockUserProfile.fullName)}`}
+        description="Here's a quick view of your financial health, monthly cash flow, investment performance, and current debt position."
+      />
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
-          <Card
+          <SummaryCard
             key={card.label}
-            className="rounded-[28px] border-slate-200 bg-white shadow-none"
-          >
-            <CardContent className="p-6">
-              <p className="text-sm font-medium text-slate-500">{card.label}</p>
-
-              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {card.value}
-              </h2>
-
-              <p className="mt-3 text-sm text-slate-500">{card.helper}</p>
-            </CardContent>
-          </Card>
+            label={card.label}
+            value={card.value}
+            helper={card.helper}
+            tone={card.tone}
+          />
         ))}
       </section>
 
@@ -144,6 +134,7 @@ export default function DashboardPage() {
                         className="w-full rounded-t-2xl bg-emerald-500"
                         style={{ height: `${bar.income}%` }}
                       />
+
                       <div
                         className="w-full rounded-t-2xl bg-slate-300"
                         style={{ height: `${bar.expense}%` }}
@@ -193,6 +184,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Monthly Surplus
                 </p>
+
                 <p className="mt-2 text-2xl font-bold text-slate-900">
                   {formatCurrency(monthlySurplus)}
                 </p>
@@ -202,6 +194,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Savings Rate
                 </p>
+
                 <p className="mt-2 text-2xl font-bold text-slate-900">
                   {formatPercentage(savingsRate)}
                 </p>
@@ -211,6 +204,7 @@ export default function DashboardPage() {
                 <p className="text-sm font-medium text-slate-500">
                   Debt Balance
                 </p>
+
                 <p className="mt-2 text-2xl font-bold text-slate-900">
                   {formatCurrency(mockLoanSummary.totalLoanBalance)}
                 </p>
@@ -237,6 +231,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-slate-500">
                     Total Invested
                   </p>
+
                   <p className="mt-1 text-lg font-bold text-slate-900">
                     {formatCurrency(mockInvestmentSummary.totalInvested)}
                   </p>
@@ -252,6 +247,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-slate-500">
                     Recurring Income
                   </p>
+
                   <p className="mt-1 text-lg font-bold text-slate-900">
                     {formatCurrency(mockIncomeSummary.recurringIncome)}
                   </p>
@@ -265,6 +261,7 @@ export default function DashboardPage() {
                   <p className="text-sm font-medium text-slate-500">
                     Essential Spending
                   </p>
+
                   <p className="mt-1 text-lg font-bold text-slate-900">
                     {formatCurrency(mockExpenseSummary.essentialSpending)}
                   </p>
