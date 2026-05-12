@@ -1,22 +1,20 @@
+import ChartCard from "@/components/dashboard/chart-card";
+import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
+import SectionHeader from "@/components/dashboard/section-header";
+import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import {
   mockIncomeItems,
   mockIncomeSummary,
   mockMonthlyIncomeBars,
 } from "@/lib/mock-data/income";
-import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
-import SectionHeader from "@/components/dashboard/section-header";
-import SummaryCard from "@/components/dashboard/summary-card";
 
 function formatIncomeFrequency(frequency: string) {
   if (frequency === "ONE_TIME") return "Irregular";
 
-  return frequency
-    .toLowerCase()
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  return formatEnumLabel(frequency);
 }
 
 const incomeSummaryCards = [
@@ -41,6 +39,11 @@ const incomeSummaryCards = [
     helper: "Estimated yearly income",
   },
 ];
+
+const monthlyIncomeChartData = mockMonthlyIncomeBars.map((item) => ({
+  label: item.month,
+  value: item.value,
+}));
 
 const incomeSources = mockIncomeItems.map((item) => ({
   id: item.id,
@@ -82,49 +85,18 @@ export default function IncomePage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
-          <CardContent className="p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Monthly Income Trend
-                </p>
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                  Income Growth
-                </h3>
-              </div>
-
-              <div className="rounded-2xl bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-                2026
-              </div>
-            </div>
-
-            <div className="rounded-[28px] bg-slate-50 p-6">
-              <div className="flex h-72 items-end gap-4">
-                {mockMonthlyIncomeBars.map((bar) => (
-                  <div
-                    key={bar.month}
-                    className="flex flex-1 flex-col items-center gap-3"
-                  >
-                    <div className="flex h-full w-full items-end">
-                      <div
-                        className="w-full rounded-t-2xl bg-emerald-500"
-                        style={{ height: `${bar.value}%` }}
-                      />
-                    </div>
-                    <span className="text-sm font-medium text-slate-500">
-                      {bar.month}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartCard
+          eyebrow="Monthly Income Trend"
+          title="Income Growth"
+          badge="2026"
+        >
+          <BarChartMock data={monthlyIncomeChartData} />
+        </ChartCard>
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
             <p className="text-sm font-medium text-slate-500">Income Sources</p>
+
             <h3 className="mt-2 text-2xl font-bold text-slate-900">
               Current Breakdown
             </h3>
@@ -137,6 +109,7 @@ export default function IncomePage() {
                       <p className="text-base font-semibold text-slate-900">
                         {item.name}
                       </p>
+
                       <p className="mt-1 text-sm text-slate-500">
                         {item.frequency}
                       </p>
@@ -161,6 +134,7 @@ export default function IncomePage() {
                 <p className="text-sm font-medium text-slate-500">
                   Recent Transactions
                 </p>
+
                 <h3 className="mt-2 text-2xl font-bold text-slate-900">
                   Latest Income Activity
                 </h3>
@@ -184,6 +158,7 @@ export default function IncomePage() {
                     <p className="text-base font-semibold text-slate-900">
                       {item.title}
                     </p>
+
                     <p className="mt-1 text-sm text-slate-500">
                       {formatEnumLabel(item.category)}
                     </p>
@@ -193,6 +168,7 @@ export default function IncomePage() {
                     <p className="text-base font-semibold text-slate-900">
                       {formatCurrency(item.amount)}
                     </p>
+
                     <p className="mt-1 text-sm text-slate-500">
                       {formatDate(item.receivedAt)}
                     </p>
