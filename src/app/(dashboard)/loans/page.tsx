@@ -1,3 +1,5 @@
+import ChartCard from "@/components/dashboard/chart-card";
+import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,11 @@ const loanSummaryCards = [
   },
 ];
 
+const loanPayoffChartData = mockLoanPayoffBars.map((item) => ({
+  label: item.month,
+  value: item.value,
+}));
+
 const loanAccounts = mockLoanItems.map((item) => {
   const paidAmount = item.principalAmount - item.remainingBalance;
   const progress =
@@ -114,47 +121,13 @@ export default function LoansPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
-          <CardContent className="p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Loan Payoff Progress
-                </p>
-
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                  Repayment Trend
-                </h3>
-              </div>
-
-              <div className="rounded-2xl bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-                2026
-              </div>
-            </div>
-
-            <div className="rounded-[28px] bg-slate-50 p-6">
-              <div className="flex h-72 items-end gap-4">
-                {mockLoanPayoffBars.map((bar) => (
-                  <div
-                    key={bar.month}
-                    className="flex flex-1 flex-col items-center gap-3"
-                  >
-                    <div className="flex h-full w-full items-end">
-                      <div
-                        className="w-full rounded-t-2xl bg-emerald-500"
-                        style={{ height: `${bar.value}%` }}
-                      />
-                    </div>
-
-                    <span className="text-sm font-medium text-slate-500">
-                      {bar.month}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartCard
+          eyebrow="Loan Payoff Progress"
+          title="Repayment Trend"
+          badge="2026"
+        >
+          <BarChartMock data={loanPayoffChartData} />
+        </ChartCard>
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
