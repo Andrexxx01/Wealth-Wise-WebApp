@@ -1,3 +1,5 @@
+import ChartCard from "@/components/dashboard/chart-card";
+import { GroupedBarChartMock } from "@/components/dashboard/bar-chart-mock";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -73,13 +75,13 @@ const recentActivity = [...recentIncome, ...recentExpenses]
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
   .slice(0, 5);
 
-const cashFlowBars = [
-  { month: "Jan", income: 68, expense: 42 },
-  { month: "Feb", income: 74, expense: 48 },
-  { month: "Mar", income: 62, expense: 52 },
-  { month: "Apr", income: 86, expense: 46 },
-  { month: "May", income: 78, expense: 56 },
-  { month: "Jun", income: 92, expense: 50 },
+const cashFlowChartData = [
+  { label: "Jan", primaryValue: 68, secondaryValue: 42 },
+  { label: "Feb", primaryValue: 74, secondaryValue: 48 },
+  { label: "Mar", primaryValue: 62, secondaryValue: 52 },
+  { label: "Apr", primaryValue: 86, secondaryValue: 46 },
+  { label: "May", primaryValue: 78, secondaryValue: 56 },
+  { label: "Jun", primaryValue: 92, secondaryValue: 50 },
 ];
 
 export default function DashboardPage() {
@@ -104,64 +106,17 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_0.7fr]">
-        <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
-          <CardContent className="p-6">
-            <div className="mb-6 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Monthly Cash Flow
-                </p>
-
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                  Income vs Expense
-                </h3>
-              </div>
-
-              <div className="rounded-2xl bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700">
-                2026
-              </div>
-            </div>
-
-            <div className="rounded-[28px] bg-slate-50 p-6">
-              <div className="flex h-72 items-end gap-4">
-                {cashFlowBars.map((bar) => (
-                  <div
-                    key={bar.month}
-                    className="flex flex-1 flex-col items-center gap-3"
-                  >
-                    <div className="flex h-full w-full items-end justify-center gap-1">
-                      <div
-                        className="w-full rounded-t-2xl bg-emerald-500"
-                        style={{ height: `${bar.income}%` }}
-                      />
-
-                      <div
-                        className="w-full rounded-t-2xl bg-slate-300"
-                        style={{ height: `${bar.expense}%` }}
-                      />
-                    </div>
-
-                    <span className="text-sm font-medium text-slate-500">
-                      {bar.month}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 flex items-center gap-6 text-sm text-slate-600">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-emerald-500" />
-                  Income
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-slate-300" />
-                  Expense
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ChartCard
+          eyebrow="Monthly Cash Flow"
+          title="Income vs Expense"
+          badge="2026"
+        >
+          <GroupedBarChartMock
+            data={cashFlowChartData}
+            primaryLabel="Income"
+            secondaryLabel="Expense"
+          />
+        </ChartCard>
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
