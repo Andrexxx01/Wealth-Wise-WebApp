@@ -1,3 +1,4 @@
+import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
 function getInsightToneClass(tone: string) {
   if (tone === "positive") return "bg-emerald-500";
   if (tone === "warning") return "bg-amber-500";
+
   return "bg-slate-400";
 }
 
@@ -29,11 +31,13 @@ export default function AnalysisPage() {
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">
-              Financial Health Score
-            </p>
+            <DashboardCardHeader
+              eyebrow="Financial Health Score"
+              title={`${healthScore.score}%`}
+              description={healthScore.summary}
+            />
 
-            <div className="mt-5 rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-8 text-white">
+            <div className="rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-8 text-white">
               <h2 className="text-6xl font-bold tracking-tight">
                 {healthScore.score}%
               </h2>
@@ -92,15 +96,10 @@ export default function AnalysisPage() {
       <section>
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <div className="mb-6">
-              <p className="text-sm font-medium text-slate-500">
-                Monthly Review
-              </p>
-
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                Key Financial Signals
-              </h3>
-            </div>
+            <DashboardCardHeader
+              eyebrow="Monthly Review"
+              title="Key Financial Signals"
+            />
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
               {monthlyReview.map((item) => (
@@ -129,13 +128,10 @@ export default function AnalysisPage() {
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1fr_1fr]">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <div className="mb-6">
-              <p className="text-sm font-medium text-slate-500">Insights</p>
-
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                What your data is saying
-              </h3>
-            </div>
+            <DashboardCardHeader
+              eyebrow="Insights"
+              title="What your data is saying"
+            />
 
             <div className="space-y-4">
               {insights.map((item) => (
@@ -168,15 +164,10 @@ export default function AnalysisPage() {
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <div className="mb-6">
-              <p className="text-sm font-medium text-slate-500">
-                Recommended Actions
-              </p>
-
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                Next best steps
-              </h3>
-            </div>
+            <DashboardCardHeader
+              eyebrow="Recommended Actions"
+              title="Next best steps"
+            />
 
             <div className="space-y-4">
               {recommendedActions.map((item) => (

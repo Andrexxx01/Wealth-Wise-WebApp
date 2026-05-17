@@ -1,5 +1,6 @@
-import ChartCard from "@/components/dashboard/chart-card";
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
+import ChartCard from "@/components/dashboard/chart-card";
+import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -114,15 +115,12 @@ export default function InvestmentsPage() {
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">
-              Portfolio Allocation
-            </p>
+            <DashboardCardHeader
+              eyebrow="Portfolio Allocation"
+              title="Asset Breakdown"
+            />
 
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">
-              Asset Breakdown
-            </h3>
-
-            <div className="mt-6 space-y-4">
+            <div className="space-y-4">
               {mockPortfolioAllocation.map((item) => (
                 <div key={item.name} className="rounded-3xl bg-slate-50 p-4">
                   <div className="flex items-start justify-between gap-4">
@@ -151,15 +149,11 @@ export default function InvestmentsPage() {
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
             <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-500">
-                  Current Holdings
-                </p>
-
-                <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                  Portfolio Positions
-                </h3>
-              </div>
+              <DashboardCardHeader
+                eyebrow="Current Holdings"
+                title="Portfolio Positions"
+                className="mb-0"
+              />
 
               <Button
                 variant="outline"

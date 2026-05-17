@@ -44,3 +44,11 @@ export type GroupedBarChartMockProps = {
   primaryLabel?: string;
   secondaryLabel?: string;
 };
+
+export type DashboardCardHeaderProps = {
+  eyebrow?: string;
+  title: string;
+  description?: string;
+  badge?: string;
+  className?: string;
+};

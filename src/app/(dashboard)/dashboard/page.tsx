@@ -1,5 +1,6 @@
-import ChartCard from "@/components/dashboard/chart-card";
 import { GroupedBarChartMock } from "@/components/dashboard/bar-chart-mock";
+import ChartCard from "@/components/dashboard/chart-card";
+import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -120,17 +121,19 @@ export default function DashboardPage() {
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">
-              Financial Health Score
-            </p>
+            <DashboardCardHeader
+              eyebrow="Financial Health Score"
+              title={`${mockAnalysisSummary.healthScore.score}%`}
+              description={mockAnalysisSummary.healthScore.label}
+            />
 
-            <div className="mt-4 rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-6 text-white">
+            <div className="rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-6 text-white">
               <h3 className="text-5xl font-bold">
                 {mockAnalysisSummary.healthScore.score}%
               </h3>
 
               <p className="mt-3 text-sm text-emerald-50">
-                {mockAnalysisSummary.healthScore.label}
+                {mockAnalysisSummary.healthScore.summary}
               </p>
             </div>
 
@@ -172,15 +175,12 @@ export default function DashboardPage() {
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[0.8fr_1.2fr]">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <p className="text-sm font-medium text-slate-500">
-              Quick Financial Snapshot
-            </p>
+            <DashboardCardHeader
+              eyebrow="Quick Financial Snapshot"
+              title="Current Position"
+            />
 
-            <h3 className="mt-2 text-2xl font-bold text-slate-900">
-              Current Position
-            </h3>
-
-            <div className="mt-6 space-y-4">
+            <div className="space-y-4">
               <div className="flex items-center justify-between rounded-3xl bg-slate-50 p-4">
                 <div>
                   <p className="text-sm font-medium text-slate-500">
@@ -230,15 +230,10 @@ export default function DashboardPage() {
 
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
-            <div className="mb-6">
-              <p className="text-sm font-medium text-slate-500">
-                Recent Activity
-              </p>
-
-              <h3 className="mt-2 text-2xl font-bold text-slate-900">
-                Latest Financial Records
-              </h3>
-            </div>
+            <DashboardCardHeader
+              eyebrow="Recent Activity"
+              title="Latest Financial Records"
+            />
 
             <div className="space-y-4">
               {recentActivity.map((item) => (
