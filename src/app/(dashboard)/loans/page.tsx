@@ -1,6 +1,7 @@
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
+import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -139,30 +140,15 @@ export default function LoansPage() {
 
             <div className="space-y-4">
               {loanAccounts.map((item) => (
-                <div key={item.id} className="rounded-3xl bg-slate-50 p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-base font-semibold text-slate-900">
-                        {item.title}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {item.category}
-                      </p>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-slate-900">
-                        {formatCurrency(item.remainingBalance)}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {formatCurrency(item.monthlyPayment)}/mo
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4">
+                <DashboardListItem
+                  key={item.id}
+                  title={item.title}
+                  subtitle={item.category}
+                  value={formatCurrency(item.remainingBalance)}
+                  meta={`${formatCurrency(item.monthlyPayment)}/mo`}
+                  className="border-none bg-slate-50 p-4"
+                >
+                  <div>
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <span className="text-slate-500">Payoff progress</span>
                       <span className="font-semibold text-slate-900">
@@ -176,12 +162,12 @@ export default function LoansPage() {
                         style={{ width: `${item.progress}%` }}
                       />
                     </div>
-                  </div>
 
-                  <p className="mt-3 text-sm font-medium text-emerald-600">
-                    {item.status}
-                  </p>
-                </div>
+                    <p className="mt-3 text-sm font-medium text-emerald-600">
+                      {item.status}
+                    </p>
+                  </div>
+                </DashboardListItem>
               ))}
             </div>
           </CardContent>
@@ -208,30 +194,13 @@ export default function LoansPage() {
 
             <div className="space-y-4">
               {upcomingPayments.map((item) => (
-                <div
+                <DashboardListItem
                   key={item.id}
-                  className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-base font-semibold text-slate-900">
-                      {item.title}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {item.lenderName}
-                    </p>
-                  </div>
-
-                  <div className="text-left sm:text-right">
-                    <p className="text-base font-semibold text-slate-900">
-                      {formatCurrency(item.monthlyPayment)}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      Due {formatDate(item.dueDate)}
-                    </p>
-                  </div>
-                </div>
+                  title={item.title}
+                  subtitle={item.lenderName}
+                  value={formatCurrency(item.monthlyPayment)}
+                  meta={`Due ${formatDate(item.dueDate)}`}
+                />
               ))}
             </div>
           </CardContent>

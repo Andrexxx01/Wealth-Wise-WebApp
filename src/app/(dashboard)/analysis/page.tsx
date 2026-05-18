@@ -1,14 +1,30 @@
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
+import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
+import type { DashboardListItemTone } from "@/types/ui";
 
 function getInsightToneClass(tone: string) {
   if (tone === "positive") return "bg-emerald-500";
   if (tone === "warning") return "bg-amber-500";
 
   return "bg-slate-400";
+}
+
+function getInsightToneLabel(tone: string) {
+  if (tone === "positive") return "Positive";
+  if (tone === "warning") return "Warning";
+
+  return "Neutral";
+}
+
+function getInsightListTone(tone: string): DashboardListItemTone {
+  if (tone === "positive") return "positive";
+  if (tone === "warning") return "warning";
+
+  return "default";
 }
 
 export default function AnalysisPage() {
@@ -48,35 +64,25 @@ export default function AnalysisPage() {
             </div>
 
             <div className="mt-6 space-y-4">
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">
-                  Current Assessment
-                </p>
+              <DashboardListItem
+                title="Current Assessment"
+                value={healthScore.label}
+                className="border-none bg-slate-50 p-4"
+              />
 
-                <p className="mt-2 text-2xl font-bold text-slate-900">
-                  {healthScore.label}
-                </p>
-              </div>
+              <DashboardListItem
+                title="Biggest Strength"
+                value="Strong Savings Rate"
+                tone="positive"
+                className="border-none bg-slate-50 p-4"
+              />
 
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">
-                  Biggest Strength
-                </p>
-
-                <p className="mt-2 text-2xl font-bold text-slate-900">
-                  Strong Savings Rate
-                </p>
-              </div>
-
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">
-                  Main Watch Area
-                </p>
-
-                <p className="mt-2 text-2xl font-bold text-slate-900">
-                  Lifestyle Spending
-                </p>
-              </div>
+              <DashboardListItem
+                title="Main Watch Area"
+                value="Lifestyle Spending"
+                tone="warning"
+                className="border-none bg-slate-50 p-4"
+              />
             </div>
           </CardContent>
         </Card>
@@ -103,22 +109,13 @@ export default function AnalysisPage() {
 
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
               {monthlyReview.map((item) => (
-                <div
+                <DashboardListItem
                   key={item.title}
-                  className="rounded-[28px] bg-slate-50 p-5"
-                >
-                  <p className="text-sm font-medium text-slate-500">
-                    {item.title}
-                  </p>
-
-                  <h4 className="mt-3 text-2xl font-bold text-slate-900">
-                    {item.value}
-                  </h4>
-
-                  <p className="mt-3 text-sm leading-6 text-slate-500">
-                    {item.helper}
-                  </p>
-                </div>
+                  title={item.title}
+                  value={item.value}
+                  meta={item.helper}
+                  className="border-none bg-slate-50 p-5"
+                />
               ))}
             </div>
           </CardContent>
@@ -135,28 +132,24 @@ export default function AnalysisPage() {
 
             <div className="space-y-4">
               {insights.map((item) => (
-                <div
+                <DashboardListItem
                   key={item.id}
-                  className="rounded-[28px] border border-slate-200 p-5"
+                  title={item.title}
+                  value={getInsightToneLabel(item.tone)}
+                  tone={getInsightListTone(item.tone)}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex gap-4">
                     <div
-                      className={`mt-1 h-3 w-3 rounded-full ${getInsightToneClass(
+                      className={`mt-2 h-3 w-3 shrink-0 rounded-full ${getInsightToneClass(
                         item.tone,
                       )}`}
                     />
 
-                    <div>
-                      <h4 className="text-lg font-semibold text-slate-900">
-                        {item.title}
-                      </h4>
-
-                      <p className="mt-2 text-sm leading-7 text-slate-600">
-                        {item.description}
-                      </p>
-                    </div>
+                    <p className="text-sm leading-7 text-slate-600">
+                      {item.description}
+                    </p>
                   </div>
-                </div>
+                </DashboardListItem>
               ))}
             </div>
           </CardContent>
@@ -171,22 +164,15 @@ export default function AnalysisPage() {
 
             <div className="space-y-4">
               {recommendedActions.map((item) => (
-                <div
+                <DashboardListItem
                   key={item.id}
-                  className="flex gap-4 rounded-[28px] bg-slate-50 p-5"
+                  title={item.title}
+                  className="border-none bg-slate-50 p-5"
                 >
-                  <div className="mt-1 h-8 w-8 shrink-0 rounded-2xl bg-emerald-100" />
-
-                  <div>
-                    <h4 className="text-base font-semibold text-slate-900">
-                      {item.title}
-                    </h4>
-
-                    <p className="mt-2 text-sm leading-7 text-slate-600">
-                      {item.description}
-                    </p>
-                  </div>
-                </div>
+                  <p className="text-sm leading-7 text-slate-600">
+                    {item.description}
+                  </p>
+                </DashboardListItem>
               ))}
             </div>
           </CardContent>

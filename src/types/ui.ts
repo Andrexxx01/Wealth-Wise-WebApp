@@ -52,3 +52,19 @@ export type DashboardCardHeaderProps = {
   badge?: string;
   className?: string;
 };
+
+export type DashboardListItemTone =
+  | "default"
+  | "positive"
+  | "warning"
+  | "danger";
+
+export type DashboardListItemProps = {
+  title: string;
+  subtitle?: string;
+  value?: string;
+  meta?: string;
+  tone?: DashboardListItemTone;
+  className?: string;
+  children?: ReactNode;
+};

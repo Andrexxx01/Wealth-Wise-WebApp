@@ -1,6 +1,7 @@
 import { GroupedBarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
+import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
@@ -85,6 +86,31 @@ const cashFlowChartData = [
   { label: "Jun", primaryValue: 92, secondaryValue: 50 },
 ];
 
+const quickSnapshotItems = [
+  {
+    id: "total-invested",
+    title: "Total Invested",
+    subtitle: "Capital deployed",
+    value: formatCurrency(mockInvestmentSummary.totalInvested),
+    meta: `+${formatCurrency(mockInvestmentSummary.netGain)}`,
+    tone: "positive" as const,
+  },
+  {
+    id: "recurring-income",
+    title: "Recurring Income",
+    subtitle: "Salary & fixed sources",
+    value: formatCurrency(mockIncomeSummary.recurringIncome),
+    meta: "Monthly",
+  },
+  {
+    id: "essential-spending",
+    title: "Essential Spending",
+    subtitle: "Needs & fixed costs",
+    value: formatCurrency(mockExpenseSummary.essentialSpending),
+    meta: "Needs",
+  },
+];
+
 export default function DashboardPage() {
   return (
     <div className="space-y-8">
@@ -138,35 +164,27 @@ export default function DashboardPage() {
             </div>
 
             <div className="mt-6 space-y-4">
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">
-                  Monthly Surplus
-                </p>
+              <DashboardListItem
+                title="Monthly Surplus"
+                subtitle="Income minus expenses"
+                value={formatCurrency(monthlySurplus)}
+                tone="positive"
+                className="border-none bg-slate-50 p-4"
+              />
 
-                <p className="mt-2 text-2xl font-bold text-slate-900">
-                  {formatCurrency(monthlySurplus)}
-                </p>
-              </div>
+              <DashboardListItem
+                title="Savings Rate"
+                subtitle="Current monthly ratio"
+                value={formatPercentage(savingsRate)}
+                className="border-none bg-slate-50 p-4"
+              />
 
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">
-                  Savings Rate
-                </p>
-
-                <p className="mt-2 text-2xl font-bold text-slate-900">
-                  {formatPercentage(savingsRate)}
-                </p>
-              </div>
-
-              <div className="rounded-3xl bg-slate-50 p-4">
-                <p className="text-sm font-medium text-slate-500">
-                  Debt Balance
-                </p>
-
-                <p className="mt-2 text-2xl font-bold text-slate-900">
-                  {formatCurrency(mockLoanSummary.totalLoanBalance)}
-                </p>
-              </div>
+              <DashboardListItem
+                title="Debt Balance"
+                subtitle="Outstanding liabilities"
+                value={formatCurrency(mockLoanSummary.totalLoanBalance)}
+                className="border-none bg-slate-50 p-4"
+              />
             </div>
           </CardContent>
         </Card>
@@ -181,49 +199,17 @@ export default function DashboardPage() {
             />
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-3xl bg-slate-50 p-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Total Invested
-                  </p>
-
-                  <p className="mt-1 text-lg font-bold text-slate-900">
-                    {formatCurrency(mockInvestmentSummary.totalInvested)}
-                  </p>
-                </div>
-
-                <p className="text-sm font-semibold text-emerald-600">
-                  +{formatCurrency(mockInvestmentSummary.netGain)}
-                </p>
-              </div>
-
-              <div className="flex items-center justify-between rounded-3xl bg-slate-50 p-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Recurring Income
-                  </p>
-
-                  <p className="mt-1 text-lg font-bold text-slate-900">
-                    {formatCurrency(mockIncomeSummary.recurringIncome)}
-                  </p>
-                </div>
-
-                <p className="text-sm font-semibold text-slate-500">Monthly</p>
-              </div>
-
-              <div className="flex items-center justify-between rounded-3xl bg-slate-50 p-4">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Essential Spending
-                  </p>
-
-                  <p className="mt-1 text-lg font-bold text-slate-900">
-                    {formatCurrency(mockExpenseSummary.essentialSpending)}
-                  </p>
-                </div>
-
-                <p className="text-sm font-semibold text-slate-500">Needs</p>
-              </div>
+              {quickSnapshotItems.map((item) => (
+                <DashboardListItem
+                  key={item.id}
+                  title={item.title}
+                  subtitle={item.subtitle}
+                  value={item.value}
+                  meta={item.meta}
+                  tone={item.tone}
+                  className="border-none bg-slate-50 p-4"
+                />
+              ))}
             </div>
           </CardContent>
         </Card>
@@ -237,35 +223,16 @@ export default function DashboardPage() {
 
             <div className="space-y-4">
               {recentActivity.map((item) => (
-                <div
+                <DashboardListItem
                   key={`${item.type}-${item.id}`}
-                  className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-base font-semibold text-slate-900">
-                      {item.title}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">{item.type}</p>
-                  </div>
-
-                  <div className="text-left sm:text-right">
-                    <p
-                      className={
-                        item.amount >= 0
-                          ? "text-base font-semibold text-emerald-600"
-                          : "text-base font-semibold text-slate-900"
-                      }
-                    >
-                      {item.amount >= 0 ? "+" : ""}
-                      {formatCurrency(item.amount)}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {formatDate(item.date)}
-                    </p>
-                  </div>
-                </div>
+                  title={item.title}
+                  subtitle={item.type}
+                  value={`${item.amount >= 0 ? "+" : ""}${formatCurrency(
+                    item.amount,
+                  )}`}
+                  meta={formatDate(item.date)}
+                  tone={item.amount >= 0 ? "positive" : "default"}
+                />
               ))}
             </div>
           </CardContent>

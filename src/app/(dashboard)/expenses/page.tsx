@@ -1,6 +1,7 @@
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
+import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -106,23 +107,13 @@ export default function ExpensesPage() {
 
             <div className="space-y-4">
               {mockExpenseCategoryBreakdown.map((item) => (
-                <div key={item.name} className="rounded-3xl bg-slate-50 p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-base font-semibold text-slate-900">
-                        {item.name}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {item.percentage}% of total expenses
-                      </p>
-                    </div>
-
-                    <p className="text-lg font-bold text-slate-900">
-                      {formatCurrency(item.amount)}
-                    </p>
-                  </div>
-                </div>
+                <DashboardListItem
+                  key={item.name}
+                  title={item.name}
+                  subtitle={`${item.percentage}% of total expenses`}
+                  value={formatCurrency(item.amount)}
+                  className="border-none bg-slate-50 p-4"
+                />
               ))}
             </div>
           </CardContent>
@@ -149,30 +140,13 @@ export default function ExpensesPage() {
 
             <div className="space-y-4">
               {recentExpenses.map((item) => (
-                <div
+                <DashboardListItem
                   key={item.id}
-                  className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-base font-semibold text-slate-900">
-                      {item.title}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {formatExpenseCategory(item.category)}
-                    </p>
-                  </div>
-
-                  <div className="text-left sm:text-right">
-                    <p className="text-base font-semibold text-slate-900">
-                      {formatCurrency(item.amount)}
-                    </p>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      {formatDate(item.spentAt)}
-                    </p>
-                  </div>
-                </div>
+                  title={item.title}
+                  subtitle={formatExpenseCategory(item.category)}
+                  value={formatCurrency(item.amount)}
+                  meta={formatDate(item.spentAt)}
+                />
               ))}
             </div>
           </CardContent>

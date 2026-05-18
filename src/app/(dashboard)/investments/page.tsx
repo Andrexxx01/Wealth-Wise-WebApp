@@ -1,6 +1,7 @@
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
+import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -122,23 +123,13 @@ export default function InvestmentsPage() {
 
             <div className="space-y-4">
               {mockPortfolioAllocation.map((item) => (
-                <div key={item.name} className="rounded-3xl bg-slate-50 p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-base font-semibold text-slate-900">
-                        {item.name}
-                      </p>
-
-                      <p className="mt-1 text-sm text-slate-500">
-                        {item.percentage}% of portfolio
-                      </p>
-                    </div>
-
-                    <p className="text-lg font-bold text-slate-900">
-                      {formatCurrency(item.amount)}
-                    </p>
-                  </div>
-                </div>
+                <DashboardListItem
+                  key={item.name}
+                  title={item.name}
+                  subtitle={`${item.percentage}% of portfolio`}
+                  value={formatCurrency(item.amount)}
+                  className="border-none bg-slate-50 p-4"
+                />
               ))}
             </div>
           </CardContent>
@@ -164,37 +155,22 @@ export default function InvestmentsPage() {
             </div>
 
             <div className="space-y-4">
-              {holdings.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex flex-col gap-4 rounded-[28px] border border-slate-200 p-5 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-base font-semibold text-slate-900">
-                      {item.asset}
-                    </p>
+              {holdings.map((item) => {
+                const isPositive = item.gainPercentage >= 0;
 
-                    <p className="mt-1 text-sm text-slate-500">{item.type}</p>
-                  </div>
-
-                  <div className="text-left sm:text-right">
-                    <p className="text-base font-semibold text-slate-900">
-                      {formatCurrency(item.currentValue)}
-                    </p>
-
-                    <p
-                      className={
-                        item.gainPercentage >= 0
-                          ? "mt-1 text-sm font-medium text-emerald-600"
-                          : "mt-1 text-sm font-medium text-red-600"
-                      }
-                    >
-                      {item.gainPercentage >= 0 ? "+" : ""}
-                      {formatPercentage(item.gainPercentage)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                return (
+                  <DashboardListItem
+                    key={item.id}
+                    title={item.asset}
+                    subtitle={item.type}
+                    value={formatCurrency(item.currentValue)}
+                    meta={`${isPositive ? "+" : ""}${formatPercentage(
+                      item.gainPercentage,
+                    )}`}
+                    tone={isPositive ? "positive" : "danger"}
+                  />
+                );
+              })}
             </div>
           </CardContent>
         </Card>
