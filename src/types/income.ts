@@ -33,3 +33,12 @@ export interface IncomeSummary {
   extraIncome: number;
   projectedAnnualIncome: number;
 }
+
+export type CreateIncomeFormValues = {
+  title: string;
+  category: IncomeCategory;
+  amount: string;
+  receivedAt: string;
+  frequency: IncomeFrequency;
+  notes?: string;
+};
