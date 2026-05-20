@@ -32,3 +32,12 @@ export interface ExpenseSummary {
   lifestyleSpending: number;
   averageDailySpend: number;
 }
+
+export type CreateExpenseFormValues = {
+  title: string;
+  category: ExpenseCategory;
+  type: ExpenseType;
+  amount: string;
+  spentAt: string;
+  notes?: string;
+};
