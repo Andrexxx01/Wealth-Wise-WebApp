@@ -27,3 +27,12 @@ export interface InvestmentSummary {
   netGain: number;
   monthlyGrowthRate: number;
 }
+
+export type CreateInvestmentFormValues = {
+  assetName: string;
+  category: InvestmentCategory;
+  investedAmount: string;
+  currentValue: string;
+  investedAt: string;
+  notes?: string;
+};
