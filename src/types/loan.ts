@@ -31,3 +31,14 @@ export interface LoanSummary {
   totalPaidOff: number;
   debtToIncomeRatio: number;
 }
+
+export type CreateLoanFormValues = {
+  title: string;
+  lenderName: string;
+  category: LoanCategory;
+  principalAmount: string;
+  remainingBalance: string;
+  monthlyPayment: string;
+  interestRate?: string;
+  dueDate?: string;
+};
