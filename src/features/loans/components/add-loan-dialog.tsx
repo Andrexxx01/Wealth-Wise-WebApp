@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import FormSelect from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +11,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
 import type { CreateLoanFormValues } from "@/types/loan";
 
@@ -41,6 +43,11 @@ export default function AddLoanDialog({
     },
   });
 
+  function handleDialogOpenChange(nextOpen: boolean) {
+    if (!nextOpen) reset();
+    onOpenChange(nextOpen);
+  }
+
   function onSubmit(values: CreateLoanFormValues) {
     console.log("Loan form values:", values);
 
@@ -49,7 +56,7 @@ export default function AddLoanDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto rounded-[28px] border border-slate-200 p-0 shadow-2xl">
         <div className="px-8 py-8">
           <div className="mb-8">
@@ -100,30 +107,12 @@ export default function AddLoanDialog({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Category
-              </label>
-
-              <select
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-500"
-                {...register("category")}
-              >
-                <option value="PERSONAL">Personal Loan</option>
-                <option value="CONSUMER">Consumer Loan</option>
-                <option value="VEHICLE">Vehicle Loan</option>
-                <option value="MORTGAGE">Mortgage</option>
-                <option value="STUDENT">Student Loan</option>
-                <option value="BUSINESS">Business Loan</option>
-                <option value="OTHER">Other Loan</option>
-              </select>
-
-              {errors.category ? (
-                <p className="text-sm text-red-600">
-                  {errors.category.message}
-                </p>
-              ) : null}
-            </div>
+            <FormSelect
+              label="Category"
+              options={LOAN_CATEGORY_OPTIONS}
+              registration={register("category")}
+              error={errors.category?.message}
+            />
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="space-y-2">
@@ -233,7 +222,7 @@ export default function AddLoanDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleDialogOpenChange(false)}
                 className="h-12 rounded-2xl border-slate-300 px-6 font-semibold"
               >
                 Cancel

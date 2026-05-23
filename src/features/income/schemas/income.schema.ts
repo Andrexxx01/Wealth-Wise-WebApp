@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  INCOME_CATEGORY_VALUES,
+  INCOME_FREQUENCY_VALUES,
+} from "@/constants/finance-options";
 
 export const createIncomeSchema = z.object({
   title: z
@@ -6,15 +10,7 @@ export const createIncomeSchema = z.object({
     .min(2, "Title must be at least 2 characters.")
     .max(80, "Title must be less than 80 characters."),
 
-  category: z.enum([
-    "SALARY",
-    "FREELANCE",
-    "BUSINESS",
-    "INVESTMENT_RETURN",
-    "BONUS",
-    "GIFT",
-    "OTHER",
-  ]),
+  category: z.enum(INCOME_CATEGORY_VALUES),
 
   amount: z
     .string()
@@ -25,7 +21,7 @@ export const createIncomeSchema = z.object({
 
   receivedAt: z.string().min(1, "Received date is required."),
 
-  frequency: z.enum(["ONE_TIME", "DAILY", "WEEKLY", "MONTHLY", "YEARLY"]),
+  frequency: z.enum(INCOME_FREQUENCY_VALUES),
 
   notes: z
     .string()

@@ -2,17 +2,22 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { createIncomeSchema } from "@/features/income/schemas/income.schema";
-import type { CreateIncomeFormValues } from "@/types/income";
+import FormSelect from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  INCOME_CATEGORY_OPTIONS,
+  INCOME_FREQUENCY_OPTIONS,
+} from "@/constants/finance-options";
+import { createIncomeSchema } from "@/features/income/schemas/income.schema";
+import type { CreateIncomeFormValues } from "@/types/income";
 
 type AddIncomeDialogProps = {
   open: boolean;
@@ -42,6 +47,11 @@ export default function AddIncomeDialog({
     },
   });
 
+  function handleDialogOpenChange(nextOpen: boolean) {
+    if (!nextOpen) reset();
+    onOpenChange(nextOpen);
+  }
+
   function onSubmit(values: CreateIncomeFormValues) {
     console.log("Income form values:", values);
 
@@ -50,8 +60,8 @@ export default function AddIncomeDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl rounded-[28px] border border-slate-200 p-0 shadow-2xl">
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto rounded-[28px] border border-slate-200 p-0 shadow-2xl">
         <div className="px-8 py-8">
           <div className="mb-8">
             <DialogTitle className="text-3xl font-bold tracking-tight text-slate-900">
@@ -69,60 +79,32 @@ export default function AddIncomeDialog({
               <label className="text-sm font-semibold text-slate-900">
                 Income Title
               </label>
+
               <Input
                 placeholder="Primary Salary"
                 className="h-12 rounded-2xl border-slate-200 shadow-none"
                 {...register("title")}
               />
+
               {errors.title ? (
                 <p className="text-sm text-red-600">{errors.title.message}</p>
               ) : null}
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Category
-                </label>
-                <select
-                  className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-500"
-                  {...register("category")}
-                >
-                  <option value="SALARY">Salary</option>
-                  <option value="FREELANCE">Freelance</option>
-                  <option value="BUSINESS">Business</option>
-                  <option value="INVESTMENT_RETURN">Investment Return</option>
-                  <option value="BONUS">Bonus</option>
-                  <option value="GIFT">Gift</option>
-                  <option value="OTHER">Other</option>
-                </select>
-                {errors.category ? (
-                  <p className="text-sm text-red-600">
-                    {errors.category.message}
-                  </p>
-                ) : null}
-              </div>
+              <FormSelect
+                label="Category"
+                options={INCOME_CATEGORY_OPTIONS}
+                registration={register("category")}
+                error={errors.category?.message}
+              />
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Frequency
-                </label>
-                <select
-                  className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-500"
-                  {...register("frequency")}
-                >
-                  <option value="ONE_TIME">One Time</option>
-                  <option value="DAILY">Daily</option>
-                  <option value="WEEKLY">Weekly</option>
-                  <option value="MONTHLY">Monthly</option>
-                  <option value="YEARLY">Yearly</option>
-                </select>
-                {errors.frequency ? (
-                  <p className="text-sm text-red-600">
-                    {errors.frequency.message}
-                  </p>
-                ) : null}
-              </div>
+              <FormSelect
+                label="Frequency"
+                options={INCOME_FREQUENCY_OPTIONS}
+                registration={register("frequency")}
+                error={errors.frequency?.message}
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -130,6 +112,7 @@ export default function AddIncomeDialog({
                 <label className="text-sm font-semibold text-slate-900">
                   Amount
                 </label>
+
                 <Input
                   type="number"
                   min="0"
@@ -138,6 +121,7 @@ export default function AddIncomeDialog({
                   className="h-12 rounded-2xl border-slate-200 shadow-none"
                   {...register("amount")}
                 />
+
                 {errors.amount ? (
                   <p className="text-sm text-red-600">
                     {errors.amount.message}
@@ -149,11 +133,13 @@ export default function AddIncomeDialog({
                 <label className="text-sm font-semibold text-slate-900">
                   Received Date
                 </label>
+
                 <Input
                   type="date"
                   className="h-12 rounded-2xl border-slate-200 shadow-none"
                   {...register("receivedAt")}
                 />
+
                 {errors.receivedAt ? (
                   <p className="text-sm text-red-600">
                     {errors.receivedAt.message}
@@ -166,11 +152,13 @@ export default function AddIncomeDialog({
               <label className="text-sm font-semibold text-slate-900">
                 Notes
               </label>
+
               <Textarea
                 placeholder="Optional note..."
                 className="min-h-24 rounded-2xl border-slate-200 shadow-none"
                 {...register("notes")}
               />
+
               {errors.notes ? (
                 <p className="text-sm text-red-600">{errors.notes.message}</p>
               ) : null}
@@ -180,7 +168,7 @@ export default function AddIncomeDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleDialogOpenChange(false)}
                 className="h-12 rounded-2xl border-slate-300 px-6 font-semibold"
               >
                 Cancel

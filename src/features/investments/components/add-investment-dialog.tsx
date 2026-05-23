@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import FormSelect from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createInvestmentSchema } from "@/features/investments/schemas/investment.schema";
 import type { CreateInvestmentFormValues } from "@/types/investment";
 
@@ -42,6 +44,11 @@ export default function AddInvestmentDialog({
     },
   });
 
+  function handleDialogOpenChange(nextOpen: boolean) {
+    if (!nextOpen) reset();
+    onOpenChange(nextOpen);
+  }
+
   function onSubmit(values: CreateInvestmentFormValues) {
     console.log("Investment form values:", values);
 
@@ -50,7 +57,7 @@ export default function AddInvestmentDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto rounded-[28px] border border-slate-200 p-0 shadow-2xl">
         <div className="px-8 py-8">
           <div className="mb-8">
@@ -83,31 +90,12 @@ export default function AddInvestmentDialog({
               ) : null}
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Category
-              </label>
-
-              <select
-                className="h-12 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none focus:border-emerald-500"
-                {...register("category")}
-              >
-                <option value="STOCK">Stock</option>
-                <option value="CRYPTO">Crypto</option>
-                <option value="MUTUAL_FUND">Mutual Fund</option>
-                <option value="BOND">Bond</option>
-                <option value="GOLD">Gold</option>
-                <option value="PROPERTY">Property</option>
-                <option value="CASH">Cash</option>
-                <option value="OTHER">Other</option>
-              </select>
-
-              {errors.category ? (
-                <p className="text-sm text-red-600">
-                  {errors.category.message}
-                </p>
-              ) : null}
-            </div>
+            <FormSelect
+              label="Category"
+              options={INVESTMENT_CATEGORY_OPTIONS}
+              registration={register("category")}
+              error={errors.category?.message}
+            />
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="space-y-2">
@@ -191,7 +179,7 @@ export default function AddInvestmentDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => handleDialogOpenChange(false)}
                 className="h-12 rounded-2xl border-slate-300 px-6 font-semibold"
               >
                 Cancel

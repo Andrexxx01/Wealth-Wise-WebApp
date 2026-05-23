@@ -1,4 +1,8 @@
 import { z } from "zod";
+import {
+  EXPENSE_CATEGORY_VALUES,
+  EXPENSE_TYPE_VALUES,
+} from "@/constants/finance-options";
 
 export const createExpenseSchema = z.object({
   title: z
@@ -6,21 +10,9 @@ export const createExpenseSchema = z.object({
     .min(2, "Title must be at least 2 characters.")
     .max(80, "Title must be less than 80 characters."),
 
-  category: z.enum([
-    "HOUSING",
-    "FOOD",
-    "TRANSPORT",
-    "UTILITIES",
-    "HEALTH",
-    "EDUCATION",
-    "SHOPPING",
-    "ENTERTAINMENT",
-    "SUBSCRIPTION",
-    "TRAVEL",
-    "OTHER",
-  ]),
+  category: z.enum(EXPENSE_CATEGORY_VALUES),
 
-  type: z.enum(["ESSENTIAL", "LIFESTYLE"]),
+  type: z.enum(EXPENSE_TYPE_VALUES),
 
   amount: z
     .string()

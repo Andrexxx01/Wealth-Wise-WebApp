@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { INVESTMENT_CATEGORY_VALUES } from "@/constants/finance-options";
 
 export const createInvestmentSchema = z.object({
   assetName: z
@@ -6,16 +7,7 @@ export const createInvestmentSchema = z.object({
     .min(2, "Asset name must be at least 2 characters.")
     .max(80, "Asset name must be less than 80 characters."),
 
-  category: z.enum([
-    "STOCK",
-    "CRYPTO",
-    "MUTUAL_FUND",
-    "BOND",
-    "GOLD",
-    "PROPERTY",
-    "CASH",
-    "OTHER",
-  ]),
+  category: z.enum(INVESTMENT_CATEGORY_VALUES),
 
   investedAmount: z
     .string()

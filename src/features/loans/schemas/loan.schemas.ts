@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LOAN_CATEGORY_VALUES } from "@/constants/finance-options";
 
 export const createLoanSchema = z.object({
   title: z
@@ -11,15 +12,7 @@ export const createLoanSchema = z.object({
     .min(2, "Lender name must be at least 2 characters.")
     .max(80, "Lender name must be less than 80 characters."),
 
-  category: z.enum([
-    "PERSONAL",
-    "CONSUMER",
-    "VEHICLE",
-    "MORTGAGE",
-    "STUDENT",
-    "BUSINESS",
-    "OTHER",
-  ]),
+  category: z.enum(LOAN_CATEGORY_VALUES),
 
   principalAmount: z
     .string()
