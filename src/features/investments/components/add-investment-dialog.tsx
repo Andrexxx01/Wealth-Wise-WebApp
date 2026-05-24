@@ -2,7 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
+import FormTextarea from "@/components/form/form-textarea";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +12,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createInvestmentSchema } from "@/features/investments/schemas/investment.schema";
 import type { CreateInvestmentFormValues } from "@/types/investment";
@@ -45,7 +45,10 @@ export default function AddInvestmentDialog({
   });
 
   function handleDialogOpenChange(nextOpen: boolean) {
-    if (!nextOpen) reset();
+    if (!nextOpen) {
+      reset();
+    }
+
     onOpenChange(nextOpen);
   }
 
@@ -72,23 +75,12 @@ export default function AddInvestmentDialog({
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Asset Name
-              </label>
-
-              <Input
-                placeholder="Apple Inc."
-                className="h-12 rounded-2xl border-slate-200 shadow-none"
-                {...register("assetName")}
-              />
-
-              {errors.assetName ? (
-                <p className="text-sm text-red-600">
-                  {errors.assetName.message}
-                </p>
-              ) : null}
-            </div>
+            <FormInput
+              label="Asset Name"
+              placeholder="Apple Inc."
+              registration={register("assetName")}
+              error={errors.assetName?.message}
+            />
 
             <FormSelect
               label="Category"
@@ -98,82 +90,40 @@ export default function AddInvestmentDialog({
             />
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Invested Amount
-                </label>
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="2800"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("investedAmount")}
-                />
-
-                {errors.investedAmount ? (
-                  <p className="text-sm text-red-600">
-                    {errors.investedAmount.message}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Current Value
-                </label>
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="3100"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("currentValue")}
-                />
-
-                {errors.currentValue ? (
-                  <p className="text-sm text-red-600">
-                    {errors.currentValue.message}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Investment Date
-              </label>
-
-              <Input
-                type="date"
-                className="h-12 rounded-2xl border-slate-200 shadow-none"
-                {...register("investedAt")}
+              <FormInput
+                label="Invested Amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="2800"
+                registration={register("investedAmount")}
+                error={errors.investedAmount?.message}
               />
 
-              {errors.investedAt ? (
-                <p className="text-sm text-red-600">
-                  {errors.investedAt.message}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Notes
-              </label>
-
-              <Textarea
-                placeholder="Optional note..."
-                className="min-h-24 rounded-2xl border-slate-200 shadow-none"
-                {...register("notes")}
+              <FormInput
+                label="Current Value"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="3100"
+                registration={register("currentValue")}
+                error={errors.currentValue?.message}
               />
-
-              {errors.notes ? (
-                <p className="text-sm text-red-600">{errors.notes.message}</p>
-              ) : null}
             </div>
+
+            <FormInput
+              label="Investment Date"
+              type="date"
+              registration={register("investedAt")}
+              error={errors.investedAt?.message}
+            />
+
+            <FormTextarea
+              label="Notes"
+              placeholder="Optional note..."
+              registration={register("notes")}
+              error={errors.notes?.message}
+            />
 
             <div className="flex flex-col-reverse gap-3 pt-3 sm:flex-row sm:justify-end">
               <Button

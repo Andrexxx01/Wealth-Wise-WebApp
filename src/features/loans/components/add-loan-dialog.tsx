@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +11,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
 import type { CreateLoanFormValues } from "@/types/loan";
@@ -44,7 +44,10 @@ export default function AddLoanDialog({
   });
 
   function handleDialogOpenChange(nextOpen: boolean) {
-    if (!nextOpen) reset();
+    if (!nextOpen) {
+      reset();
+    }
+
     onOpenChange(nextOpen);
   }
 
@@ -72,39 +75,19 @@ export default function AddLoanDialog({
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Loan Title
-                </label>
+              <FormInput
+                label="Loan Title"
+                placeholder="Laptop Installment"
+                registration={register("title")}
+                error={errors.title?.message}
+              />
 
-                <Input
-                  placeholder="Laptop Installment"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("title")}
-                />
-
-                {errors.title ? (
-                  <p className="text-sm text-red-600">{errors.title.message}</p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Lender Name
-                </label>
-
-                <Input
-                  placeholder="Tech Store"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("lenderName")}
-                />
-
-                {errors.lenderName ? (
-                  <p className="text-sm text-red-600">
-                    {errors.lenderName.message}
-                  </p>
-                ) : null}
-              </div>
+              <FormInput
+                label="Lender Name"
+                placeholder="Tech Store"
+                registration={register("lenderName")}
+                error={errors.lenderName?.message}
+              />
             </div>
 
             <FormSelect
@@ -115,108 +98,55 @@ export default function AddLoanDialog({
             />
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Principal Amount
-                </label>
+              <FormInput
+                label="Principal Amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="2000"
+                registration={register("principalAmount")}
+                error={errors.principalAmount?.message}
+              />
 
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="2000"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("principalAmount")}
-                />
-
-                {errors.principalAmount ? (
-                  <p className="text-sm text-red-600">
-                    {errors.principalAmount.message}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Remaining Balance
-                </label>
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="650"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("remainingBalance")}
-                />
-
-                {errors.remainingBalance ? (
-                  <p className="text-sm text-red-600">
-                    {errors.remainingBalance.message}
-                  </p>
-                ) : null}
-              </div>
+              <FormInput
+                label="Remaining Balance"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="650"
+                registration={register("remainingBalance")}
+                error={errors.remainingBalance?.message}
+              />
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Monthly Payment
-                </label>
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="120"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("monthlyPayment")}
-                />
-
-                {errors.monthlyPayment ? (
-                  <p className="text-sm text-red-600">
-                    {errors.monthlyPayment.message}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Interest Rate
-                </label>
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="5.5"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("interestRate")}
-                />
-
-                {errors.interestRate ? (
-                  <p className="text-sm text-red-600">
-                    {errors.interestRate.message}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Due Date
-              </label>
-
-              <Input
-                type="date"
-                className="h-12 rounded-2xl border-slate-200 shadow-none"
-                {...register("dueDate")}
+              <FormInput
+                label="Monthly Payment"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="120"
+                registration={register("monthlyPayment")}
+                error={errors.monthlyPayment?.message}
               />
 
-              {errors.dueDate ? (
-                <p className="text-sm text-red-600">{errors.dueDate.message}</p>
-              ) : null}
+              <FormInput
+                label="Interest Rate"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="5.5"
+                registration={register("interestRate")}
+                error={errors.interestRate?.message}
+              />
             </div>
+
+            <FormInput
+              label="Due Date"
+              type="date"
+              registration={register("dueDate")}
+              error={errors.dueDate?.message}
+            />
 
             <div className="flex flex-col-reverse gap-3 pt-3 sm:flex-row sm:justify-end">
               <Button

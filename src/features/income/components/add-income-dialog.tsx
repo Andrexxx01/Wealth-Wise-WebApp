@@ -2,7 +2,9 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
+import FormTextarea from "@/components/form/form-textarea";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,8 +12,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   INCOME_CATEGORY_OPTIONS,
   INCOME_FREQUENCY_OPTIONS,
@@ -48,7 +48,10 @@ export default function AddIncomeDialog({
   });
 
   function handleDialogOpenChange(nextOpen: boolean) {
-    if (!nextOpen) reset();
+    if (!nextOpen) {
+      reset();
+    }
+
     onOpenChange(nextOpen);
   }
 
@@ -75,21 +78,12 @@ export default function AddIncomeDialog({
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Income Title
-              </label>
-
-              <Input
-                placeholder="Primary Salary"
-                className="h-12 rounded-2xl border-slate-200 shadow-none"
-                {...register("title")}
-              />
-
-              {errors.title ? (
-                <p className="text-sm text-red-600">{errors.title.message}</p>
-              ) : null}
-            </div>
+            <FormInput
+              label="Income Title"
+              placeholder="Primary Salary"
+              registration={register("title")}
+              error={errors.title?.message}
+            />
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <FormSelect
@@ -108,61 +102,30 @@ export default function AddIncomeDialog({
             </div>
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Amount
-                </label>
-
-                <Input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="5500"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("amount")}
-                />
-
-                {errors.amount ? (
-                  <p className="text-sm text-red-600">
-                    {errors.amount.message}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-900">
-                  Received Date
-                </label>
-
-                <Input
-                  type="date"
-                  className="h-12 rounded-2xl border-slate-200 shadow-none"
-                  {...register("receivedAt")}
-                />
-
-                {errors.receivedAt ? (
-                  <p className="text-sm text-red-600">
-                    {errors.receivedAt.message}
-                  </p>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-900">
-                Notes
-              </label>
-
-              <Textarea
-                placeholder="Optional note..."
-                className="min-h-24 rounded-2xl border-slate-200 shadow-none"
-                {...register("notes")}
+              <FormInput
+                label="Amount"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="5500"
+                registration={register("amount")}
+                error={errors.amount?.message}
               />
 
-              {errors.notes ? (
-                <p className="text-sm text-red-600">{errors.notes.message}</p>
-              ) : null}
+              <FormInput
+                label="Received Date"
+                type="date"
+                registration={register("receivedAt")}
+                error={errors.receivedAt?.message}
+              />
             </div>
+
+            <FormTextarea
+              label="Notes"
+              placeholder="Optional note..."
+              registration={register("notes")}
+              error={errors.notes?.message}
+            />
 
             <div className="flex flex-col-reverse gap-3 pt-3 sm:flex-row sm:justify-end">
               <Button
