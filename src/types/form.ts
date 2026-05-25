@@ -1,4 +1,9 @@
-import type { InputHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type {
+  FormHTMLAttributes,
+  InputHTMLAttributes,
+  ReactNode,
+  TextareaHTMLAttributes,
+} from "react";
 import type { UseFormRegisterReturn } from "react-hook-form";
 
 export type FormSelectOption = {
@@ -37,4 +42,21 @@ export type FormTextareaProps = Omit<
   registration?: UseFormRegisterReturn;
   className?: string;
   textareaClassName?: string;
+};
+
+export type FormDialogShellProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  children: ReactNode;
+  footer: ReactNode;
+  formProps?: FormHTMLAttributes<HTMLFormElement>;
+};
+
+export type FormDialogFooterProps = {
+  cancelLabel?: string;
+  submitLabel: string;
+  isSubmitting?: boolean;
+  onCancel: () => void;
 };
