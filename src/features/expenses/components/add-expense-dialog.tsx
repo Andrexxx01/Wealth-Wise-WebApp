@@ -12,6 +12,7 @@ import {
   EXPENSE_TYPE_OPTIONS,
 } from "@/constants/finance-options";
 import { createExpenseSchema } from "@/features/expenses/schemas/expense.schema";
+import { transformExpenseFormValues } from "@/lib/form-transformers";
 import type { CreateExpenseFormValues } from "@/types/expense";
 
 type AddExpenseDialogProps = {
@@ -51,7 +52,9 @@ export default function AddExpenseDialog({
   }
 
   function onSubmit(values: CreateExpenseFormValues) {
-    console.log("Expense form values:", values);
+    const payload = transformExpenseFormValues(values);
+
+    console.log("Expense payload:", payload);
 
     reset();
     onOpenChange(false);

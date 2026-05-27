@@ -9,6 +9,7 @@ import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createInvestmentSchema } from "@/features/investments/schemas/investment.schema";
+import { transformInvestmentFormValues } from "@/lib/form-transformers";
 import type { CreateInvestmentFormValues } from "@/types/investment";
 
 type AddInvestmentDialogProps = {
@@ -48,7 +49,9 @@ export default function AddInvestmentDialog({
   }
 
   function onSubmit(values: CreateInvestmentFormValues) {
-    console.log("Investment form values:", values);
+    const payload = transformInvestmentFormValues(values);
+
+    console.log("Investment payload:", payload);
 
     reset();
     onOpenChange(false);

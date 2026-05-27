@@ -12,6 +12,7 @@ import {
   INCOME_FREQUENCY_OPTIONS,
 } from "@/constants/finance-options";
 import { createIncomeSchema } from "@/features/income/schemas/income.schema";
+import { transformIncomeFormValues } from "@/lib/form-transformers";
 import type { CreateIncomeFormValues } from "@/types/income";
 
 type AddIncomeDialogProps = {
@@ -51,7 +52,9 @@ export default function AddIncomeDialog({
   }
 
   function onSubmit(values: CreateIncomeFormValues) {
-    console.log("Income form values:", values);
+    const payload = transformIncomeFormValues(values);
+
+    console.log("Income payload:", payload);
 
     reset();
     onOpenChange(false);
