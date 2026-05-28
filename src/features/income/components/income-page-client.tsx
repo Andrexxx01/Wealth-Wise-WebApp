@@ -11,11 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import AddIncomeDialog from "@/features/income/components/add-income-dialog";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
-import {
-  mockIncomeItems,
-  mockIncomeSummary,
-  mockMonthlyIncomeBars,
-} from "@/lib/mock-data/income";
+import { mockIncomeItems, mockMonthlyIncomeBars } from "@/lib/mock-data/income";
+import type { CreateIncomePayload } from "@/types/form-payload";
+import type { IncomeItem } from "@/types/income";
 
 function formatIncomeFrequency(frequency: string) {
   if (frequency === "ONE_TIME") return "Irregular";
@@ -23,50 +21,91 @@ function formatIncomeFrequency(frequency: string) {
   return formatEnumLabel(frequency);
 }
 
-const incomeSummaryCards = [
-  {
-    label: "Total Income",
-    value: mockIncomeSummary.totalIncome,
-    helper: "This month",
-  },
-  {
-    label: "Recurring Income",
-    value: mockIncomeSummary.recurringIncome,
-    helper: "Salary & fixed sources",
-  },
-  {
-    label: "Extra Income",
-    value: mockIncomeSummary.extraIncome,
-    helper: "Freelance & side projects",
-  },
-  {
-    label: "Projected Annual",
-    value: mockIncomeSummary.projectedAnnualIncome,
-    helper: "Estimated yearly income",
-  },
-];
+function createTemporaryId(prefix: string) {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
+
+  return `${prefix}_${Date.now()}`;
+}
 
 const monthlyIncomeChartData = mockMonthlyIncomeBars.map((item) => ({
   label: item.month,
   value: item.value,
 }));
 
-const incomeSources = mockIncomeItems.map((item) => ({
-  id: item.id,
-  name: item.title,
-  amount: item.amount,
-  frequency: formatIncomeFrequency(item.frequency),
-}));
-
-const recentIncome = [...mockIncomeItems]
-  .sort(
-    (a, b) =>
-      new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime(),
-  )
-  .slice(0, 4);
-
 export default function IncomePageClient() {
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
+  const [incomeItems, setIncomeItems] = useState<IncomeItem[]>(mockIncomeItems);
+
+  const totalIncome = incomeItems.reduce(
+    (total, item) => total + item.amount,
+    0,
+  );
+
+  const recurringIncome = incomeItems
+    .filter((item) => item.frequency !== "ONE_TIME")
+    .reduce((total, item) => total + item.amount, 0);
+
+  const extraIncome = totalIncome - recurringIncome;
+
+  const projectedAnnualIncome = totalIncome * 12;
+
+  const incomeSummaryCards = [
+    {
+      label: "Total Income",
+      value: totalIncome,
+      helper: "This month",
+    },
+    {
+      label: "Recurring Income",
+      value: recurringIncome,
+      helper: "Salary & fixed sources",
+    },
+    {
+      label: "Extra Income",
+      value: extraIncome,
+      helper: "Freelance & side projects",
+    },
+    {
+      label: "Projected Annual",
+      value: projectedAnnualIncome,
+      helper: "Estimated yearly income",
+    },
+  ];
+
+  const incomeSources = incomeItems.map((item) => ({
+    id: item.id,
+    name: item.title,
+    amount: item.amount,
+    frequency: formatIncomeFrequency(item.frequency),
+  }));
+
+  const recentIncome = [...incomeItems]
+    .sort(
+      (a, b) =>
+        new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime(),
+    )
+    .slice(0, 4);
+
+  function handleCreateIncome(payload: CreateIncomePayload) {
+    const now = new Date().toISOString();
+
+    const newIncome: IncomeItem = {
+      id: createTemporaryId("income"),
+      userId: "user_1",
+      title: payload.title,
+      category: payload.category,
+      amount: payload.amount,
+      receivedAt: payload.receivedAt,
+      frequency: payload.frequency,
+      notes: payload.notes,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setIncomeItems((currentItems) => [newIncome, ...currentItems]);
+  }
 
   return (
     <>
@@ -166,6 +205,7 @@ export default function IncomePageClient() {
       <AddIncomeDialog
         open={isAddIncomeOpen}
         onOpenChange={setIsAddIncomeOpen}
+        onCreateIncome={handleCreateIncome}
       />
     </>
   );

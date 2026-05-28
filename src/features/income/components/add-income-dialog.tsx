@@ -13,18 +13,15 @@ import {
 } from "@/constants/finance-options";
 import { createIncomeSchema } from "@/features/income/schemas/income.schema";
 import { transformIncomeFormValues } from "@/lib/form-transformers";
+import type { AddIncomeDialogProps } from "@/types/finance-dialog";
 import type { CreateIncomeFormValues } from "@/types/income";
-
-type AddIncomeDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
 
 const today = new Date().toISOString().slice(0, 10);
 
 export default function AddIncomeDialog({
   open,
   onOpenChange,
+  onCreateIncome,
 }: AddIncomeDialogProps) {
   const {
     register,
@@ -54,7 +51,7 @@ export default function AddIncomeDialog({
   function onSubmit(values: CreateIncomeFormValues) {
     const payload = transformIncomeFormValues(values);
 
-    console.log("Income payload:", payload);
+    onCreateIncome(payload);
 
     reset();
     onOpenChange(false);
