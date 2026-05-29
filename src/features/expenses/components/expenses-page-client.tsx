@@ -9,67 +9,123 @@ import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import AddExpenseDialog from "@/features/expenses/components/add-expense-dialog";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import {
-  mockExpenseCategoryBreakdown,
   mockExpenseItems,
-  mockExpenseSummary,
   mockMonthlyExpenseBars,
 } from "@/lib/mock-data/expense";
+import type { CreateExpensePayload } from "@/types/form-payload";
+import type { ExpenseCategory, ExpenseItem } from "@/types/expense";
 
-function formatExpenseCategory(category: string) {
-  const categoryLabels: Record<string, string> = {
-    HOUSING: "Housing",
-    FOOD: "Food & Dining",
-    TRANSPORT: "Transportation",
-    UTILITIES: "Utilities",
-    HEALTH: "Health",
-    EDUCATION: "Education",
-    SHOPPING: "Shopping",
-    ENTERTAINMENT: "Entertainment",
-    SUBSCRIPTION: "Subscription",
-    TRAVEL: "Travel",
-    OTHER: "Other",
-  };
+function createTemporaryId(prefix: string) {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
 
-  return categoryLabels[category] ?? category;
+  return `${prefix}_${Date.now()}`;
 }
 
-const expenseSummaryCards = [
-  {
-    label: "Total Expenses",
-    value: mockExpenseSummary.totalExpenses,
-    helper: "This month",
-  },
-  {
-    label: "Essential Spending",
-    value: mockExpenseSummary.essentialSpending,
-    helper: "Needs & fixed costs",
-  },
-  {
-    label: "Lifestyle Spending",
-    value: mockExpenseSummary.lifestyleSpending,
-    helper: "Dining, shopping, fun",
-  },
-  {
-    label: "Average Daily Spend",
-    value: mockExpenseSummary.averageDailySpend,
-    helper: "Based on current month",
-  },
-];
+function formatExpenseCategory(category: string) {
+  const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
+    (option) => option.value === category,
+  );
+
+  return categoryOption?.label ?? category;
+}
 
 const monthlyExpenseChartData = mockMonthlyExpenseBars.map((item) => ({
   label: item.month,
   value: item.value,
 }));
 
-const recentExpenses = [...mockExpenseItems]
-  .sort((a, b) => new Date(b.spentAt).getTime() - new Date(a.spentAt).getTime())
-  .slice(0, 5);
-
 export default function ExpensesPageClient() {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [expenseItems, setExpenseItems] =
+    useState<ExpenseItem[]>(mockExpenseItems);
+
+  const totalExpenses = expenseItems.reduce(
+    (total, item) => total + item.amount,
+    0,
+  );
+
+  const essentialSpending = expenseItems
+    .filter((item) => item.type === "ESSENTIAL")
+    .reduce((total, item) => total + item.amount, 0);
+
+  const lifestyleSpending = expenseItems
+    .filter((item) => item.type === "LIFESTYLE")
+    .reduce((total, item) => total + item.amount, 0);
+
+  const averageDailySpend = totalExpenses / 30;
+
+  const expenseSummaryCards = [
+    {
+      label: "Total Expenses",
+      value: totalExpenses,
+      helper: "This month",
+    },
+    {
+      label: "Essential Spending",
+      value: essentialSpending,
+      helper: "Needs & fixed costs",
+    },
+    {
+      label: "Lifestyle Spending",
+      value: lifestyleSpending,
+      helper: "Dining, shopping, fun",
+    },
+    {
+      label: "Average Daily Spend",
+      value: averageDailySpend,
+      helper: "Based on current month",
+    },
+  ];
+
+  const expenseCategoryBreakdown = EXPENSE_CATEGORY_OPTIONS.map((option) => {
+    const amount = expenseItems
+      .filter((item) => item.category === option.value)
+      .reduce((total, item) => total + item.amount, 0);
+
+    const percentage =
+      totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0;
+
+    return {
+      name: option.label,
+      category: option.value as ExpenseCategory,
+      amount,
+      percentage,
+    };
+  })
+    .filter((item) => item.amount > 0)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
+
+  const recentExpenses = [...expenseItems]
+    .sort(
+      (a, b) => new Date(b.spentAt).getTime() - new Date(a.spentAt).getTime(),
+    )
+    .slice(0, 5);
+
+  function handleCreateExpense(payload: CreateExpensePayload) {
+    const now = new Date().toISOString();
+
+    const newExpense: ExpenseItem = {
+      id: createTemporaryId("expense"),
+      userId: "user_1",
+      title: payload.title,
+      category: payload.category,
+      type: payload.type,
+      amount: payload.amount,
+      spentAt: payload.spentAt,
+      notes: payload.notes,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setExpenseItems((currentItems) => [newExpense, ...currentItems]);
+  }
 
   return (
     <>
@@ -117,9 +173,9 @@ export default function ExpensesPageClient() {
               />
 
               <div className="space-y-4">
-                {mockExpenseCategoryBreakdown.map((item) => (
+                {expenseCategoryBreakdown.map((item) => (
                   <DashboardListItem
-                    key={item.name}
+                    key={item.category}
                     title={item.name}
                     subtitle={`${item.percentage}% of total expenses`}
                     value={formatCurrency(item.amount)}
@@ -168,6 +224,7 @@ export default function ExpensesPageClient() {
       <AddExpenseDialog
         open={isAddExpenseOpen}
         onOpenChange={setIsAddExpenseOpen}
+        onCreateExpense={handleCreateExpense}
       />
     </>
   );

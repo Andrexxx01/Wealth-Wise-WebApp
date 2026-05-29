@@ -13,18 +13,15 @@ import {
 } from "@/constants/finance-options";
 import { createExpenseSchema } from "@/features/expenses/schemas/expense.schema";
 import { transformExpenseFormValues } from "@/lib/form-transformers";
+import type { AddExpenseDialogProps } from "@/types/finance-dialog";
 import type { CreateExpenseFormValues } from "@/types/expense";
-
-type AddExpenseDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
 
 const today = new Date().toISOString().slice(0, 10);
 
 export default function AddExpenseDialog({
   open,
   onOpenChange,
+  onCreateExpense,
 }: AddExpenseDialogProps) {
   const {
     register,
@@ -54,7 +51,7 @@ export default function AddExpenseDialog({
   function onSubmit(values: CreateExpenseFormValues) {
     const payload = transformExpenseFormValues(values);
 
-    console.log("Expense payload:", payload);
+    onCreateExpense(payload);
 
     reset();
     onOpenChange(false);
