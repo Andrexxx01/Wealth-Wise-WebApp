@@ -10,18 +10,15 @@ import FormTextarea from "@/components/form/form-textarea";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createInvestmentSchema } from "@/features/investments/schemas/investment.schema";
 import { transformInvestmentFormValues } from "@/lib/form-transformers";
+import type { AddInvestmentDialogProps } from "@/types/finance-dialog";
 import type { CreateInvestmentFormValues } from "@/types/investment";
-
-type AddInvestmentDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
 
 const today = new Date().toISOString().slice(0, 10);
 
 export default function AddInvestmentDialog({
   open,
   onOpenChange,
+  onCreateInvestment,
 }: AddInvestmentDialogProps) {
   const {
     register,
@@ -51,7 +48,7 @@ export default function AddInvestmentDialog({
   function onSubmit(values: CreateInvestmentFormValues) {
     const payload = transformInvestmentFormValues(values);
 
-    console.log("Investment payload:", payload);
+    onCreateInvestment(payload);
 
     reset();
     onOpenChange(false);

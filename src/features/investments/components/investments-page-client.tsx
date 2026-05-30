@@ -9,58 +9,31 @@ import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
-import {
-  formatCurrency,
-  formatEnumLabel,
-  formatPercentage,
-} from "@/lib/formatters";
+import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import {
   mockInvestmentItems,
   mockInvestmentPerformanceBars,
-  mockInvestmentSummary,
-  mockPortfolioAllocation,
 } from "@/lib/mock-data/investment";
+import type { CreateInvestmentPayload } from "@/types/form-payload";
+import type { InvestmentCategory, InvestmentItem } from "@/types/investment";
 
-function formatInvestmentCategory(category: string) {
-  const categoryLabels: Record<string, string> = {
-    STOCK: "Stock",
-    CRYPTO: "Crypto",
-    MUTUAL_FUND: "Mutual Fund",
-    BOND: "Bond",
-    GOLD: "Gold",
-    PROPERTY: "Property",
-    CASH: "Cash",
-    OTHER: "Other",
-  };
+function createTemporaryId(prefix: string) {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return `${prefix}_${crypto.randomUUID()}`;
+  }
 
-  return categoryLabels[category] ?? formatEnumLabel(category);
+  return `${prefix}_${Date.now()}`;
 }
 
-const investmentSummaryCards = [
-  {
-    label: "Portfolio Value",
-    value: formatCurrency(mockInvestmentSummary.portfolioValue),
-    helper: "Current total value",
-  },
-  {
-    label: "Total Invested",
-    value: formatCurrency(mockInvestmentSummary.totalInvested),
-    helper: "Total capital deployed",
-  },
-  {
-    label: "Net Gain",
-    value: formatCurrency(mockInvestmentSummary.netGain),
-    helper: "Overall return",
-    tone: "positive" as const,
-  },
-  {
-    label: "Monthly Growth",
-    value: formatPercentage(mockInvestmentSummary.monthlyGrowthRate),
-    helper: "Compared to last month",
-    tone: "positive" as const,
-  },
-];
+function formatInvestmentCategory(category: string) {
+  const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
+    (option) => option.value === category,
+  );
+
+  return categoryOption?.label ?? category;
+}
 
 const investmentPerformanceChartData = mockInvestmentPerformanceBars.map(
   (item) => ({
@@ -69,22 +42,101 @@ const investmentPerformanceChartData = mockInvestmentPerformanceBars.map(
   }),
 );
 
-const holdings = mockInvestmentItems.map((item) => {
-  const gain = item.currentValue - item.investedAmount;
-  const gainPercentage =
-    item.investedAmount > 0 ? (gain / item.investedAmount) * 100 : 0;
-
-  return {
-    id: item.id,
-    asset: item.assetName,
-    type: formatInvestmentCategory(item.category),
-    currentValue: item.currentValue,
-    gainPercentage,
-  };
-});
-
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
+  const [investmentItems, setInvestmentItems] =
+    useState<InvestmentItem[]>(mockInvestmentItems);
+
+  const portfolioValue = investmentItems.reduce(
+    (total, item) => total + item.currentValue,
+    0,
+  );
+
+  const totalInvested = investmentItems.reduce(
+    (total, item) => total + item.investedAmount,
+    0,
+  );
+
+  const netGain = portfolioValue - totalInvested;
+
+  const returnRate = totalInvested > 0 ? (netGain / totalInvested) * 100 : 0;
+
+  const investmentSummaryCards = [
+    {
+      label: "Portfolio Value",
+      value: formatCurrency(portfolioValue),
+      helper: "Current total value",
+    },
+    {
+      label: "Total Invested",
+      value: formatCurrency(totalInvested),
+      helper: "Total capital deployed",
+    },
+    {
+      label: "Net Gain",
+      value: formatCurrency(netGain),
+      helper: "Overall return",
+      tone: netGain >= 0 ? ("positive" as const) : ("danger" as const),
+    },
+    {
+      label: "Return Rate",
+      value: formatPercentage(returnRate),
+      helper: "Based on current value",
+      tone: returnRate >= 0 ? ("positive" as const) : ("danger" as const),
+    },
+  ];
+
+  const portfolioAllocation = INVESTMENT_CATEGORY_OPTIONS.map((option) => {
+    const amount = investmentItems
+      .filter((item) => item.category === option.value)
+      .reduce((total, item) => total + item.currentValue, 0);
+
+    const percentage =
+      portfolioValue > 0 ? Math.round((amount / portfolioValue) * 100) : 0;
+
+    return {
+      name: option.label,
+      category: option.value as InvestmentCategory,
+      amount,
+      percentage,
+    };
+  })
+    .filter((item) => item.amount > 0)
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, 5);
+
+  const holdings = investmentItems.map((item) => {
+    const gain = item.currentValue - item.investedAmount;
+    const gainPercentage =
+      item.investedAmount > 0 ? (gain / item.investedAmount) * 100 : 0;
+
+    return {
+      id: item.id,
+      asset: item.assetName,
+      type: formatInvestmentCategory(item.category),
+      currentValue: item.currentValue,
+      gainPercentage,
+    };
+  });
+
+  function handleCreateInvestment(payload: CreateInvestmentPayload) {
+    const now = new Date().toISOString();
+
+    const newInvestment: InvestmentItem = {
+      id: createTemporaryId("investment"),
+      userId: "user_1",
+      assetName: payload.assetName,
+      category: payload.category,
+      investedAmount: payload.investedAmount,
+      currentValue: payload.currentValue,
+      investedAt: payload.investedAt,
+      notes: payload.notes,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    setInvestmentItems((currentItems) => [newInvestment, ...currentItems]);
+  }
 
   return (
     <>
@@ -133,9 +185,9 @@ export default function InvestmentsPageClient() {
               />
 
               <div className="space-y-4">
-                {mockPortfolioAllocation.map((item) => (
+                {portfolioAllocation.map((item) => (
                   <DashboardListItem
-                    key={item.name}
+                    key={item.category}
                     title={item.name}
                     subtitle={`${item.percentage}% of portfolio`}
                     value={formatCurrency(item.amount)}
@@ -191,6 +243,7 @@ export default function InvestmentsPageClient() {
       <AddInvestmentDialog
         open={isAddInvestmentOpen}
         onOpenChange={setIsAddInvestmentOpen}
+        onCreateInvestment={handleCreateInvestment}
       />
     </>
   );
