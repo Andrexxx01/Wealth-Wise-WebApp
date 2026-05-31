@@ -9,16 +9,13 @@ import FormSelect from "@/components/form/form-select";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
 import { transformLoanFormValues } from "@/lib/form-transformers";
+import type { AddLoanDialogProps } from "@/types/finance-dialog";
 import type { CreateLoanFormValues } from "@/types/loan";
-
-type AddLoanDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-};
 
 export default function AddLoanDialog({
   open,
   onOpenChange,
+  onCreateLoan,
 }: AddLoanDialogProps) {
   const {
     register,
@@ -50,7 +47,7 @@ export default function AddLoanDialog({
   function onSubmit(values: CreateLoanFormValues) {
     const payload = transformLoanFormValues(values);
 
-    console.log("Loan payload:", payload);
+    onCreateLoan(payload);
 
     reset();
     onOpenChange(false);
