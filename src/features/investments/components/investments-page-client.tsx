@@ -11,21 +11,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
+import { useFinance } from "@/features/finance/components/finance-provider";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
-import {
-  mockInvestmentItems,
-  mockInvestmentPerformanceBars,
-} from "@/lib/mock-data/investment";
-import type { CreateInvestmentPayload } from "@/types/form-payload";
-import type { InvestmentCategory, InvestmentItem } from "@/types/investment";
-
-function createTemporaryId(prefix: string) {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${prefix}_${crypto.randomUUID()}`;
-  }
-
-  return `${prefix}_${Date.now()}`;
-}
+import { mockInvestmentPerformanceBars } from "@/lib/mock-data/investment";
 
 function formatInvestmentCategory(category: string) {
   const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
@@ -44,18 +32,16 @@ const investmentPerformanceChartData = mockInvestmentPerformanceBars.map(
 
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
-  const [investmentItems, setInvestmentItems] =
-    useState<InvestmentItem[]>(mockInvestmentItems);
 
-  const portfolioValue = investmentItems.reduce(
-    (total, item) => total + item.currentValue,
-    0,
-  );
+  const { investmentItems, createInvestment } = useFinance();
 
-  const totalInvested = investmentItems.reduce(
-    (total, item) => total + item.investedAmount,
-    0,
-  );
+  const portfolioValue = investmentItems.reduce((total, item) => {
+    return total + item.currentValue;
+  }, 0);
+
+  const totalInvested = investmentItems.reduce((total, item) => {
+    return total + item.investedAmount;
+  }, 0);
 
   const netGain = portfolioValue - totalInvested;
 
@@ -89,14 +75,16 @@ export default function InvestmentsPageClient() {
   const portfolioAllocation = INVESTMENT_CATEGORY_OPTIONS.map((option) => {
     const amount = investmentItems
       .filter((item) => item.category === option.value)
-      .reduce((total, item) => total + item.currentValue, 0);
+      .reduce((total, item) => {
+        return total + item.currentValue;
+      }, 0);
 
     const percentage =
       portfolioValue > 0 ? Math.round((amount / portfolioValue) * 100) : 0;
 
     return {
       name: option.label,
-      category: option.value as InvestmentCategory,
+      category: option.value,
       amount,
       percentage,
     };
@@ -107,6 +95,7 @@ export default function InvestmentsPageClient() {
 
   const holdings = investmentItems.map((item) => {
     const gain = item.currentValue - item.investedAmount;
+
     const gainPercentage =
       item.investedAmount > 0 ? (gain / item.investedAmount) * 100 : 0;
 
@@ -118,25 +107,6 @@ export default function InvestmentsPageClient() {
       gainPercentage,
     };
   });
-
-  function handleCreateInvestment(payload: CreateInvestmentPayload) {
-    const now = new Date().toISOString();
-
-    const newInvestment: InvestmentItem = {
-      id: createTemporaryId("investment"),
-      userId: "user_1",
-      assetName: payload.assetName,
-      category: payload.category,
-      investedAmount: payload.investedAmount,
-      currentValue: payload.currentValue,
-      investedAt: payload.investedAt,
-      notes: payload.notes,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setInvestmentItems((currentItems) => [newInvestment, ...currentItems]);
-  }
 
   return (
     <>
@@ -243,7 +213,7 @@ export default function InvestmentsPageClient() {
       <AddInvestmentDialog
         open={isAddInvestmentOpen}
         onOpenChange={setIsAddInvestmentOpen}
-        onCreateInvestment={handleCreateInvestment}
+        onCreateInvestment={createInvestment}
       />
     </>
   );

@@ -10,19 +10,10 @@ import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
+import { useFinance } from "@/features/finance/components/finance-provider";
 import AddLoanDialog from "@/features/loans/components/add-loan-dialog";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
-import { mockLoanItems, mockLoanPayoffBars } from "@/lib/mock-data/loan";
-import type { CreateLoanPayload } from "@/types/form-payload";
-import type { LoanCategory, LoanItem } from "@/types/loan";
-
-function createTemporaryId(prefix: string) {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${prefix}_${crypto.randomUUID()}`;
-  }
-
-  return `${prefix}_${Date.now()}`;
-}
+import { mockLoanPayoffBars } from "@/lib/mock-data/loan";
 
 function formatLoanCategory(category: string) {
   const categoryOption = LOAN_CATEGORY_OPTIONS.find(
@@ -55,17 +46,16 @@ const loanPayoffChartData = mockLoanPayoffBars.map((item) => ({
 
 export default function LoansPageClient() {
   const [isAddLoanOpen, setIsAddLoanOpen] = useState(false);
-  const [loanItems, setLoanItems] = useState<LoanItem[]>(mockLoanItems);
 
-  const totalLoanBalance = loanItems.reduce(
-    (total, item) => total + item.remainingBalance,
-    0,
-  );
+  const { loanItems, createLoan } = useFinance();
 
-  const monthlyPaymentTotal = loanItems.reduce(
-    (total, item) => total + item.monthlyPayment,
-    0,
-  );
+  const totalLoanBalance = loanItems.reduce((total, item) => {
+    return total + item.remainingBalance;
+  }, 0);
+
+  const monthlyPaymentTotal = loanItems.reduce((total, item) => {
+    return total + item.monthlyPayment;
+  }, 0);
 
   const totalPaidOff = loanItems.reduce((total, item) => {
     const paidAmount = item.principalAmount - item.remainingBalance;
@@ -104,6 +94,7 @@ export default function LoansPageClient() {
 
   const loanAccounts = loanItems.map((item) => {
     const paidAmount = item.principalAmount - item.remainingBalance;
+
     const rawProgress =
       item.principalAmount > 0 ? (paidAmount / item.principalAmount) * 100 : 0;
 
@@ -128,30 +119,6 @@ export default function LoansPageClient() {
       return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
     })
     .slice(0, 4);
-
-  function handleCreateLoan(payload: CreateLoanPayload) {
-    const now = new Date().toISOString();
-
-    const status = payload.remainingBalance <= 0 ? "PAID_OFF" : "ACTIVE";
-
-    const newLoan: LoanItem = {
-      id: createTemporaryId("loan"),
-      userId: "user_1",
-      title: payload.title,
-      lenderName: payload.lenderName,
-      category: payload.category as LoanCategory,
-      principalAmount: payload.principalAmount,
-      remainingBalance: payload.remainingBalance,
-      monthlyPayment: payload.monthlyPayment,
-      interestRate: payload.interestRate,
-      dueDate: payload.dueDate,
-      status,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setLoanItems((currentItems) => [newLoan, ...currentItems]);
-  }
 
   return (
     <>
@@ -273,7 +240,7 @@ export default function LoansPageClient() {
       <AddLoanDialog
         open={isAddLoanOpen}
         onOpenChange={setIsAddLoanOpen}
-        onCreateLoan={handleCreateLoan}
+        onCreateLoan={createLoan}
       />
     </>
   );
