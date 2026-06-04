@@ -12,6 +12,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import AddExpenseDialog from "@/features/expenses/components/add-expense-dialog";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import {
+  buildExpenseCategoryBreakdown,
+  calculateAverageDailySpend,
+  calculateEssentialSpending,
+  calculateLifestyleSpending,
+  calculateTotalExpenses,
+  sortRecentExpenseItems,
+} from "@/lib/finance-calculations";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { mockMonthlyExpenseBars } from "@/lib/mock-data/expense";
 
@@ -33,23 +41,10 @@ export default function ExpensesPageClient() {
 
   const { expenseItems, createExpense } = useFinance();
 
-  const totalExpenses = expenseItems.reduce((total, item) => {
-    return total + item.amount;
-  }, 0);
-
-  const essentialSpending = expenseItems
-    .filter((item) => item.type === "ESSENTIAL")
-    .reduce((total, item) => {
-      return total + item.amount;
-    }, 0);
-
-  const lifestyleSpending = expenseItems
-    .filter((item) => item.type === "LIFESTYLE")
-    .reduce((total, item) => {
-      return total + item.amount;
-    }, 0);
-
-  const averageDailySpend = totalExpenses / 30;
+  const totalExpenses = calculateTotalExpenses(expenseItems);
+  const essentialSpending = calculateEssentialSpending(expenseItems);
+  const lifestyleSpending = calculateLifestyleSpending(expenseItems);
+  const averageDailySpend = calculateAverageDailySpend(totalExpenses);
 
   const expenseSummaryCards = [
     {
@@ -74,32 +69,13 @@ export default function ExpensesPageClient() {
     },
   ];
 
-  const expenseCategoryBreakdown = EXPENSE_CATEGORY_OPTIONS.map((option) => {
-    const amount = expenseItems
-      .filter((item) => item.category === option.value)
-      .reduce((total, item) => {
-        return total + item.amount;
-      }, 0);
+  const expenseCategoryBreakdown = buildExpenseCategoryBreakdown({
+    expenseItems,
+    totalExpenses,
+    limit: 5,
+  });
 
-    const percentage =
-      totalExpenses > 0 ? Math.round((amount / totalExpenses) * 100) : 0;
-
-    return {
-      name: option.label,
-      category: option.value,
-      amount,
-      percentage,
-    };
-  })
-    .filter((item) => item.amount > 0)
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 5);
-
-  const recentExpenses = [...expenseItems]
-    .sort((a, b) => {
-      return new Date(b.spentAt).getTime() - new Date(a.spentAt).getTime();
-    })
-    .slice(0, 5);
+  const recentExpenses = sortRecentExpenseItems(expenseItems, 5);
 
   return (
     <>

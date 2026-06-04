@@ -10,8 +10,16 @@ import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
-import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
+import {
+  buildInvestmentHoldings,
+  buildPortfolioAllocation,
+  calculateInvestmentReturnRate,
+  calculateNetGain,
+  calculatePortfolioValue,
+  calculateTotalInvested,
+} from "@/lib/finance-calculations";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import { mockInvestmentPerformanceBars } from "@/lib/mock-data/investment";
 
@@ -35,17 +43,10 @@ export default function InvestmentsPageClient() {
 
   const { investmentItems, createInvestment } = useFinance();
 
-  const portfolioValue = investmentItems.reduce((total, item) => {
-    return total + item.currentValue;
-  }, 0);
-
-  const totalInvested = investmentItems.reduce((total, item) => {
-    return total + item.investedAmount;
-  }, 0);
-
-  const netGain = portfolioValue - totalInvested;
-
-  const returnRate = totalInvested > 0 ? (netGain / totalInvested) * 100 : 0;
+  const portfolioValue = calculatePortfolioValue(investmentItems);
+  const totalInvested = calculateTotalInvested(investmentItems);
+  const netGain = calculateNetGain(portfolioValue, totalInvested);
+  const returnRate = calculateInvestmentReturnRate(netGain, totalInvested);
 
   const investmentSummaryCards = [
     {
@@ -72,41 +73,13 @@ export default function InvestmentsPageClient() {
     },
   ];
 
-  const portfolioAllocation = INVESTMENT_CATEGORY_OPTIONS.map((option) => {
-    const amount = investmentItems
-      .filter((item) => item.category === option.value)
-      .reduce((total, item) => {
-        return total + item.currentValue;
-      }, 0);
-
-    const percentage =
-      portfolioValue > 0 ? Math.round((amount / portfolioValue) * 100) : 0;
-
-    return {
-      name: option.label,
-      category: option.value,
-      amount,
-      percentage,
-    };
-  })
-    .filter((item) => item.amount > 0)
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, 5);
-
-  const holdings = investmentItems.map((item) => {
-    const gain = item.currentValue - item.investedAmount;
-
-    const gainPercentage =
-      item.investedAmount > 0 ? (gain / item.investedAmount) * 100 : 0;
-
-    return {
-      id: item.id,
-      asset: item.assetName,
-      type: formatInvestmentCategory(item.category),
-      currentValue: item.currentValue,
-      gainPercentage,
-    };
+  const portfolioAllocation = buildPortfolioAllocation({
+    investmentItems,
+    portfolioValue,
+    limit: 5,
   });
+
+  const holdings = buildInvestmentHoldings(investmentItems);
 
   return (
     <>
@@ -195,7 +168,7 @@ export default function InvestmentsPageClient() {
                     <DashboardListItem
                       key={item.id}
                       title={item.asset}
-                      subtitle={item.type}
+                      subtitle={formatInvestmentCategory(item.category)}
                       value={formatCurrency(item.currentValue)}
                       meta={`${isPositive ? "+" : ""}${formatPercentage(
                         item.gainPercentage,

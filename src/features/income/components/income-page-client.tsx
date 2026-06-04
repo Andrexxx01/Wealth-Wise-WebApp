@@ -9,8 +9,15 @@ import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import AddIncomeDialog from "@/features/income/components/add-income-dialog";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import AddIncomeDialog from "@/features/income/components/add-income-dialog";
+import {
+  calculateExtraIncome,
+  calculateProjectedAnnualIncome,
+  calculateRecurringIncome,
+  calculateTotalIncome,
+  sortRecentIncomeItems,
+} from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import { mockMonthlyIncomeBars } from "@/lib/mock-data/income";
 
@@ -30,19 +37,10 @@ export default function IncomePageClient() {
 
   const { incomeItems, createIncome } = useFinance();
 
-  const totalIncome = incomeItems.reduce((total, item) => {
-    return total + item.amount;
-  }, 0);
-
-  const recurringIncome = incomeItems
-    .filter((item) => item.frequency !== "ONE_TIME")
-    .reduce((total, item) => {
-      return total + item.amount;
-    }, 0);
-
-  const extraIncome = totalIncome - recurringIncome;
-
-  const projectedAnnualIncome = totalIncome * 12;
+  const totalIncome = calculateTotalIncome(incomeItems);
+  const recurringIncome = calculateRecurringIncome(incomeItems);
+  const extraIncome = calculateExtraIncome(totalIncome, recurringIncome);
+  const projectedAnnualIncome = calculateProjectedAnnualIncome(totalIncome);
 
   const incomeSummaryCards = [
     {
@@ -74,13 +72,7 @@ export default function IncomePageClient() {
     frequency: formatIncomeFrequency(item.frequency),
   }));
 
-  const recentIncome = [...incomeItems]
-    .sort((a, b) => {
-      return (
-        new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
-      );
-    })
-    .slice(0, 4);
+  const recentIncome = sortRecentIncomeItems(incomeItems, 4);
 
   return (
     <>
