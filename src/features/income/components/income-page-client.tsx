@@ -10,14 +10,9 @@ import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddIncomeDialog from "@/features/income/components/add-income-dialog";
-import {
-  calculateExtraIncome,
-  calculateProjectedAnnualIncome,
-  calculateRecurringIncome,
-  calculateTotalIncome,
-  sortRecentIncomeItems,
-} from "@/lib/finance-calculations";
+import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import { mockMonthlyIncomeBars } from "@/lib/mock-data/income";
 
@@ -37,10 +32,8 @@ export default function IncomePageClient() {
 
   const { incomeItems, createIncome } = useFinance();
 
-  const totalIncome = calculateTotalIncome(incomeItems);
-  const recurringIncome = calculateRecurringIncome(incomeItems);
-  const extraIncome = calculateExtraIncome(totalIncome, recurringIncome);
-  const projectedAnnualIncome = calculateProjectedAnnualIncome(totalIncome);
+  const { totalIncome, recurringIncome, extraIncome, projectedAnnualIncome } =
+    useFinanceSummary();
 
   const incomeSummaryCards = [
     {

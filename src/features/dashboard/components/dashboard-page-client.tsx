@@ -7,21 +7,7 @@ import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
-import { useFinance } from "@/features/finance/components/finance-provider";
-import {
-  calculateEssentialSpending,
-  calculateMonthlySurplus,
-  calculateNetGain,
-  calculateNetWorth,
-  calculatePortfolioValue,
-  calculateRecurringIncome,
-  calculateSavingsRate,
-  calculateTotalExpenses,
-  calculateTotalIncome,
-  calculateTotalInvested,
-  calculateTotalLoanBalance,
-  buildRecentFinancialActivity,
-} from "@/lib/finance-calculations";
+import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
 import { mockUserProfile } from "@/lib/mock-data/user";
@@ -41,35 +27,20 @@ const cashFlowChartData = [
 ];
 
 export default function DashboardPageClient() {
-  const { incomeItems, expenseItems, investmentItems, loanItems } =
-    useFinance();
-
-  const totalIncome = calculateTotalIncome(incomeItems);
-  const totalExpenses = calculateTotalExpenses(expenseItems);
-  const monthlySurplus = calculateMonthlySurplus(totalIncome, totalExpenses);
-
-  const portfolioValue = calculatePortfolioValue(investmentItems);
-  const totalInvested = calculateTotalInvested(investmentItems);
-  const netGain = calculateNetGain(portfolioValue, totalInvested);
-
-  const totalLoanBalance = calculateTotalLoanBalance(loanItems);
-
-  const netWorth = calculateNetWorth({
+  const {
+    totalIncome,
+    totalExpenses,
     monthlySurplus,
+    savingsRate,
     portfolioValue,
+    totalInvested,
+    netGain,
     totalLoanBalance,
-  });
-
-  const savingsRate = calculateSavingsRate(totalIncome, monthlySurplus);
-
-  const recurringIncome = calculateRecurringIncome(incomeItems);
-  const essentialSpending = calculateEssentialSpending(expenseItems);
-
-  const recentActivity = buildRecentFinancialActivity({
-    incomeItems,
-    expenseItems,
-    limit: 5,
-  });
+    netWorth,
+    recurringIncome,
+    essentialSpending,
+    recentActivity,
+  } = useFinanceSummary();
 
   const summaryCards: SummaryCardProps[] = [
     {

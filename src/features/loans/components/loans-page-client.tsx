@@ -12,6 +12,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import AddLoanDialog from "@/features/loans/components/add-loan-dialog";
+import {
+  buildLoanAccounts,
+  calculateDebtToIncomeRatio,
+  calculateMonthlyLoanPayment,
+  calculateTotalIncome,
+  calculateTotalLoanBalance,
+  calculateTotalPaidOff,
+  sortUpcomingLoanPayments,
+} from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { mockLoanPayoffBars } from "@/lib/mock-data/loan";
 
@@ -33,12 +42,6 @@ function formatLoanStatus(status: string) {
   return statusLabels[status] ?? status;
 }
 
-function clampPercentage(value: number) {
-  return Math.min(Math.max(value, 0), 100);
-}
-
-const estimatedMonthlyIncome = 8500;
-
 const loanPayoffChartData = mockLoanPayoffBars.map((item) => ({
   label: item.month,
   value: item.value,
@@ -47,26 +50,17 @@ const loanPayoffChartData = mockLoanPayoffBars.map((item) => ({
 export default function LoansPageClient() {
   const [isAddLoanOpen, setIsAddLoanOpen] = useState(false);
 
-  const { loanItems, createLoan } = useFinance();
+  const { incomeItems, loanItems, createLoan } = useFinance();
 
-  const totalLoanBalance = loanItems.reduce((total, item) => {
-    return total + item.remainingBalance;
-  }, 0);
+  const totalIncome = calculateTotalIncome(incomeItems);
+  const totalLoanBalance = calculateTotalLoanBalance(loanItems);
+  const monthlyPaymentTotal = calculateMonthlyLoanPayment(loanItems);
+  const totalPaidOff = calculateTotalPaidOff(loanItems);
 
-  const monthlyPaymentTotal = loanItems.reduce((total, item) => {
-    return total + item.monthlyPayment;
-  }, 0);
-
-  const totalPaidOff = loanItems.reduce((total, item) => {
-    const paidAmount = item.principalAmount - item.remainingBalance;
-
-    return total + Math.max(paidAmount, 0);
-  }, 0);
-
-  const debtToIncomeRatio =
-    estimatedMonthlyIncome > 0
-      ? (monthlyPaymentTotal / estimatedMonthlyIncome) * 100
-      : 0;
+  const debtToIncomeRatio = calculateDebtToIncomeRatio(
+    monthlyPaymentTotal,
+    totalIncome,
+  );
 
   const loanSummaryCards = [
     {
@@ -88,37 +82,12 @@ export default function LoansPageClient() {
     {
       label: "Debt Ratio",
       value: formatPercentage(debtToIncomeRatio),
-      helper: "Based on estimated income",
+      helper: "Based on current income",
     },
   ];
 
-  const loanAccounts = loanItems.map((item) => {
-    const paidAmount = item.principalAmount - item.remainingBalance;
-
-    const rawProgress =
-      item.principalAmount > 0 ? (paidAmount / item.principalAmount) * 100 : 0;
-
-    const progress = clampPercentage(rawProgress);
-
-    return {
-      id: item.id,
-      title: item.title,
-      category: formatLoanCategory(item.category),
-      remainingBalance: item.remainingBalance,
-      monthlyPayment: item.monthlyPayment,
-      progress,
-      status: formatLoanStatus(item.status),
-    };
-  });
-
-  const upcomingPayments = [...loanItems]
-    .sort((a, b) => {
-      if (!a.dueDate) return 1;
-      if (!b.dueDate) return -1;
-
-      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-    })
-    .slice(0, 4);
+  const loanAccounts = buildLoanAccounts(loanItems);
+  const upcomingPayments = sortUpcomingLoanPayments(loanItems, 4);
 
   return (
     <>
@@ -171,7 +140,7 @@ export default function LoansPageClient() {
                   <DashboardListItem
                     key={item.id}
                     title={item.title}
-                    subtitle={item.category}
+                    subtitle={formatLoanCategory(item.category)}
                     value={formatCurrency(item.remainingBalance)}
                     meta={`${formatCurrency(item.monthlyPayment)}/mo`}
                     className="border-none bg-slate-50 p-4"
@@ -193,7 +162,7 @@ export default function LoansPageClient() {
                       </div>
 
                       <p className="mt-3 text-sm font-medium text-emerald-600">
-                        {item.status}
+                        {formatLoanStatus(item.status)}
                       </p>
                     </div>
                   </DashboardListItem>
@@ -228,7 +197,11 @@ export default function LoansPageClient() {
                     title={item.title}
                     subtitle={item.lenderName}
                     value={formatCurrency(item.monthlyPayment)}
-                    meta={`Due ${formatDate(item.dueDate)}`}
+                    meta={
+                      item.dueDate
+                        ? `Due ${formatDate(item.dueDate)}`
+                        : "No due date"
+                    }
                   />
                 ))}
               </div>

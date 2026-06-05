@@ -12,12 +12,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import AddExpenseDialog from "@/features/expenses/components/add-expense-dialog";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import {
   buildExpenseCategoryBreakdown,
   calculateAverageDailySpend,
-  calculateEssentialSpending,
-  calculateLifestyleSpending,
-  calculateTotalExpenses,
   sortRecentExpenseItems,
 } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate } from "@/lib/formatters";
@@ -41,9 +39,9 @@ export default function ExpensesPageClient() {
 
   const { expenseItems, createExpense } = useFinance();
 
-  const totalExpenses = calculateTotalExpenses(expenseItems);
-  const essentialSpending = calculateEssentialSpending(expenseItems);
-  const lifestyleSpending = calculateLifestyleSpending(expenseItems);
+  const { totalExpenses, essentialSpending, lifestyleSpending } =
+    useFinanceSummary();
+
   const averageDailySpend = calculateAverageDailySpend(totalExpenses);
 
   const expenseSummaryCards = [

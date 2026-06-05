@@ -258,3 +258,41 @@ export function buildInvestmentHoldings(investmentItems: InvestmentItem[]) {
     };
   });
 }
+
+function clampPercentage(value: number) {
+  return Math.min(Math.max(value, 0), 100);
+}
+
+export function calculateLoanPayoffProgress(loanItem: LoanItem) {
+  const paidAmount = loanItem.principalAmount - loanItem.remainingBalance;
+
+  const progress =
+    loanItem.principalAmount > 0
+      ? (paidAmount / loanItem.principalAmount) * 100
+      : 0;
+
+  return clampPercentage(progress);
+}
+
+export function buildLoanAccounts(loanItems: LoanItem[]) {
+  return loanItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+    category: item.category,
+    remainingBalance: item.remainingBalance,
+    monthlyPayment: item.monthlyPayment,
+    progress: calculateLoanPayoffProgress(item),
+    status: item.status,
+  }));
+}
+
+export function sortUpcomingLoanPayments(loanItems: LoanItem[], limit = 4) {
+  return [...loanItems]
+    .sort((a, b) => {
+      if (!a.dueDate) return 1;
+      if (!b.dueDate) return -1;
+
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    })
+    .slice(0, limit);
+}
