@@ -22,6 +22,7 @@ import {
   calculateTotalInvested,
   calculateTotalLoanBalance,
   calculateTotalPaidOff,
+  calculateFinancialHealthScore,
 } from "@/lib/finance-calculations";
 
 export function useFinanceSummary() {
@@ -66,6 +67,14 @@ export function useFinanceSummary() {
       totalLoanBalance,
     });
 
+    const financialHealthScore = calculateFinancialHealthScore({
+      savingsRate,
+      debtToIncomeRatio,
+      monthlySurplus,
+      portfolioValue,
+      investmentReturnRate,
+    });
+
     const recentActivity = buildRecentFinancialActivity({
       incomeItems,
       expenseItems,
@@ -92,6 +101,7 @@ export function useFinanceSummary() {
       debtToIncomeRatio,
       netWorth,
       recentActivity,
+      financialHealthScore,
     };
   }, [incomeItems, expenseItems, investmentItems, loanItems]);
 }

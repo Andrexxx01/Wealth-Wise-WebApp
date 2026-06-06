@@ -11,14 +11,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
 import {
   buildInvestmentHoldings,
   buildPortfolioAllocation,
-  calculateInvestmentReturnRate,
-  calculateNetGain,
-  calculatePortfolioValue,
-  calculateTotalInvested,
 } from "@/lib/finance-calculations";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import { mockInvestmentPerformanceBars } from "@/lib/mock-data/investment";
@@ -43,10 +40,8 @@ export default function InvestmentsPageClient() {
 
   const { investmentItems, createInvestment } = useFinance();
 
-  const portfolioValue = calculatePortfolioValue(investmentItems);
-  const totalInvested = calculateTotalInvested(investmentItems);
-  const netGain = calculateNetGain(portfolioValue, totalInvested);
-  const returnRate = calculateInvestmentReturnRate(netGain, totalInvested);
+  const { portfolioValue, totalInvested, netGain, investmentReturnRate } =
+    useFinanceSummary();
 
   const investmentSummaryCards = [
     {
@@ -67,9 +62,10 @@ export default function InvestmentsPageClient() {
     },
     {
       label: "Return Rate",
-      value: formatPercentage(returnRate),
+      value: formatPercentage(investmentReturnRate),
       helper: "Based on current value",
-      tone: returnRate >= 0 ? ("positive" as const) : ("danger" as const),
+      tone:
+        investmentReturnRate >= 0 ? ("positive" as const) : ("danger" as const),
     },
   ];
 

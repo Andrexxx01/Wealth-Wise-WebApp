@@ -9,7 +9,6 @@ import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
-import { mockAnalysisSummary } from "@/lib/mock-data/analysis";
 import { mockUserProfile } from "@/lib/mock-data/user";
 import type { SummaryCardProps } from "@/types/ui";
 
@@ -40,6 +39,7 @@ export default function DashboardPageClient() {
     recurringIncome,
     essentialSpending,
     recentActivity,
+    financialHealthScore,
   } = useFinanceSummary();
 
   const summaryCards: SummaryCardProps[] = [
@@ -130,17 +130,17 @@ export default function DashboardPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="Financial Health Score"
-              title={`${mockAnalysisSummary.healthScore.score}%`}
-              description={mockAnalysisSummary.healthScore.label}
+              title={`${financialHealthScore.score}%`}
+              description={financialHealthScore.label}
             />
 
             <div className="rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-6 text-white">
               <h3 className="text-5xl font-bold">
-                {mockAnalysisSummary.healthScore.score}%
+                {financialHealthScore.score}%
               </h3>
 
               <p className="mt-3 text-sm text-emerald-50">
-                {mockAnalysisSummary.healthScore.summary}
+                {financialHealthScore.summary}
               </p>
             </div>
 

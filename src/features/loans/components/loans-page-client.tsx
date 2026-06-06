@@ -11,14 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddLoanDialog from "@/features/loans/components/add-loan-dialog";
 import {
   buildLoanAccounts,
-  calculateDebtToIncomeRatio,
-  calculateMonthlyLoanPayment,
-  calculateTotalIncome,
-  calculateTotalLoanBalance,
-  calculateTotalPaidOff,
   sortUpcomingLoanPayments,
 } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
@@ -50,17 +46,14 @@ const loanPayoffChartData = mockLoanPayoffBars.map((item) => ({
 export default function LoansPageClient() {
   const [isAddLoanOpen, setIsAddLoanOpen] = useState(false);
 
-  const { incomeItems, loanItems, createLoan } = useFinance();
+  const { loanItems, createLoan } = useFinance();
 
-  const totalIncome = calculateTotalIncome(incomeItems);
-  const totalLoanBalance = calculateTotalLoanBalance(loanItems);
-  const monthlyPaymentTotal = calculateMonthlyLoanPayment(loanItems);
-  const totalPaidOff = calculateTotalPaidOff(loanItems);
-
-  const debtToIncomeRatio = calculateDebtToIncomeRatio(
-    monthlyPaymentTotal,
-    totalIncome,
-  );
+  const {
+    totalLoanBalance,
+    monthlyLoanPayment,
+    totalPaidOff,
+    debtToIncomeRatio,
+  } = useFinanceSummary();
 
   const loanSummaryCards = [
     {
@@ -70,7 +63,7 @@ export default function LoansPageClient() {
     },
     {
       label: "Monthly Payment",
-      value: formatCurrency(monthlyPaymentTotal),
+      value: formatCurrency(monthlyLoanPayment),
       helper: "Required this month",
     },
     {

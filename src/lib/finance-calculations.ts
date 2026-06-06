@@ -296,3 +296,67 @@ export function sortUpcomingLoanPayments(loanItems: LoanItem[], limit = 4) {
     })
     .slice(0, limit);
 }
+
+export function calculateFinancialHealthScore({
+  savingsRate,
+  debtToIncomeRatio,
+  monthlySurplus,
+  portfolioValue,
+  investmentReturnRate,
+}: {
+  savingsRate: number;
+  debtToIncomeRatio: number;
+  monthlySurplus: number;
+  portfolioValue: number;
+  investmentReturnRate: number;
+}) {
+  const savingsScore =
+    savingsRate >= 20 ? 30 : savingsRate >= 10 ? 22 : savingsRate >= 0 ? 12 : 0;
+
+  const debtScore =
+    debtToIncomeRatio <= 20
+      ? 25
+      : debtToIncomeRatio <= 35
+        ? 18
+        : debtToIncomeRatio <= 50
+          ? 10
+          : 3;
+
+  const surplusScore = monthlySurplus > 0 ? 20 : 0;
+  const investingScore = portfolioValue > 0 ? 15 : 5;
+  const returnScore = investmentReturnRate >= 0 ? 10 : 3;
+
+  const score = Math.min(
+    Math.max(
+      Math.round(
+        savingsScore + debtScore + surplusScore + investingScore + returnScore,
+      ),
+      0,
+    ),
+    100,
+  );
+
+  const label =
+    score >= 85
+      ? "Excellent"
+      : score >= 70
+        ? "Good"
+        : score >= 50
+          ? "Fair"
+          : "Needs Attention";
+
+  const summary =
+    score >= 85
+      ? "Your financial position is strong with healthy savings, controlled debt, and positive asset growth."
+      : score >= 70
+        ? "Your financial position is stable, but there are still areas that can be optimized."
+        : score >= 50
+          ? "Your financial position is acceptable, but spending control and debt management need attention."
+          : "Your financial position needs improvement. Focus on reducing expenses, improving surplus, and managing debt.";
+
+  return {
+    score,
+    label,
+    summary,
+  };
+}
