@@ -17,6 +17,7 @@ import {
   buildInvestmentHoldings,
   buildPortfolioAllocation,
 } from "@/lib/finance-calculations";
+import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import { mockInvestmentPerformanceBars } from "@/lib/mock-data/investment";
 
@@ -43,31 +44,12 @@ export default function InvestmentsPageClient() {
   const { portfolioValue, totalInvested, netGain, investmentReturnRate } =
     useFinanceSummary();
 
-  const investmentSummaryCards = [
-    {
-      label: "Portfolio Value",
-      value: formatCurrency(portfolioValue),
-      helper: "Current total value",
-    },
-    {
-      label: "Total Invested",
-      value: formatCurrency(totalInvested),
-      helper: "Total capital deployed",
-    },
-    {
-      label: "Net Gain",
-      value: formatCurrency(netGain),
-      helper: "Overall return",
-      tone: netGain >= 0 ? ("positive" as const) : ("danger" as const),
-    },
-    {
-      label: "Return Rate",
-      value: formatPercentage(investmentReturnRate),
-      helper: "Based on current value",
-      tone:
-        investmentReturnRate >= 0 ? ("positive" as const) : ("danger" as const),
-    },
-  ];
+  const investmentSummaryCards = buildInvestmentSummaryCards({
+    portfolioValue,
+    totalInvested,
+    netGain,
+    investmentReturnRate,
+  });
 
   const portfolioAllocation = buildPortfolioAllocation({
     investmentItems,

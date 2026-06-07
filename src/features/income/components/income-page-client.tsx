@@ -13,6 +13,7 @@ import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddIncomeDialog from "@/features/income/components/add-income-dialog";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
+import { buildIncomeSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import { mockMonthlyIncomeBars } from "@/lib/mock-data/income";
 
@@ -35,28 +36,12 @@ export default function IncomePageClient() {
   const { totalIncome, recurringIncome, extraIncome, projectedAnnualIncome } =
     useFinanceSummary();
 
-  const incomeSummaryCards = [
-    {
-      label: "Total Income",
-      value: totalIncome,
-      helper: "This month",
-    },
-    {
-      label: "Recurring Income",
-      value: recurringIncome,
-      helper: "Salary & fixed sources",
-    },
-    {
-      label: "Extra Income",
-      value: extraIncome,
-      helper: "Freelance & side projects",
-    },
-    {
-      label: "Projected Annual",
-      value: projectedAnnualIncome,
-      helper: "Estimated yearly income",
-    },
-  ];
+  const incomeSummaryCards = buildIncomeSummaryCards({
+    totalIncome,
+    recurringIncome,
+    extraIncome,
+    projectedAnnualIncome,
+  });
 
   const incomeSources = incomeItems.map((item) => ({
     id: item.id,
@@ -90,8 +75,9 @@ export default function IncomePageClient() {
             <SummaryCard
               key={card.label}
               label={card.label}
-              value={formatCurrency(card.value)}
+              value={card.value}
               helper={card.helper}
+              tone={card.tone}
             />
           ))}
         </section>

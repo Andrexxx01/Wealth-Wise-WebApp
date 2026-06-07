@@ -18,6 +18,7 @@ import {
   calculateAverageDailySpend,
   sortRecentExpenseItems,
 } from "@/lib/finance-calculations";
+import { buildExpenseSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import { mockMonthlyExpenseBars } from "@/lib/mock-data/expense";
 
@@ -44,28 +45,12 @@ export default function ExpensesPageClient() {
 
   const averageDailySpend = calculateAverageDailySpend(totalExpenses);
 
-  const expenseSummaryCards = [
-    {
-      label: "Total Expenses",
-      value: totalExpenses,
-      helper: "This month",
-    },
-    {
-      label: "Essential Spending",
-      value: essentialSpending,
-      helper: "Needs & fixed costs",
-    },
-    {
-      label: "Lifestyle Spending",
-      value: lifestyleSpending,
-      helper: "Dining, shopping, fun",
-    },
-    {
-      label: "Average Daily Spend",
-      value: averageDailySpend,
-      helper: "Based on current month",
-    },
-  ];
+  const expenseSummaryCards = buildExpenseSummaryCards({
+    totalExpenses,
+    essentialSpending,
+    lifestyleSpending,
+    averageDailySpend,
+  });
 
   const expenseCategoryBreakdown = buildExpenseCategoryBreakdown({
     expenseItems,
@@ -98,8 +83,9 @@ export default function ExpensesPageClient() {
             <SummaryCard
               key={card.label}
               label={card.label}
-              value={formatCurrency(card.value)}
+              value={card.value}
               helper={card.helper}
+              tone={card.tone}
             />
           ))}
         </section>

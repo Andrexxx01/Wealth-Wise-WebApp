@@ -6,24 +6,31 @@ import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
-import { formatCurrency, formatPercentage } from "@/lib/formatters";
+import {
+  buildFinancialInsights,
+  buildHealthMetrics,
+  buildMonthlyReview,
+  buildRecommendedActions,
+  type FinanceInsightTone,
+  buildFinancialHealthHighlights,
+} from "@/lib/finance-analysis";
 import type { DashboardListItemTone } from "@/types/ui";
 
-function getInsightToneClass(tone: string) {
+function getInsightToneClass(tone: FinanceInsightTone) {
   if (tone === "positive") return "bg-emerald-500";
   if (tone === "warning") return "bg-amber-500";
 
   return "bg-slate-400";
 }
 
-function getInsightToneLabel(tone: string) {
+function getInsightToneLabel(tone: FinanceInsightTone) {
   if (tone === "positive") return "Positive";
   if (tone === "warning") return "Warning";
 
   return "Neutral";
 }
 
-function getInsightListTone(tone: string): DashboardListItemTone {
+function getInsightListTone(tone: FinanceInsightTone): DashboardListItemTone {
   if (tone === "positive") return "positive";
   if (tone === "warning") return "warning";
 
@@ -45,143 +52,37 @@ export default function AnalysisPageClient() {
     financialHealthScore,
   } = useFinanceSummary();
 
-  const healthMetrics = [
-    {
-      label: "Savings Rate",
-      value: formatPercentage(savingsRate),
-      helper: "Monthly surplus compared to income",
-    },
-    {
-      label: "Debt Ratio",
-      value: formatPercentage(debtToIncomeRatio),
-      helper: "Monthly debt payment compared to income",
-    },
-    {
-      label: "Net Worth",
-      value: formatCurrency(netWorth),
-      helper: "Surplus + investments - loan balance",
-    },
-    {
-      label: "Investment Return",
-      value: formatPercentage(investmentReturnRate),
-      helper: "Current gain compared to invested capital",
-    },
-  ];
+  const healthMetrics = buildHealthMetrics({
+    savingsRate,
+    debtToIncomeRatio,
+    netWorth,
+    investmentReturnRate,
+  });
 
-  const monthlyReview = [
-    {
-      title: "Income",
-      value: formatCurrency(totalIncome),
-      helper: "Total money received this month.",
-    },
-    {
-      title: "Expenses",
-      value: formatCurrency(totalExpenses),
-      helper: "Total spending recorded this month.",
-    },
-    {
-      title: "Monthly Surplus",
-      value: formatCurrency(monthlySurplus),
-      helper:
-        monthlySurplus >= 0
-          ? "You are spending less than your income."
-          : "Your expenses are higher than your income.",
-    },
-    {
-      title: "Debt Balance",
-      value: formatCurrency(totalLoanBalance),
-      helper: "Total remaining loan balance.",
-    },
-  ];
+  const monthlyReview = buildMonthlyReview({
+    totalIncome,
+    totalExpenses,
+    monthlySurplus,
+    totalLoanBalance,
+  });
 
-  const insights = [
-    {
-      id: "cash-flow",
-      title:
-        monthlySurplus >= 0
-          ? "Positive cash flow"
-          : "Negative cash flow warning",
-      description:
-        monthlySurplus >= 0
-          ? `You currently have a monthly surplus of ${formatCurrency(
-              monthlySurplus,
-            )}. This gives you room to save, invest, or repay debt faster.`
-          : `You currently have a monthly deficit of ${formatCurrency(
-              Math.abs(monthlySurplus),
-            )}. Review lifestyle spending and recurring expenses.`,
-      tone: monthlySurplus >= 0 ? "positive" : "warning",
-    },
-    {
-      id: "savings-rate",
-      title:
-        savingsRate >= 20
-          ? "Healthy savings rate"
-          : "Savings rate can be improved",
-      description:
-        savingsRate >= 20
-          ? `Your savings rate is ${formatPercentage(
-              savingsRate,
-            )}, which shows strong monthly discipline.`
-          : `Your savings rate is ${formatPercentage(
-              savingsRate,
-            )}. Try increasing the gap between income and expenses.`,
-      tone: savingsRate >= 20 ? "positive" : "warning",
-    },
-    {
-      id: "debt-risk",
-      title:
-        debtToIncomeRatio <= 35
-          ? "Debt level looks manageable"
-          : "Debt pressure is getting high",
-      description:
-        debtToIncomeRatio <= 35
-          ? `Your debt ratio is ${formatPercentage(
-              debtToIncomeRatio,
-            )}, which is still manageable based on current income.`
-          : `Your debt ratio is ${formatPercentage(
-              debtToIncomeRatio,
-            )}. Consider reducing monthly obligations or accelerating payoff.`,
-      tone: debtToIncomeRatio <= 35 ? "positive" : "warning",
-    },
-    {
-      id: "investment-growth",
-      title:
-        portfolioValue <= 0
-          ? "No investment portfolio recorded yet"
-          : netGain >= 0
-            ? "Portfolio is growing"
-            : "Portfolio value is down",
-      description:
-        portfolioValue > 0
-          ? `Your portfolio value is ${formatCurrency(
-              portfolioValue,
-            )}, with total gain/loss of ${formatCurrency(netGain)}.`
-          : "You have not recorded any investment portfolio yet.",
-      tone:
-        portfolioValue <= 0 ? "neutral" : netGain >= 0 ? "positive" : "warning",
-    },
-  ];
+  const insights = buildFinancialInsights({
+    monthlySurplus,
+    savingsRate,
+    debtToIncomeRatio,
+    portfolioValue,
+    netGain,
+  });
 
-  const recommendedActions = [
-    {
-      id: "budget-review",
-      title: "Review expense categories weekly",
-      description:
-        "Use your expense breakdown to identify categories that can be reduced without hurting essential needs.",
-    },
-    {
-      id: "surplus-plan",
-      title: "Give every surplus a clear job",
-      description:
-        "Allocate monthly surplus into emergency fund, investments, or extra debt repayment instead of leaving it unplanned.",
-    },
-    {
-      id: "debt-plan",
-      title: "Prioritize high-interest debt",
-      description:
-        "If you have multiple loans, focus extra payments on the most expensive debt first.",
-    },
-  ];
+  const recommendedActions = buildRecommendedActions();
+
+  const financialHealthHighlights = buildFinancialHealthHighlights({
+    savingsRate,
+    monthlySurplus,
+    debtToIncomeRatio,
+    totalExpenses,
+    totalIncome,
+  });
 
   return (
     <div className="space-y-8">
@@ -219,15 +120,9 @@ export default function AnalysisPageClient() {
 
               <DashboardListItem
                 title="Biggest Strength"
-                value={
-                  savingsRate >= 20
-                    ? "Strong Savings Rate"
-                    : monthlySurplus >= 0
-                      ? "Positive Cash Flow"
-                      : "Needs More Surplus"
-                }
+                value={financialHealthHighlights.biggestStrength}
                 tone={
-                  savingsRate >= 20 || monthlySurplus >= 0
+                  financialHealthHighlights.biggestStrengthTone === "positive"
                     ? "positive"
                     : "warning"
                 }
@@ -236,13 +131,7 @@ export default function AnalysisPageClient() {
 
               <DashboardListItem
                 title="Main Watch Area"
-                value={
-                  debtToIncomeRatio > 35
-                    ? "Debt Pressure"
-                    : totalExpenses > totalIncome
-                      ? "Expense Control"
-                      : "Portfolio Growth"
-                }
+                value={financialHealthHighlights.mainWatchArea}
                 tone="warning"
                 className="border-none bg-slate-50 p-4"
               />
