@@ -17,6 +17,7 @@ import {
   buildLoanAccounts,
   sortUpcomingLoanPayments,
 } from "@/lib/finance-calculations";
+import { buildLoanSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { mockLoanPayoffBars } from "@/lib/mock-data/loan";
 
@@ -55,29 +56,12 @@ export default function LoansPageClient() {
     debtToIncomeRatio,
   } = useFinanceSummary();
 
-  const loanSummaryCards = [
-    {
-      label: "Total Loan Balance",
-      value: formatCurrency(totalLoanBalance),
-      helper: "Outstanding debt balance",
-    },
-    {
-      label: "Monthly Payment",
-      value: formatCurrency(monthlyLoanPayment),
-      helper: "Required this month",
-    },
-    {
-      label: "Paid Off",
-      value: formatCurrency(totalPaidOff),
-      helper: "Total repaid so far",
-      tone: "positive" as const,
-    },
-    {
-      label: "Debt Ratio",
-      value: formatPercentage(debtToIncomeRatio),
-      helper: "Based on current income",
-    },
-  ];
+  const loanSummaryCards = buildLoanSummaryCards({
+    totalLoanBalance,
+    monthlyLoanPayment,
+    totalPaidOff,
+    debtToIncomeRatio,
+  });
 
   const loanAccounts = buildLoanAccounts(loanItems);
   const upcomingPayments = sortUpcomingLoanPayments(loanItems, 4);

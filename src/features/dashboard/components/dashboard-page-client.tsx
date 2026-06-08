@@ -8,9 +8,10 @@ import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import { buildQuickSnapshotItems } from "@/lib/finance-dashboard";
+import { buildDashboardSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { mockUserProfile } from "@/lib/mock-data/user";
-import type { SummaryCardProps } from "@/types/ui";
 
 function getFirstName(fullName: string) {
   return fullName.split(" ")[0] ?? fullName;
@@ -42,56 +43,19 @@ export default function DashboardPageClient() {
     financialHealthScore,
   } = useFinanceSummary();
 
-  const summaryCards: SummaryCardProps[] = [
-    {
-      label: "Net Worth",
-      value: formatCurrency(netWorth),
-      helper: "Assets minus liabilities",
-      tone: netWorth >= 0 ? "positive" : "danger",
-    },
-    {
-      label: "Monthly Income",
-      value: formatCurrency(totalIncome),
-      helper: "Total income this month",
-      tone: "positive",
-    },
-    {
-      label: "Monthly Expenses",
-      value: formatCurrency(totalExpenses),
-      helper: "Total spending this month",
-    },
-    {
-      label: "Portfolio Value",
-      value: formatCurrency(portfolioValue),
-      helper: "Current investment value",
-      tone: portfolioValue >= 0 ? "positive" : "default",
-    },
-  ];
+  const summaryCards = buildDashboardSummaryCards({
+    netWorth,
+    totalIncome,
+    totalExpenses,
+    portfolioValue,
+  });
 
-  const quickSnapshotItems = [
-    {
-      id: "total-invested",
-      title: "Total Invested",
-      subtitle: "Capital deployed",
-      value: formatCurrency(totalInvested),
-      meta: `${netGain >= 0 ? "+" : ""}${formatCurrency(netGain)}`,
-      tone: netGain >= 0 ? ("positive" as const) : ("danger" as const),
-    },
-    {
-      id: "recurring-income",
-      title: "Recurring Income",
-      subtitle: "Salary & fixed sources",
-      value: formatCurrency(recurringIncome),
-      meta: "Monthly",
-    },
-    {
-      id: "essential-spending",
-      title: "Essential Spending",
-      subtitle: "Needs & fixed costs",
-      value: formatCurrency(essentialSpending),
-      meta: "Needs",
-    },
-  ];
+  const quickSnapshotItems = buildQuickSnapshotItems({
+    totalInvested,
+    netGain,
+    recurringIncome,
+    essentialSpending,
+  });
 
   return (
     <div className="space-y-8">

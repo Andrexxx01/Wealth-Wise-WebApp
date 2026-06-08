@@ -29,6 +29,13 @@ type BuildLoanSummaryCardsParams = {
   debtToIncomeRatio: number;
 };
 
+type BuildDashboardSummaryCardsParams = {
+  netWorth: number;
+  totalIncome: number;
+  totalExpenses: number;
+  portfolioValue: number;
+};
+
 export function buildIncomeSummaryCards({
   totalIncome,
   recurringIncome,
@@ -148,6 +155,39 @@ export function buildLoanSummaryCards({
       label: "Debt Ratio",
       value: formatPercentage(debtToIncomeRatio),
       helper: "Based on current income",
+    },
+  ];
+}
+
+export function buildDashboardSummaryCards({
+  netWorth,
+  totalIncome,
+  totalExpenses,
+  portfolioValue,
+}: BuildDashboardSummaryCardsParams): SummaryCardProps[] {
+  return [
+    {
+      label: "Net Worth",
+      value: formatCurrency(netWorth),
+      helper: "Assets minus liabilities",
+      tone: netWorth >= 0 ? "positive" : "danger",
+    },
+    {
+      label: "Monthly Income",
+      value: formatCurrency(totalIncome),
+      helper: "Total income this month",
+      tone: "positive",
+    },
+    {
+      label: "Monthly Expenses",
+      value: formatCurrency(totalExpenses),
+      helper: "Total spending this month",
+    },
+    {
+      label: "Portfolio Value",
+      value: formatCurrency(portfolioValue),
+      helper: "Current investment value",
+      tone: portfolioValue > 0 ? "positive" : "default",
     },
   ];
 }
