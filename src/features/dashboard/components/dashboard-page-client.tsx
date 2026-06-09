@@ -7,8 +7,12 @@ import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Card, CardContent } from "@/components/ui/card";
+import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
-import { buildQuickSnapshotItems } from "@/lib/finance-dashboard";
+import {
+  buildCashFlowChartData,
+  buildQuickSnapshotItems,
+} from "@/lib/finance-dashboard";
 import { buildDashboardSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { mockUserProfile } from "@/lib/mock-data/user";
@@ -17,16 +21,9 @@ function getFirstName(fullName: string) {
   return fullName.split(" ")[0] ?? fullName;
 }
 
-const cashFlowChartData = [
-  { label: "Jan", primaryValue: 68, secondaryValue: 42 },
-  { label: "Feb", primaryValue: 74, secondaryValue: 48 },
-  { label: "Mar", primaryValue: 62, secondaryValue: 52 },
-  { label: "Apr", primaryValue: 86, secondaryValue: 46 },
-  { label: "May", primaryValue: 78, secondaryValue: 56 },
-  { label: "Jun", primaryValue: 92, secondaryValue: 50 },
-];
-
 export default function DashboardPageClient() {
+  const { incomeItems, expenseItems } = useFinance();
+
   const {
     totalIncome,
     totalExpenses,
@@ -55,6 +52,11 @@ export default function DashboardPageClient() {
     netGain,
     recurringIncome,
     essentialSpending,
+  });
+
+  const cashFlowChartData = buildCashFlowChartData({
+    incomeItems,
+    expenseItems,
   });
 
   return (

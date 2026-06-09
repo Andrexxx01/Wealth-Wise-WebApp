@@ -12,21 +12,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddIncomeDialog from "@/features/income/components/add-income-dialog";
+import { buildMonthlyIncomeChartData } from "@/lib/finance-charts";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { buildIncomeSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
-import { mockMonthlyIncomeBars } from "@/lib/mock-data/income";
 
 function formatIncomeFrequency(frequency: string) {
   if (frequency === "ONE_TIME") return "Irregular";
 
   return formatEnumLabel(frequency);
 }
-
-const monthlyIncomeChartData = mockMonthlyIncomeBars.map((item) => ({
-  label: item.month,
-  value: item.value,
-}));
 
 export default function IncomePageClient() {
   const [isAddIncomeOpen, setIsAddIncomeOpen] = useState(false);
@@ -41,6 +36,10 @@ export default function IncomePageClient() {
     recurringIncome,
     extraIncome,
     projectedAnnualIncome,
+  });
+
+  const monthlyIncomeChartData = buildMonthlyIncomeChartData({
+    incomeItems,
   });
 
   const incomeSources = incomeItems.map((item) => ({

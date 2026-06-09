@@ -17,9 +17,9 @@ import {
   buildLoanAccounts,
   sortUpcomingLoanPayments,
 } from "@/lib/finance-calculations";
+import { buildLoanPayoffChartData } from "@/lib/finance-charts";
 import { buildLoanSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
-import { mockLoanPayoffBars } from "@/lib/mock-data/loan";
 
 function formatLoanCategory(category: string) {
   const categoryOption = LOAN_CATEGORY_OPTIONS.find(
@@ -39,11 +39,6 @@ function formatLoanStatus(status: string) {
   return statusLabels[status] ?? status;
 }
 
-const loanPayoffChartData = mockLoanPayoffBars.map((item) => ({
-  label: item.month,
-  value: item.value,
-}));
-
 export default function LoansPageClient() {
   const [isAddLoanOpen, setIsAddLoanOpen] = useState(false);
 
@@ -61,6 +56,10 @@ export default function LoansPageClient() {
     monthlyLoanPayment,
     totalPaidOff,
     debtToIncomeRatio,
+  });
+
+  const loanPayoffChartData = buildLoanPayoffChartData({
+    loanItems,
   });
 
   const loanAccounts = buildLoanAccounts(loanItems);

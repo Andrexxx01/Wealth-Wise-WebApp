@@ -17,9 +17,9 @@ import {
   buildInvestmentHoldings,
   buildPortfolioAllocation,
 } from "@/lib/finance-calculations";
+import { buildInvestmentPerformanceChartData } from "@/lib/finance-charts";
 import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
-import { mockInvestmentPerformanceBars } from "@/lib/mock-data/investment";
 
 function formatInvestmentCategory(category: string) {
   const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
@@ -28,13 +28,6 @@ function formatInvestmentCategory(category: string) {
 
   return categoryOption?.label ?? category;
 }
-
-const investmentPerformanceChartData = mockInvestmentPerformanceBars.map(
-  (item) => ({
-    label: item.month,
-    value: item.value,
-  }),
-);
 
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
@@ -49,6 +42,10 @@ export default function InvestmentsPageClient() {
     totalInvested,
     netGain,
     investmentReturnRate,
+  });
+
+  const investmentPerformanceChartData = buildInvestmentPerformanceChartData({
+    investmentItems,
   });
 
   const portfolioAllocation = buildPortfolioAllocation({

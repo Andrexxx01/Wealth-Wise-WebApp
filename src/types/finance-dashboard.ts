@@ -1,3 +1,5 @@
+import type { ExpenseItem } from "@/types/expense";
+import type { IncomeItem } from "@/types/income";
 import type { DashboardListItemTone } from "@/types/ui";
 
 export type QuickSnapshotItem = {
@@ -14,4 +16,15 @@ export type BuildQuickSnapshotItemsParams = {
   netGain: number;
   recurringIncome: number;
   essentialSpending: number;
+};
+
+export type CashFlowChartItem = {
+  label: string;
+  primaryValue: number;
+  secondaryValue: number;
+};
+
+export type BuildCashFlowChartDataParams = {
+  incomeItems: IncomeItem[];
+  expenseItems: ExpenseItem[];
 };

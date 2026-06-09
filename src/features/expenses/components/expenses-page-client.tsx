@@ -13,6 +13,7 @@ import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import AddExpenseDialog from "@/features/expenses/components/add-expense-dialog";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import { buildMonthlyExpenseChartData } from "@/lib/finance-charts";
 import {
   buildExpenseCategoryBreakdown,
   calculateAverageDailySpend,
@@ -20,7 +21,6 @@ import {
 } from "@/lib/finance-calculations";
 import { buildExpenseSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-import { mockMonthlyExpenseBars } from "@/lib/mock-data/expense";
 
 function formatExpenseCategory(category: string) {
   const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
@@ -29,11 +29,6 @@ function formatExpenseCategory(category: string) {
 
   return categoryOption?.label ?? category;
 }
-
-const monthlyExpenseChartData = mockMonthlyExpenseBars.map((item) => ({
-  label: item.month,
-  value: item.value,
-}));
 
 export default function ExpensesPageClient() {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
@@ -50,6 +45,10 @@ export default function ExpensesPageClient() {
     essentialSpending,
     lifestyleSpending,
     averageDailySpend,
+  });
+
+  const monthlyExpenseChartData = buildMonthlyExpenseChartData({
+    expenseItems,
   });
 
   const expenseCategoryBreakdown = buildExpenseCategoryBreakdown({
