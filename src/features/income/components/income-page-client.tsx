@@ -5,6 +5,7 @@ import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,8 @@ export default function IncomePageClient() {
 
   const { totalIncome, recurringIncome, extraIncome, projectedAnnualIncome } =
     useFinanceSummary();
+
+  const hasIncomeItems = incomeItems.length > 0;
 
   const incomeSummaryCards = buildIncomeSummaryCards({
     totalIncome,
@@ -87,7 +90,23 @@ export default function IncomePageClient() {
             title="Income Growth"
             badge="2026"
           >
-            <BarChartMock data={monthlyIncomeChartData} />
+            {hasIncomeItems ? (
+              <BarChartMock data={monthlyIncomeChartData} />
+            ) : (
+              <EmptyState
+                title="No income chart yet"
+                description="Add your first income record to start building your monthly income trend."
+                action={
+                  <Button
+                    type="button"
+                    onClick={() => setIsAddIncomeOpen(true)}
+                    className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                  >
+                    Add Income
+                  </Button>
+                }
+              />
+            )}
           </ChartCard>
 
           <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
@@ -97,17 +116,33 @@ export default function IncomePageClient() {
                 title="Current Breakdown"
               />
 
-              <div className="space-y-4">
-                {incomeSources.map((item) => (
-                  <DashboardListItem
-                    key={item.id}
-                    title={item.name}
-                    subtitle={item.frequency}
-                    value={formatCurrency(item.amount)}
-                    className="border-none bg-slate-50 p-4"
-                  />
-                ))}
-              </div>
+              {hasIncomeItems ? (
+                <div className="space-y-4">
+                  {incomeSources.map((item) => (
+                    <DashboardListItem
+                      key={item.id}
+                      title={item.name}
+                      subtitle={item.frequency}
+                      value={formatCurrency(item.amount)}
+                      className="border-none bg-slate-50 p-4"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No income sources yet"
+                  description="Add salary, freelance work, business income, or other sources to see your income breakdown."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddIncomeOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Income
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>
@@ -130,18 +165,34 @@ export default function IncomePageClient() {
                 </Button>
               </div>
 
-              <div className="space-y-4">
-                {recentIncome.map((item) => (
-                  <DashboardListItem
-                    key={item.id}
-                    title={item.title}
-                    subtitle={formatEnumLabel(item.category)}
-                    value={formatCurrency(item.amount)}
-                    meta={formatDate(item.receivedAt)}
-                    tone="positive"
-                  />
-                ))}
-              </div>
+              {recentIncome.length > 0 ? (
+                <div className="space-y-4">
+                  {recentIncome.map((item) => (
+                    <DashboardListItem
+                      key={item.id}
+                      title={item.title}
+                      subtitle={formatEnumLabel(item.category)}
+                      value={formatCurrency(item.amount)}
+                      meta={formatDate(item.receivedAt)}
+                      tone="positive"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No income activity yet"
+                  description="Your latest income records will appear here after you add income transactions."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddIncomeOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Income
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>

@@ -5,6 +5,7 @@ import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,8 @@ export default function ExpensesPageClient() {
 
   const { totalExpenses, essentialSpending, lifestyleSpending } =
     useFinanceSummary();
+
+  const hasExpenseItems = expenseItems.length > 0;
 
   const averageDailySpend = calculateAverageDailySpend(totalExpenses);
 
@@ -95,7 +98,23 @@ export default function ExpensesPageClient() {
             title="Spending Over Time"
             badge="2026"
           >
-            <BarChartMock data={monthlyExpenseChartData} />
+            {hasExpenseItems ? (
+              <BarChartMock data={monthlyExpenseChartData} />
+            ) : (
+              <EmptyState
+                title="No expense chart yet"
+                description="Add your first expense record to start building your monthly spending trend."
+                action={
+                  <Button
+                    type="button"
+                    onClick={() => setIsAddExpenseOpen(true)}
+                    className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                  >
+                    Add Expense
+                  </Button>
+                }
+              />
+            )}
           </ChartCard>
 
           <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
@@ -105,17 +124,33 @@ export default function ExpensesPageClient() {
                 title="Top Spending Areas"
               />
 
-              <div className="space-y-4">
-                {expenseCategoryBreakdown.map((item) => (
-                  <DashboardListItem
-                    key={item.category}
-                    title={item.name}
-                    subtitle={`${item.percentage}% of total expenses`}
-                    value={formatCurrency(item.amount)}
-                    className="border-none bg-slate-50 p-4"
-                  />
-                ))}
-              </div>
+              {expenseCategoryBreakdown.length > 0 ? (
+                <div className="space-y-4">
+                  {expenseCategoryBreakdown.map((item) => (
+                    <DashboardListItem
+                      key={item.category}
+                      title={item.name}
+                      subtitle={`${item.percentage}% of total expenses`}
+                      value={formatCurrency(item.amount)}
+                      className="border-none bg-slate-50 p-4"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No expense categories yet"
+                  description="Add expenses to see your top spending categories and understand where your money goes."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddExpenseOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Expense
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>
@@ -138,17 +173,33 @@ export default function ExpensesPageClient() {
                 </Button>
               </div>
 
-              <div className="space-y-4">
-                {recentExpenses.map((item) => (
-                  <DashboardListItem
-                    key={item.id}
-                    title={item.title}
-                    subtitle={formatExpenseCategory(item.category)}
-                    value={formatCurrency(item.amount)}
-                    meta={formatDate(item.spentAt)}
-                  />
-                ))}
-              </div>
+              {recentExpenses.length > 0 ? (
+                <div className="space-y-4">
+                  {recentExpenses.map((item) => (
+                    <DashboardListItem
+                      key={item.id}
+                      title={item.title}
+                      subtitle={formatExpenseCategory(item.category)}
+                      value={formatCurrency(item.amount)}
+                      meta={formatDate(item.spentAt)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No expense activity yet"
+                  description="Your latest expense records will appear here after you add spending transactions."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddExpenseOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Expense
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>

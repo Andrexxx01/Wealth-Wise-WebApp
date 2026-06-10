@@ -5,6 +5,7 @@ import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,8 @@ export default function LoansPageClient() {
     totalPaidOff,
     debtToIncomeRatio,
   } = useFinanceSummary();
+
+  const hasLoanItems = loanItems.length > 0;
 
   const loanSummaryCards = buildLoanSummaryCards({
     totalLoanBalance,
@@ -101,7 +104,23 @@ export default function LoansPageClient() {
             title="Repayment Trend"
             badge="2026"
           >
-            <BarChartMock data={loanPayoffChartData} />
+            {hasLoanItems ? (
+              <BarChartMock data={loanPayoffChartData} />
+            ) : (
+              <EmptyState
+                title="No loan chart yet"
+                description="Add your first loan to start tracking repayment progress over time."
+                action={
+                  <Button
+                    type="button"
+                    onClick={() => setIsAddLoanOpen(true)}
+                    className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                  >
+                    Add Loan
+                  </Button>
+                }
+              />
+            )}
           </ChartCard>
 
           <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
@@ -111,39 +130,57 @@ export default function LoansPageClient() {
                 title="Active Debt List"
               />
 
-              <div className="space-y-4">
-                {loanAccounts.map((item) => (
-                  <DashboardListItem
-                    key={item.id}
-                    title={item.title}
-                    subtitle={formatLoanCategory(item.category)}
-                    value={formatCurrency(item.remainingBalance)}
-                    meta={`${formatCurrency(item.monthlyPayment)}/mo`}
-                    className="border-none bg-slate-50 p-4"
-                  >
-                    <div>
-                      <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="text-slate-500">Payoff progress</span>
+              {loanAccounts.length > 0 ? (
+                <div className="space-y-4">
+                  {loanAccounts.map((item) => (
+                    <DashboardListItem
+                      key={item.id}
+                      title={item.title}
+                      subtitle={formatLoanCategory(item.category)}
+                      value={formatCurrency(item.remainingBalance)}
+                      meta={`${formatCurrency(item.monthlyPayment)}/mo`}
+                      className="border-none bg-slate-50 p-4"
+                    >
+                      <div>
+                        <div className="mb-2 flex items-center justify-between text-sm">
+                          <span className="text-slate-500">
+                            Payoff progress
+                          </span>
 
-                        <span className="font-semibold text-slate-900">
-                          {formatPercentage(item.progress)}
-                        </span>
+                          <span className="font-semibold text-slate-900">
+                            {formatPercentage(item.progress)}
+                          </span>
+                        </div>
+
+                        <div className="h-3 rounded-full bg-slate-200">
+                          <div
+                            className="h-3 rounded-full bg-emerald-500"
+                            style={{ width: `${item.progress}%` }}
+                          />
+                        </div>
+
+                        <p className="mt-3 text-sm font-medium text-emerald-600">
+                          {formatLoanStatus(item.status)}
+                        </p>
                       </div>
-
-                      <div className="h-3 rounded-full bg-slate-200">
-                        <div
-                          className="h-3 rounded-full bg-emerald-500"
-                          style={{ width: `${item.progress}%` }}
-                        />
-                      </div>
-
-                      <p className="mt-3 text-sm font-medium text-emerald-600">
-                        {formatLoanStatus(item.status)}
-                      </p>
-                    </div>
-                  </DashboardListItem>
-                ))}
-              </div>
+                    </DashboardListItem>
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No loan accounts yet"
+                  description="Add personal, vehicle, mortgage, student, or business loans to monitor your debt."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddLoanOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Loan
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>
@@ -166,21 +203,37 @@ export default function LoansPageClient() {
                 </Button>
               </div>
 
-              <div className="space-y-4">
-                {upcomingPayments.map((item) => (
-                  <DashboardListItem
-                    key={item.id}
-                    title={item.title}
-                    subtitle={item.lenderName}
-                    value={formatCurrency(item.monthlyPayment)}
-                    meta={
-                      item.dueDate
-                        ? `Due ${formatDate(item.dueDate)}`
-                        : "No due date"
-                    }
-                  />
-                ))}
-              </div>
+              {upcomingPayments.length > 0 ? (
+                <div className="space-y-4">
+                  {upcomingPayments.map((item) => (
+                    <DashboardListItem
+                      key={item.id}
+                      title={item.title}
+                      subtitle={item.lenderName}
+                      value={formatCurrency(item.monthlyPayment)}
+                      meta={
+                        item.dueDate
+                          ? `Due ${formatDate(item.dueDate)}`
+                          : "No due date"
+                      }
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No upcoming payments yet"
+                  description="Loan payment schedules will appear here after you add loan records."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddLoanOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Loan
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>

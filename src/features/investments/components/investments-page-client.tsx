@@ -5,6 +5,7 @@ import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,8 @@ export default function InvestmentsPageClient() {
 
   const { portfolioValue, totalInvested, netGain, investmentReturnRate } =
     useFinanceSummary();
+
+  const hasInvestmentItems = investmentItems.length > 0;
 
   const investmentSummaryCards = buildInvestmentSummaryCards({
     portfolioValue,
@@ -92,7 +95,23 @@ export default function InvestmentsPageClient() {
             title="Growth Over Time"
             badge="2026"
           >
-            <BarChartMock data={investmentPerformanceChartData} />
+            {hasInvestmentItems ? (
+              <BarChartMock data={investmentPerformanceChartData} />
+            ) : (
+              <EmptyState
+                title="No investment chart yet"
+                description="Add your first investment record to start tracking portfolio performance over time."
+                action={
+                  <Button
+                    type="button"
+                    onClick={() => setIsAddInvestmentOpen(true)}
+                    className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                  >
+                    Add Investment
+                  </Button>
+                }
+              />
+            )}
           </ChartCard>
 
           <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
@@ -102,17 +121,33 @@ export default function InvestmentsPageClient() {
                 title="Asset Breakdown"
               />
 
-              <div className="space-y-4">
-                {portfolioAllocation.map((item) => (
-                  <DashboardListItem
-                    key={item.category}
-                    title={item.name}
-                    subtitle={`${item.percentage}% of portfolio`}
-                    value={formatCurrency(item.amount)}
-                    className="border-none bg-slate-50 p-4"
-                  />
-                ))}
-              </div>
+              {portfolioAllocation.length > 0 ? (
+                <div className="space-y-4">
+                  {portfolioAllocation.map((item) => (
+                    <DashboardListItem
+                      key={item.category}
+                      title={item.name}
+                      subtitle={`${item.percentage}% of portfolio`}
+                      value={formatCurrency(item.amount)}
+                      className="border-none bg-slate-50 p-4"
+                    />
+                  ))}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No portfolio allocation yet"
+                  description="Add stocks, crypto, mutual funds, gold, property, or other assets to see your allocation."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddInvestmentOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Investment
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>
@@ -135,24 +170,40 @@ export default function InvestmentsPageClient() {
                 </Button>
               </div>
 
-              <div className="space-y-4">
-                {holdings.map((item) => {
-                  const isPositive = item.gainPercentage >= 0;
+              {holdings.length > 0 ? (
+                <div className="space-y-4">
+                  {holdings.map((item) => {
+                    const isPositive = item.gainPercentage >= 0;
 
-                  return (
-                    <DashboardListItem
-                      key={item.id}
-                      title={item.asset}
-                      subtitle={formatInvestmentCategory(item.category)}
-                      value={formatCurrency(item.currentValue)}
-                      meta={`${isPositive ? "+" : ""}${formatPercentage(
-                        item.gainPercentage,
-                      )}`}
-                      tone={isPositive ? "positive" : "danger"}
-                    />
-                  );
-                })}
-              </div>
+                    return (
+                      <DashboardListItem
+                        key={item.id}
+                        title={item.asset}
+                        subtitle={formatInvestmentCategory(item.category)}
+                        value={formatCurrency(item.currentValue)}
+                        meta={`${isPositive ? "+" : ""}${formatPercentage(
+                          item.gainPercentage,
+                        )}`}
+                        tone={isPositive ? "positive" : "danger"}
+                      />
+                    );
+                  })}
+                </div>
+              ) : (
+                <EmptyState
+                  title="No holdings yet"
+                  description="Your investment positions will appear here after you add portfolio assets."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddInvestmentOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Investment
+                    </Button>
+                  }
+                />
+              )}
             </CardContent>
           </Card>
         </section>
