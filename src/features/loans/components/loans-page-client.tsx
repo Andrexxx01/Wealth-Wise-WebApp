@@ -21,6 +21,7 @@ import {
 import { buildLoanPayoffChartData } from "@/lib/finance-charts";
 import { buildLoanSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
+import Link from "next/link";
 
 function formatLoanCategory(category: string) {
   const categoryOption = LOAN_CATEGORY_OPTIONS.find(
@@ -195,12 +196,15 @@ export default function LoansPageClient() {
                   className="mb-0"
                 />
 
-                <Button
-                  variant="outline"
-                  className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
-                >
-                  View All
-                </Button>
+                {upcomingPayments.length > 0 ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
+                  >
+                    <Link href="/loans/history">View All</Link>
+                  </Button>
+                ) : null}
               </div>
 
               {upcomingPayments.length > 0 ? (

@@ -21,6 +21,7 @@ import {
 import { buildInvestmentPerformanceChartData } from "@/lib/finance-charts";
 import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
+import Link from "next/link";
 
 function formatInvestmentCategory(category: string) {
   const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
@@ -162,12 +163,15 @@ export default function InvestmentsPageClient() {
                   className="mb-0"
                 />
 
-                <Button
-                  variant="outline"
-                  className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
-                >
-                  View All
-                </Button>
+                {holdings.length > 0 ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
+                  >
+                    <Link href="/investments/history">View All</Link>
+                  </Button>
+                ) : null}
               </div>
 
               {holdings.length > 0 ? (

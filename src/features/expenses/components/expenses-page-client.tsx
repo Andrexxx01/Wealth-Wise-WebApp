@@ -22,6 +22,7 @@ import {
 } from "@/lib/finance-calculations";
 import { buildExpenseSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+import Link from "next/link";
 
 function formatExpenseCategory(category: string) {
   const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
@@ -165,12 +166,15 @@ export default function ExpensesPageClient() {
                   className="mb-0"
                 />
 
-                <Button
-                  variant="outline"
-                  className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
-                >
-                  View All
-                </Button>
+                {recentExpenses.length > 0 ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
+                  >
+                    <Link href="/expenses/history">View All</Link>
+                  </Button>
+                ) : null}
               </div>
 
               {recentExpenses.length > 0 ? (

@@ -17,6 +17,7 @@ import { buildMonthlyIncomeChartData } from "@/lib/finance-charts";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { buildIncomeSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
+import Link from "next/link";
 
 function formatIncomeFrequency(frequency: string) {
   if (frequency === "ONE_TIME") return "Irregular";
@@ -157,12 +158,15 @@ export default function IncomePageClient() {
                   className="mb-0"
                 />
 
-                <Button
-                  variant="outline"
-                  className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
-                >
-                  View All
-                </Button>
+                {recentIncome.length > 0 ? (
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
+                  >
+                    <Link href="/income/history">View All</Link>
+                  </Button>
+                ) : null}
               </div>
 
               {recentIncome.length > 0 ? (
