@@ -20,13 +20,23 @@ function formatExpenseCategory(category: string) {
 }
 
 export default function ExpensesHistoryPageClient() {
-  const { expenseItems } = useFinance();
+  const { expenseItems, deleteExpense } = useFinance();
 
   const sortedExpenseItems = sortRecentExpenseItems(
     expenseItems,
     expenseItems.length,
   );
 
+  function handleDeleteExpense(expenseId: string) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this expense record?",
+    );
+
+    if (!shouldDelete) return;
+
+    deleteExpense(expenseId);
+  }
+  
   return (
     <div className="space-y-8">
       <SectionHeader
@@ -55,7 +65,18 @@ export default function ExpensesHistoryPageClient() {
                   subtitle={formatExpenseCategory(item.category)}
                   value={formatCurrency(item.amount)}
                   meta={formatDate(item.spentAt)}
-                />
+                >
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleDeleteExpense(item.id)}
+                      className="h-10 rounded-xl border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </DashboardListItem>
               ))}
             </div>
           ) : (

@@ -15,10 +15,16 @@ export type FinanceContextValue = {
   expenseItems: ExpenseItem[];
   investmentItems: InvestmentItem[];
   loanItems: LoanItem[];
+
   createIncome: (payload: CreateIncomePayload) => void;
   createExpense: (payload: CreateExpensePayload) => void;
   createInvestment: (payload: CreateInvestmentPayload) => void;
   createLoan: (payload: CreateLoanPayload) => void;
+
+  deleteIncome: (incomeId: string) => void;
+  deleteExpense: (expenseId: string) => void;
+  deleteInvestment: (investmentId: string) => void;
+  deleteLoan: (loanId: string) => void;
 };
 
 export type FinanceProviderProps = {

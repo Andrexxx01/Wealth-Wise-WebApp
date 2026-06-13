@@ -120,6 +120,30 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     setLoanItems((currentItems) => [newLoan, ...currentItems]);
   }
 
+  function deleteIncome(incomeId: string) {
+    setIncomeItems((currentItems) =>
+      currentItems.filter((item) => item.id !== incomeId),
+    );
+  }
+
+  function deleteExpense(expenseId: string) {
+    setExpenseItems((currentItems) =>
+      currentItems.filter((item) => item.id !== expenseId),
+    );
+  }
+
+  function deleteInvestment(investmentId: string) {
+    setInvestmentItems((currentItems) =>
+      currentItems.filter((item) => item.id !== investmentId),
+    );
+  }
+
+  function deleteLoan(loanId: string) {
+    setLoanItems((currentItems) =>
+      currentItems.filter((item) => item.id !== loanId),
+    );
+  }
+
   const value: FinanceContextValue = {
     incomeItems,
     expenseItems,
@@ -129,6 +153,10 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     createExpense,
     createInvestment,
     createLoan,
+    deleteIncome,
+    deleteExpense,
+    deleteInvestment,
+    deleteLoan,
   };
 
   return (

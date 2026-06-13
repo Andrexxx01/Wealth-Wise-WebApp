@@ -29,7 +29,7 @@ function formatLoanStatus(status: string) {
 }
 
 export default function LoansHistoryPageClient() {
-  const { loanItems } = useFinance();
+  const { loanItems, deleteLoan } = useFinance();
 
   const sortedLoanItems = [...loanItems].sort((currentItem, nextItem) => {
     const currentDate = currentItem.dueDate ?? currentItem.createdAt;
@@ -37,6 +37,16 @@ export default function LoansHistoryPageClient() {
 
     return new Date(nextDate).getTime() - new Date(currentDate).getTime();
   });
+
+  function handleDeleteLoan(loanId: string) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this loan record?",
+    );
+
+    if (!shouldDelete) return;
+
+    deleteLoan(loanId);
+  }
 
   return (
     <div className="space-y-8">
@@ -63,18 +73,27 @@ export default function LoansHistoryPageClient() {
                 <DashboardListItem
                   key={item.id}
                   title={item.title}
-                  subtitle={`${item.lenderName} • ${formatLoanCategory(
-                    item.category,
-                  )}`}
+                  subtitle={`${item.lenderName} • ${formatLoanCategory(item.category)}`}
                   value={formatCurrency(item.remainingBalance)}
                   meta={`Monthly ${formatCurrency(item.monthlyPayment)} • ${
                     item.dueDate ? formatDate(item.dueDate) : "No due date"
                   }`}
                   tone={item.status === "PAID_OFF" ? "positive" : "default"}
                 >
-                  <p className="mt-2 text-sm font-medium text-slate-500">
-                    Status: {formatLoanStatus(item.status)}
-                  </p>
+                  <div className="mt-2 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm font-medium text-slate-500">
+                      Status: {formatLoanStatus(item.status)}
+                    </p>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => handleDeleteLoan(item.id)}
+                      className="h-10 rounded-xl border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </DashboardListItem>
               ))}
             </div>

@@ -19,13 +19,23 @@ function formatInvestmentCategory(category: string) {
 }
 
 export default function InvestmentsHistoryPageClient() {
-  const { investmentItems } = useFinance();
+  const { investmentItems, deleteInvestment } = useFinance();
 
   const sortedInvestmentItems = [...investmentItems].sort(
     (currentItem, nextItem) =>
       new Date(nextItem.investedAt).getTime() -
       new Date(currentItem.investedAt).getTime(),
   );
+
+  function handleDeleteInvestment(investmentId: string) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this investment record?",
+    );
+
+    if (!shouldDelete) return;
+
+    deleteInvestment(investmentId);
+  }
 
   return (
     <div className="space-y-8">
@@ -62,7 +72,18 @@ export default function InvestmentsHistoryPageClient() {
                       item.investedAmount,
                     )} • ${formatDate(item.investedAt)}`}
                     tone={isPositive ? "positive" : "danger"}
-                  />
+                  >
+                    <div className="mt-4 flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleDeleteInvestment(item.id)}
+                        className="h-10 rounded-xl border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </DashboardListItem>
                 );
               })}
             </div>
