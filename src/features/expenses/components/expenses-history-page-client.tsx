@@ -10,6 +10,7 @@ import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { sortRecentExpenseItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+import DeleteRecordButton from "@/components/dashboard/delete-record-button";
 
 function formatExpenseCategory(category: string) {
   const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
@@ -27,16 +28,6 @@ export default function ExpensesHistoryPageClient() {
     expenseItems.length,
   );
 
-  function handleDeleteExpense(expenseId: string) {
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete this expense record?",
-    );
-
-    if (!shouldDelete) return;
-
-    deleteExpense(expenseId);
-  }
-  
   return (
     <div className="space-y-8">
       <SectionHeader
@@ -67,14 +58,10 @@ export default function ExpensesHistoryPageClient() {
                   meta={formatDate(item.spentAt)}
                 >
                   <div className="mt-4 flex justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleDeleteExpense(item.id)}
-                      className="h-10 rounded-xl border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      Delete
-                    </Button>
+                    <DeleteRecordButton
+                      confirmMessage="Are you sure you want to delete this expense record?"
+                      onConfirmDelete={() => deleteExpense(item.id)}
+                    />
                   </div>
                 </DashboardListItem>
               ))}

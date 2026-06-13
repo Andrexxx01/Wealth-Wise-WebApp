@@ -1,6 +1,10 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import {
+  loadFinanceStorageData,
+  saveFinanceStorageData,
+} from "@/lib/finance-storage";
 import { mockExpenseItems } from "@/lib/mock-data/expense";
 import { mockIncomeItems } from "@/lib/mock-data/income";
 import { mockInvestmentItems } from "@/lib/mock-data/investment";
@@ -31,12 +35,38 @@ function createTemporaryId(prefix: string) {
 }
 
 export default function FinanceProvider({ children }: FinanceProviderProps) {
+  const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
+
   const [incomeItems, setIncomeItems] = useState<IncomeItem[]>(mockIncomeItems);
   const [expenseItems, setExpenseItems] =
     useState<ExpenseItem[]>(mockExpenseItems);
   const [investmentItems, setInvestmentItems] =
     useState<InvestmentItem[]>(mockInvestmentItems);
   const [loanItems, setLoanItems] = useState<LoanItem[]>(mockLoanItems);
+
+  useEffect(() => {
+    const storedData = loadFinanceStorageData();
+
+    if (storedData) {
+      setIncomeItems(storedData.incomeItems);
+      setExpenseItems(storedData.expenseItems);
+      setInvestmentItems(storedData.investmentItems);
+      setLoanItems(storedData.loanItems);
+    }
+
+    setHasLoadedStorage(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedStorage) return;
+
+    saveFinanceStorageData({
+      incomeItems,
+      expenseItems,
+      investmentItems,
+      loanItems,
+    });
+  }, [hasLoadedStorage, incomeItems, expenseItems, investmentItems, loanItems]);
 
   function createIncome(payload: CreateIncomePayload) {
     const now = new Date().toISOString();

@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
+import DeleteRecordButton from "@/components/dashboard/delete-record-button";
 
 export default function IncomeHistoryPageClient() {
   const { incomeItems, deleteIncome } = useFinance();
@@ -17,16 +18,6 @@ export default function IncomeHistoryPageClient() {
     incomeItems,
     incomeItems.length,
   );
-
-  function handleDeleteIncome(incomeId: string) {
-    const shouldDelete = window.confirm(
-      "Are you sure you want to delete this income record?",
-    );
-
-    if (!shouldDelete) return;
-
-    deleteIncome(incomeId);
-  }
 
   return (
     <div className="space-y-8">
@@ -59,14 +50,10 @@ export default function IncomeHistoryPageClient() {
                   tone="positive"
                 >
                   <div className="mt-4 flex justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => handleDeleteIncome(item.id)}
-                      className="h-10 rounded-xl border-red-200 bg-white px-4 text-sm font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      Delete
-                    </Button>
+                    <DeleteRecordButton
+                      confirmMessage="Are you sure you want to delete this income record?"
+                      onConfirmDelete={() => deleteIncome(item.id)}
+                    />
                   </div>
                 </DashboardListItem>
               ))}
