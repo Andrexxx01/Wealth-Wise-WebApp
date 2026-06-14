@@ -2,18 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import Logo from "@/components/common/logo";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+import ResetDemoDataButton from "@/components/dashboard/reset-demo-data-button";
+import { Button } from "@/components/ui/button";
+import { useFinance } from "@/features/finance/components/finance-provider";
 
-const navItems = [
+const dashboardLinks = [
   { label: "Dashboard", href: "/dashboard" },
   { label: "Income", href: "/income" },
   { label: "Expenses", href: "/expenses" },
@@ -22,69 +15,69 @@ const navItems = [
   { label: "Analysis", href: "/analysis" },
 ];
 
+function getLinkClassName(isActive: boolean) {
+  return `rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+    isActive
+      ? "bg-emerald-600 text-white"
+      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+  }`;
+}
+
 export default function DashboardNavbar() {
   const pathname = usePathname();
+  const { resetFinanceData } = useFinance();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-10">
-          <Logo textClassName="text-xl" iconClassName="h-9 w-9" />
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/dashboard" className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-lg font-black text-white">
+              W
+            </div>
 
-          <nav className="hidden items-center gap-2 lg:flex">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
+            <div>
+              <p className="text-base font-black tracking-tight text-slate-900">
+                WealthWise
+              </p>
+              <p className="text-xs font-medium text-slate-500">
+                Personal Finance Tracker
+              </p>
+            </div>
+          </Link>
 
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "rounded-2xl px-4 py-2 text-sm font-semibold transition-colors",
-                    isActive
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+          <div className="xl:hidden">
+            <ResetDemoDataButton onReset={resetFinanceData} />
+          </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 outline-none transition hover:bg-slate-50">
-            <Avatar className="h-10 w-10">
-              <AvatarFallback className="bg-emerald-100 text-sm font-semibold text-emerald-700">
-                AK
-              </AvatarFallback>
-            </Avatar>
+        <nav className="flex gap-2 overflow-x-auto pb-1 xl:pb-0">
+          {dashboardLinks.map((link) => {
+            const isActive =
+              pathname === link.href || pathname.startsWith(`${link.href}/`);
 
-            <div className="hidden text-left sm:block">
-              <p className="text-sm font-semibold text-slate-900">
-                Andre Kurniawan
-              </p>
-              <p className="text-xs text-slate-500">Personal Account</p>
-            </div>
-          </DropdownMenuTrigger>
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={getLinkClassName(isActive)}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
 
-          <DropdownMenuContent align="end" className="w-56 rounded-2xl">
-            <DropdownMenuItem className="cursor-pointer rounded-xl">
-              My Profile
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer rounded-xl">
-              Account Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer rounded-xl">
-              Appearance
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer rounded-xl text-red-600 focus:text-red-600">
-              Log Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="hidden items-center gap-3 xl:flex">
+          <ResetDemoDataButton onReset={resetFinanceData} />
+
+          <Button
+            variant="outline"
+            className="h-12 rounded-2xl border-slate-300 bg-white px-6 font-semibold text-slate-900 hover:bg-slate-100"
+          >
+            Andre
+          </Button>
+        </div>
       </div>
     </header>
   );

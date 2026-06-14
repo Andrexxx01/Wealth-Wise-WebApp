@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import {
+  clearFinanceStorageData,
   loadFinanceStorageData,
   saveFinanceStorageData,
 } from "@/lib/finance-storage";
@@ -174,6 +175,15 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
+  function resetFinanceData() {
+    clearFinanceStorageData();
+
+    setIncomeItems(mockIncomeItems);
+    setExpenseItems(mockExpenseItems);
+    setInvestmentItems(mockInvestmentItems);
+    setLoanItems(mockLoanItems);
+  }
+
   const value: FinanceContextValue = {
     incomeItems,
     expenseItems,
@@ -187,6 +197,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     deleteExpense,
     deleteInvestment,
     deleteLoan,
+    resetFinanceData,
   };
 
   return (
