@@ -2,9 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { mockUserProfile } from "@/lib/mock-data/user";
+
+const accountLinks = [
+  {
+    label: "Profile",
+    href: "/profile",
+    description: "View your personal profile",
+  },
+  {
+    label: "Settings",
+    href: "/settings",
+    description: "Manage app preferences",
+  },
+];
 
 function getFirstName(fullName: string) {
   return fullName.split(" ")[0] ?? fullName;
@@ -20,14 +33,37 @@ function getInitials(fullName: string) {
     .toUpperCase();
 }
 
+function isActivePath(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function getProfileButtonClassName(isActive: boolean) {
+  if (isActive) {
+    return "h-12 rounded-2xl border-emerald-600 bg-emerald-600 px-4 font-semibold text-white hover:bg-emerald-700 hover:text-white";
+  }
+
+  return "h-12 rounded-2xl border-slate-300 bg-white px-4 font-semibold text-slate-900 hover:bg-slate-100";
+}
+
+function getDropdownLinkClassName(isActive: boolean) {
+  return `block rounded-2xl px-4 py-3 transition ${
+    isActive ? "bg-emerald-50" : "hover:bg-slate-50"
+  }`;
+}
+
 export default function ProfileDropdown() {
   const router = useRouter();
+  const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   const fullName = mockUserProfile.fullName;
   const firstName = getFirstName(fullName);
   const initials = getInitials(fullName);
+
+  const isAccountPage = accountLinks.some((link) =>
+    isActivePath(pathname, link.href),
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -67,9 +103,15 @@ export default function ProfileDropdown() {
         variant="outline"
         aria-expanded={isOpen}
         onClick={() => setIsOpen((currentValue) => !currentValue)}
-        className="h-12 rounded-2xl border-slate-300 bg-white px-4 font-semibold text-slate-900 hover:bg-slate-100"
+        className={getProfileButtonClassName(isAccountPage)}
       >
-        <span className="mr-2 flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-100 text-xs font-black text-emerald-700">
+        <span
+          className={`mr-2 flex h-8 w-8 items-center justify-center rounded-xl text-xs font-black ${
+            isAccountPage
+              ? "bg-white/20 text-white"
+              : "bg-emerald-100 text-emerald-700"
+          }`}
+        >
           {initials}
         </span>
 
@@ -92,27 +134,34 @@ export default function ProfileDropdown() {
           </div>
 
           <div className="mt-3 space-y-2">
-            <Link
-              href="/profile"
-              onClick={() => setIsOpen(false)}
-              className="block rounded-2xl px-4 py-3 transition hover:bg-slate-50"
-            >
-              <p className="text-sm font-bold text-slate-900">Profile</p>
-              <p className="mt-1 text-xs text-slate-500">
-                View your personal profile
-              </p>
-            </Link>
+            {accountLinks.map((link) => {
+              const isActive = isActivePath(pathname, link.href);
 
-            <Link
-              href="/settings"
-              onClick={() => setIsOpen(false)}
-              className="block rounded-2xl px-4 py-3 transition hover:bg-slate-50"
-            >
-              <p className="text-sm font-bold text-slate-900">Settings</p>
-              <p className="mt-1 text-xs text-slate-500">
-                Manage app preferences
-              </p>
-            </Link>
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setIsOpen(false)}
+                  className={getDropdownLinkClassName(isActive)}
+                >
+                  <p
+                    className={`text-sm font-bold ${
+                      isActive ? "text-emerald-700" : "text-slate-900"
+                    }`}
+                  >
+                    {link.label}
+                  </p>
+
+                  <p
+                    className={`mt-1 text-xs ${
+                      isActive ? "text-emerald-600" : "text-slate-500"
+                    }`}
+                  >
+                    {link.description}
+                  </p>
+                </Link>
+              );
+            })}
 
             <button
               type="button"

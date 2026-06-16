@@ -88,6 +88,29 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     setIncomeItems((currentItems) => [newIncome, ...currentItems]);
   }
 
+  function updateIncome(incomeId: string, payload: CreateIncomePayload) {
+    const now = new Date().toISOString();
+
+    setIncomeItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== incomeId) {
+          return item;
+        }
+
+        return {
+          ...item,
+          title: payload.title,
+          category: payload.category,
+          amount: payload.amount,
+          receivedAt: payload.receivedAt,
+          frequency: payload.frequency,
+          notes: payload.notes,
+          updatedAt: now,
+        };
+      }),
+    );
+  }
+
   function createExpense(payload: CreateExpensePayload) {
     const now = new Date().toISOString();
 
@@ -105,6 +128,29 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     };
 
     setExpenseItems((currentItems) => [newExpense, ...currentItems]);
+  }
+
+  function updateExpense(expenseId: string, payload: CreateExpensePayload) {
+    const now = new Date().toISOString();
+
+    setExpenseItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== expenseId) {
+          return item;
+        }
+
+        return {
+          ...item,
+          title: payload.title,
+          category: payload.category,
+          type: payload.type,
+          amount: payload.amount,
+          spentAt: payload.spentAt,
+          notes: payload.notes,
+          updatedAt: now,
+        };
+      }),
+    );
   }
 
   function createInvestment(payload: CreateInvestmentPayload) {
@@ -198,6 +244,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     deleteInvestment,
     deleteLoan,
     resetFinanceData,
+    updateIncome,
+    updateExpense,
   };
 
   return (
