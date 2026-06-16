@@ -2,12 +2,27 @@
 
 import { Button } from "@/components/ui/button";
 
+type ResetDemoDataButtonSize = "default" | "compact";
+
 type ResetDemoDataButtonProps = {
   onReset: () => void;
+  size?: ResetDemoDataButtonSize;
 };
+
+function getResetButtonClassName(size: ResetDemoDataButtonSize) {
+  const baseClassName =
+    "border-red-200 bg-white font-semibold text-red-600 hover:bg-red-50 hover:text-red-700";
+
+  if (size === "compact") {
+    return `${baseClassName} h-10 rounded-xl px-3 text-xs`;
+  }
+
+  return `${baseClassName} h-12 rounded-2xl px-6 text-sm`;
+}
 
 export default function ResetDemoDataButton({
   onReset,
+  size = "default",
 }: ResetDemoDataButtonProps) {
   function handleResetClick() {
     const shouldReset = window.confirm(
@@ -24,9 +39,9 @@ export default function ResetDemoDataButton({
       type="button"
       variant="outline"
       onClick={handleResetClick}
-      className="h-12 rounded-2xl border-red-200 bg-white px-6 font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+      className={getResetButtonClassName(size)}
     >
-      Reset Demo Data
+      {size === "compact" ? "Reset" : "Reset Demo Data"}
     </Button>
   );
 }

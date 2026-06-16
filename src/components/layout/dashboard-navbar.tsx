@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ResetDemoDataButton from "@/components/dashboard/reset-demo-data-button";
 import { Button } from "@/components/ui/button";
+import ProfileDropdown from "@/components/layout/profile-dropdown";
 import { useFinance } from "@/features/finance/components/finance-provider";
 
 const dashboardLinks = [
@@ -15,7 +17,7 @@ const dashboardLinks = [
   { label: "Analysis", href: "/analysis" },
 ];
 
-function getLinkClassName(isActive: boolean) {
+function getDesktopLinkClassName(isActive: boolean) {
   return `rounded-2xl px-4 py-2 text-sm font-semibold transition ${
     isActive
       ? "bg-emerald-600 text-white"
@@ -23,9 +25,22 @@ function getLinkClassName(isActive: boolean) {
   }`;
 }
 
+function getMobileLinkClassName(isActive: boolean) {
+  return `rounded-2xl px-4 py-3 text-sm font-semibold transition ${
+    isActive
+      ? "bg-emerald-600 text-white"
+      : "bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+  }`;
+}
+
 export default function DashboardNavbar() {
   const pathname = usePathname();
   const { resetFinanceData } = useFinance();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -46,12 +61,23 @@ export default function DashboardNavbar() {
             </div>
           </Link>
 
-          <div className="xl:hidden">
-            <ResetDemoDataButton onReset={resetFinanceData} />
+          <div className="flex items-center gap-2 xl:hidden">
+            <ResetDemoDataButton onReset={resetFinanceData} size="compact" />
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                setIsMobileMenuOpen((currentValue) => !currentValue)
+              }
+              className="h-10 rounded-xl border-slate-300 bg-white px-3 text-xs font-semibold text-slate-900 hover:bg-slate-100"
+            >
+              {isMobileMenuOpen ? "Close" : "Menu"}
+            </Button>
           </div>
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto pb-1 xl:pb-0">
+        <nav className="hidden gap-2 xl:flex">
           {dashboardLinks.map((link) => {
             const isActive =
               pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -60,7 +86,7 @@ export default function DashboardNavbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={getLinkClassName(isActive)}
+                className={getDesktopLinkClassName(isActive)}
               >
                 {link.label}
               </Link>
@@ -68,15 +94,29 @@ export default function DashboardNavbar() {
           })}
         </nav>
 
+        {isMobileMenuOpen ? (
+          <nav className="grid gap-2 rounded-[28px] border border-slate-200 bg-slate-50 p-3 xl:hidden">
+            {dashboardLinks.map((link) => {
+              const isActive =
+                pathname === link.href || pathname.startsWith(`${link.href}/`);
+
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={getMobileLinkClassName(isActive)}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
+        ) : null}
+
         <div className="hidden items-center gap-3 xl:flex">
           <ResetDemoDataButton onReset={resetFinanceData} />
 
-          <Button
-            variant="outline"
-            className="h-12 rounded-2xl border-slate-300 bg-white px-6 font-semibold text-slate-900 hover:bg-slate-100"
-          >
-            Andre
-          </Button>
+          <ProfileDropdown />
         </div>
       </div>
     </header>
