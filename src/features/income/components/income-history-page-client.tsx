@@ -13,6 +13,7 @@ import EditIncomeDialog from "@/features/income/components/edit-income-dialog";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import type { IncomeItem } from "@/types/income";
+import EditRecordButton from "@/components/dashboard/edit-record-button";
 
 export default function IncomeHistoryPageClient() {
   const [selectedIncome, setSelectedIncome] = useState<IncomeItem | null>(null);
@@ -70,14 +71,9 @@ export default function IncomeHistoryPageClient() {
                     tone="positive"
                   >
                     <div className="mt-4 flex justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
+                      <EditRecordButton
                         onClick={() => handleOpenEditIncome(item)}
-                        className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 hover:bg-slate-100"
-                      >
-                        Edit
-                      </Button>
+                      />
 
                       <DeleteRecordButton
                         confirmMessage="Are you sure you want to delete this income record?"

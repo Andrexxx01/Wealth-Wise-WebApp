@@ -14,6 +14,7 @@ import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialo
 import { sortRecentExpenseItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { ExpenseItem } from "@/types/expense";
+import EditRecordButton from "@/components/dashboard/edit-record-button";
 
 function formatExpenseCategory(category: string) {
   const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
@@ -80,14 +81,9 @@ export default function ExpensesHistoryPageClient() {
                     meta={formatDate(item.spentAt)}
                   >
                     <div className="mt-4 flex justify-end gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
+                      <EditRecordButton
                         onClick={() => handleOpenEditExpense(item)}
-                        className="h-10 rounded-xl border-slate-300 bg-white px-4 text-sm font-semibold text-slate-900 hover:bg-slate-100"
-                      >
-                        Edit
-                      </Button>
+                      />
 
                       <DeleteRecordButton
                         confirmMessage="Are you sure you want to delete this expense record?"

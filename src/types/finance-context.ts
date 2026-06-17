@@ -28,6 +28,11 @@ export type FinanceContextValue = {
   resetFinanceData: () => void;
   updateIncome: (incomeId: string, payload: CreateIncomePayload) => void;
   updateExpense: (expenseId: string, payload: CreateExpensePayload) => void;
+  updateInvestment: (
+    investmentId: string,
+    payload: CreateInvestmentPayload,
+  ) => void;
+  updateLoan: (loanId: string, payload: CreateLoanPayload) => void;
 };
 
 export type FinanceProviderProps = {

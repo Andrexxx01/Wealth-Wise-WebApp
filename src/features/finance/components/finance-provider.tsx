@@ -172,6 +172,32 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     setInvestmentItems((currentItems) => [newInvestment, ...currentItems]);
   }
 
+  function updateInvestment(
+    investmentId: string,
+    payload: CreateInvestmentPayload,
+  ) {
+    const now = new Date().toISOString();
+
+    setInvestmentItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== investmentId) {
+          return item;
+        }
+
+        return {
+          ...item,
+          assetName: payload.assetName,
+          category: payload.category,
+          investedAmount: payload.investedAmount,
+          currentValue: payload.currentValue,
+          investedAt: payload.investedAt,
+          notes: payload.notes,
+          updatedAt: now,
+        };
+      }),
+    );
+  }
+
   function createLoan(payload: CreateLoanPayload) {
     const now = new Date().toISOString();
 
@@ -195,6 +221,35 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     };
 
     setLoanItems((currentItems) => [newLoan, ...currentItems]);
+  }
+
+  function updateLoan(loanId: string, payload: CreateLoanPayload) {
+    const now = new Date().toISOString();
+
+    setLoanItems((currentItems) =>
+      currentItems.map((item) => {
+        if (item.id !== loanId) {
+          return item;
+        }
+
+        const status: LoanItem["status"] =
+          payload.remainingBalance <= 0 ? "PAID_OFF" : "ACTIVE";
+
+        return {
+          ...item,
+          title: payload.title,
+          lenderName: payload.lenderName,
+          category: payload.category,
+          principalAmount: payload.principalAmount,
+          remainingBalance: payload.remainingBalance,
+          monthlyPayment: payload.monthlyPayment,
+          interestRate: payload.interestRate,
+          dueDate: payload.dueDate,
+          status,
+          updatedAt: now,
+        };
+      }),
+    );
   }
 
   function deleteIncome(incomeId: string) {
@@ -246,6 +301,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     resetFinanceData,
     updateIncome,
     updateExpense,
+    updateInvestment,
+    updateLoan,
   };
 
   return (
