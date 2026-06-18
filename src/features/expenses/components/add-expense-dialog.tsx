@@ -4,19 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import FormDialogFooter from "@/components/form/form-dialog-footer";
 import FormDialogShell from "@/components/form/form-dialog-shell";
-import FormInput from "@/components/form/form-input";
-import FormSelect from "@/components/form/form-select";
-import FormTextarea from "@/components/form/form-textarea";
-import {
-  EXPENSE_CATEGORY_OPTIONS,
-  EXPENSE_TYPE_OPTIONS,
-} from "@/constants/finance-options";
+import ExpenseFormFields from "@/features/expenses/components/expense-form-fields";
 import { createExpenseSchema } from "@/features/expenses/schemas/expense.schema";
 import { transformExpenseFormValues } from "@/lib/form-transformers";
 import type { AddExpenseDialogProps } from "@/types/finance-dialog";
 import type { CreateExpenseFormValues } from "@/types/expense";
-
-const today = new Date().toISOString().slice(0, 10);
 
 export default function AddExpenseDialog({
   open,
@@ -35,10 +27,15 @@ export default function AddExpenseDialog({
       category: "FOOD",
       type: "ESSENTIAL",
       amount: "",
-      spentAt: today,
+      spentAt: "",
       notes: "",
     },
   });
+
+  function handleCloseDialog() {
+    reset();
+    onOpenChange(false);
+  }
 
   function handleDialogOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
@@ -52,7 +49,6 @@ export default function AddExpenseDialog({
     const payload = transformExpenseFormValues(values);
 
     onCreateExpense(payload);
-
     reset();
     onOpenChange(false);
   }
@@ -62,66 +58,19 @@ export default function AddExpenseDialog({
       open={open}
       onOpenChange={handleDialogOpenChange}
       title="Add Expense"
-      description="Record daily spending, bills, subscriptions, and other expenses so your financial overview stays accurate."
+      description="Add a new expense record to keep your spending overview accurate."
       formProps={{
         onSubmit: handleSubmit(onSubmit),
       }}
       footer={
         <FormDialogFooter
-          submitLabel="Save Expense"
+          submitLabel="Add Expense"
           isSubmitting={isSubmitting}
-          onCancel={() => handleDialogOpenChange(false)}
+          onCancel={handleCloseDialog}
         />
       }
     >
-      <FormInput
-        label="Expense Title"
-        placeholder="Supermarket"
-        registration={register("title")}
-        error={errors.title?.message}
-      />
-
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <FormSelect
-          label="Category"
-          options={EXPENSE_CATEGORY_OPTIONS}
-          registration={register("category")}
-          error={errors.category?.message}
-        />
-
-        <FormSelect
-          label="Expense Type"
-          options={EXPENSE_TYPE_OPTIONS}
-          registration={register("type")}
-          error={errors.type?.message}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <FormInput
-          label="Amount"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="135"
-          registration={register("amount")}
-          error={errors.amount?.message}
-        />
-
-        <FormInput
-          label="Spent Date"
-          type="date"
-          registration={register("spentAt")}
-          error={errors.spentAt?.message}
-        />
-      </div>
-
-      <FormTextarea
-        label="Notes"
-        placeholder="Optional note..."
-        registration={register("notes")}
-        error={errors.notes?.message}
-      />
+      <ExpenseFormFields register={register} errors={errors} />
     </FormDialogShell>
   );
 }

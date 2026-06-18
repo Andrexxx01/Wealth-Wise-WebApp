@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
-import DeleteRecordButton from "@/components/dashboard/delete-record-button";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { useFinance } from "@/features/finance/components/finance-provider";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { LoanItem } from "@/types/loan";
-import EditRecordButton from "@/components/dashboard/edit-record-button";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 
 function formatLoanCategory(category: string) {
   const categoryOption = LOAN_CATEGORY_OPTIONS.find(
@@ -99,16 +98,11 @@ export default function LoansHistoryPageClient() {
                         Status: {formatLoanStatus(item.status)}
                       </p>
 
-                      <div className="flex justify-end gap-3">
-                        <EditRecordButton
-                          onClick={() => handleOpenEditLoan(item)}
-                        />
-
-                        <DeleteRecordButton
-                          confirmMessage="Are you sure you want to delete this loan record?"
-                          onConfirmDelete={() => deleteLoan(item.id)}
-                        />
-                      </div>
+                      <RecordActionButtons
+                        onEdit={() => handleOpenEditLoan(item)}
+                        onDelete={() => deleteLoan(item.id)}
+                        deleteConfirmMessage="Are you sure you want to delete this loan record?"
+                      />
                     </div>
                   </DashboardListItem>
                 ))}

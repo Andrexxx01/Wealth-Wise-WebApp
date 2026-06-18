@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
-import DeleteRecordButton from "@/components/dashboard/delete-record-button";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { InvestmentItem } from "@/types/investment";
-import EditRecordButton from "@/components/dashboard/edit-record-button";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 
 function formatInvestmentCategory(category: string) {
   const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
@@ -86,16 +85,12 @@ export default function InvestmentsHistoryPageClient() {
                       )} • ${formatDate(item.investedAt)}`}
                       tone={isPositive ? "positive" : "danger"}
                     >
-                      <div className="mt-4 flex justify-end gap-3">
-                        <EditRecordButton
-                          onClick={() => handleOpenEditInvestment(item)}
-                        />
-
-                        <DeleteRecordButton
-                          confirmMessage="Are you sure you want to delete this investment record?"
-                          onConfirmDelete={() => deleteInvestment(item.id)}
-                        />
-                      </div>
+                      <RecordActionButtons
+                        className="mt-4"
+                        onEdit={() => handleOpenEditInvestment(item)}
+                        onDelete={() => deleteInvestment(item.id)}
+                        deleteConfirmMessage="Are you sure you want to delete this investment record?"
+                      />
                     </DashboardListItem>
                   );
                 })}

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
-import DeleteRecordButton from "@/components/dashboard/delete-record-button";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,8 @@ import EditIncomeDialog from "@/features/income/components/edit-income-dialog";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import type { IncomeItem } from "@/types/income";
-import EditRecordButton from "@/components/dashboard/edit-record-button";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
+
 
 export default function IncomeHistoryPageClient() {
   const [selectedIncome, setSelectedIncome] = useState<IncomeItem | null>(null);
@@ -70,16 +70,12 @@ export default function IncomeHistoryPageClient() {
                     meta={formatDate(item.receivedAt)}
                     tone="positive"
                   >
-                    <div className="mt-4 flex justify-end gap-3">
-                      <EditRecordButton
-                        onClick={() => handleOpenEditIncome(item)}
-                      />
-
-                      <DeleteRecordButton
-                        confirmMessage="Are you sure you want to delete this income record?"
-                        onConfirmDelete={() => deleteIncome(item.id)}
-                      />
-                    </div>
+                    <RecordActionButtons
+                      className="mt-4"
+                      onEdit={() => handleOpenEditIncome(item)}
+                      onDelete={() => deleteIncome(item.id)}
+                      deleteConfirmMessage="Are you sure you want to delete this income record?"
+                    />
                   </DashboardListItem>
                 ))}
               </div>

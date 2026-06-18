@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
-import DeleteRecordButton from "@/components/dashboard/delete-record-button";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
@@ -14,7 +13,7 @@ import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialo
 import { sortRecentExpenseItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { ExpenseItem } from "@/types/expense";
-import EditRecordButton from "@/components/dashboard/edit-record-button";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 
 function formatExpenseCategory(category: string) {
   const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
@@ -80,16 +79,12 @@ export default function ExpensesHistoryPageClient() {
                     value={formatCurrency(item.amount)}
                     meta={formatDate(item.spentAt)}
                   >
-                    <div className="mt-4 flex justify-end gap-3">
-                      <EditRecordButton
-                        onClick={() => handleOpenEditExpense(item)}
-                      />
-
-                      <DeleteRecordButton
-                        confirmMessage="Are you sure you want to delete this expense record?"
-                        onConfirmDelete={() => deleteExpense(item.id)}
-                      />
-                    </div>
+                    <RecordActionButtons
+                      className="mt-4"
+                      onEdit={() => handleOpenEditExpense(item)}
+                      onDelete={() => deleteExpense(item.id)}
+                      deleteConfirmMessage="Are you sure you want to delete this expense record?"
+                    />
                   </DashboardListItem>
                 ))}
               </div>

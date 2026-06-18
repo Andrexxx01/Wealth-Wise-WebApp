@@ -4,19 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import FormDialogFooter from "@/components/form/form-dialog-footer";
 import FormDialogShell from "@/components/form/form-dialog-shell";
-import FormInput from "@/components/form/form-input";
-import FormSelect from "@/components/form/form-select";
-import FormTextarea from "@/components/form/form-textarea";
-import {
-  INCOME_CATEGORY_OPTIONS,
-  INCOME_FREQUENCY_OPTIONS,
-} from "@/constants/finance-options";
+import IncomeFormFields from "@/features/income/components/income-form-fields";
 import { createIncomeSchema } from "@/features/income/schemas/income.schema";
 import { transformIncomeFormValues } from "@/lib/form-transformers";
 import type { AddIncomeDialogProps } from "@/types/finance-dialog";
 import type { CreateIncomeFormValues } from "@/types/income";
-
-const today = new Date().toISOString().slice(0, 10);
 
 export default function AddIncomeDialog({
   open,
@@ -34,11 +26,16 @@ export default function AddIncomeDialog({
       title: "",
       category: "SALARY",
       amount: "",
-      receivedAt: today,
+      receivedAt: "",
       frequency: "MONTHLY",
       notes: "",
     },
   });
+
+  function handleCloseDialog() {
+    reset();
+    onOpenChange(false);
+  }
 
   function handleDialogOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
@@ -52,7 +49,6 @@ export default function AddIncomeDialog({
     const payload = transformIncomeFormValues(values);
 
     onCreateIncome(payload);
-
     reset();
     onOpenChange(false);
   }
@@ -62,66 +58,19 @@ export default function AddIncomeDialog({
       open={open}
       onOpenChange={handleDialogOpenChange}
       title="Add Income"
-      description="Record salary, freelance payment, business income, or any other money you received."
+      description="Add a new income record to keep your financial overview accurate."
       formProps={{
         onSubmit: handleSubmit(onSubmit),
       }}
       footer={
         <FormDialogFooter
-          submitLabel="Save Income"
+          submitLabel="Add Income"
           isSubmitting={isSubmitting}
-          onCancel={() => handleDialogOpenChange(false)}
+          onCancel={handleCloseDialog}
         />
       }
     >
-      <FormInput
-        label="Income Title"
-        placeholder="Primary Salary"
-        registration={register("title")}
-        error={errors.title?.message}
-      />
-
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <FormSelect
-          label="Category"
-          options={INCOME_CATEGORY_OPTIONS}
-          registration={register("category")}
-          error={errors.category?.message}
-        />
-
-        <FormSelect
-          label="Frequency"
-          options={INCOME_FREQUENCY_OPTIONS}
-          registration={register("frequency")}
-          error={errors.frequency?.message}
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-        <FormInput
-          label="Amount"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="5500"
-          registration={register("amount")}
-          error={errors.amount?.message}
-        />
-
-        <FormInput
-          label="Received Date"
-          type="date"
-          registration={register("receivedAt")}
-          error={errors.receivedAt?.message}
-        />
-      </div>
-
-      <FormTextarea
-        label="Notes"
-        placeholder="Optional note..."
-        registration={register("notes")}
-        error={errors.notes?.message}
-      />
+      <IncomeFormFields register={register} errors={errors} />
     </FormDialogShell>
   );
 }
