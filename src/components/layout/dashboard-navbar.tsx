@@ -65,6 +65,7 @@ export default function DashboardNavbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { resetFinanceData } = useFinance();
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const fullName = mockUserProfile.fullName;
@@ -73,6 +74,10 @@ export default function DashboardNavbar() {
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [pathname]);
+
+  function handleToggleMobileMenu() {
+    setIsMobileMenuOpen((currentValue) => !currentValue);
+  }
 
   function handleLogout() {
     setIsMobileMenuOpen(false);
@@ -104,9 +109,8 @@ export default function DashboardNavbar() {
             <Button
               type="button"
               variant="outline"
-              onClick={() =>
-                setIsMobileMenuOpen((currentValue) => !currentValue)
-              }
+              aria-expanded={isMobileMenuOpen}
+              onClick={handleToggleMobileMenu}
               className="h-10 rounded-xl border-slate-300 bg-white px-3 text-xs font-semibold text-slate-900 hover:bg-slate-100"
             >
               {isMobileMenuOpen ? "Close" : "Menu"}
