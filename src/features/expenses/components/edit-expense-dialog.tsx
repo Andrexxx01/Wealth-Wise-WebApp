@@ -8,15 +8,9 @@ import FormDialogShell from "@/components/form/form-dialog-shell";
 import ExpenseFormFields from "@/features/expenses/components/expense-form-fields";
 import { createExpenseSchema } from "@/features/expenses/schemas/expense.schema";
 import { transformExpenseFormValues } from "@/lib/form-transformers";
-import type { CreateExpensePayload } from "@/types/form-payload";
-import type { CreateExpenseFormValues, ExpenseItem } from "@/types/expense";
-
-type EditExpenseDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  expense: ExpenseItem | null;
-  onUpdateExpense: (expenseId: string, payload: CreateExpensePayload) => void;
-};
+import type { EditExpenseDialogProps } from "@/types/finance-dialog";
+import type { CreateExpenseFormValues } from "@/types/expense";
+import { DEFAULT_EXPENSE_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function EditExpenseDialog({
   open,
@@ -31,14 +25,7 @@ export default function EditExpenseDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateExpenseFormValues>({
     resolver: zodResolver(createExpenseSchema),
-    defaultValues: {
-      title: "",
-      category: "FOOD",
-      type: "ESSENTIAL",
-      amount: "",
-      spentAt: "",
-      notes: "",
-    },
+    defaultValues: DEFAULT_EXPENSE_FORM_VALUES,
   });
 
   useEffect(() => {

@@ -1,14 +1,8 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
-import type { CreateInvestmentFormValues } from "@/types/investment";
-
-type InvestmentFormFieldsProps = {
-  register: UseFormRegister<CreateInvestmentFormValues>;
-  errors: FieldErrors<CreateInvestmentFormValues>;
-};
+import type { InvestmentFormFieldsProps } from "@/types/finance-form-fields";
 
 export default function InvestmentFormFields({
   register,

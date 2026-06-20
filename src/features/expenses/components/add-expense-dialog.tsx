@@ -9,6 +9,7 @@ import { createExpenseSchema } from "@/features/expenses/schemas/expense.schema"
 import { transformExpenseFormValues } from "@/lib/form-transformers";
 import type { AddExpenseDialogProps } from "@/types/finance-dialog";
 import type { CreateExpenseFormValues } from "@/types/expense";
+import { DEFAULT_EXPENSE_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function AddExpenseDialog({
   open,
@@ -22,14 +23,7 @@ export default function AddExpenseDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateExpenseFormValues>({
     resolver: zodResolver(createExpenseSchema),
-    defaultValues: {
-      title: "",
-      category: "FOOD",
-      type: "ESSENTIAL",
-      amount: "",
-      spentAt: "",
-      notes: "",
-    },
+    defaultValues: DEFAULT_EXPENSE_FORM_VALUES,
   });
 
   function handleCloseDialog() {

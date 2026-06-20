@@ -1,13 +1,7 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
-import type { CreateLoanFormValues } from "@/types/loan";
-
-type LoanFormFieldsProps = {
-  register: UseFormRegister<CreateLoanFormValues>;
-  errors: FieldErrors<CreateLoanFormValues>;
-};
+import type { LoanFormFieldsProps } from "@/types/finance-form-fields";
 
 export default function LoanFormFields({
   register,

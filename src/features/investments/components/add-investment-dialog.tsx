@@ -9,6 +9,7 @@ import { createInvestmentSchema } from "@/features/investments/schemas/investmen
 import { transformInvestmentFormValues } from "@/lib/form-transformers";
 import type { AddInvestmentDialogProps } from "@/types/finance-dialog";
 import type { CreateInvestmentFormValues } from "@/types/investment";
+import { DEFAULT_INVESTMENT_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function AddInvestmentDialog({
   open,
@@ -22,14 +23,7 @@ export default function AddInvestmentDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateInvestmentFormValues>({
     resolver: zodResolver(createInvestmentSchema),
-    defaultValues: {
-      assetName: "",
-      category: "STOCK",
-      investedAmount: "",
-      currentValue: "",
-      investedAt: "",
-      notes: "",
-    },
+    defaultValues: DEFAULT_INVESTMENT_FORM_VALUES,
   });
 
   function handleCloseDialog() {

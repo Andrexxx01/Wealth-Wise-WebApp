@@ -1,4 +1,3 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
@@ -6,12 +5,7 @@ import {
   EXPENSE_CATEGORY_OPTIONS,
   EXPENSE_TYPE_OPTIONS,
 } from "@/constants/finance-options";
-import type { CreateExpenseFormValues } from "@/types/expense";
-
-type ExpenseFormFieldsProps = {
-  register: UseFormRegister<CreateExpenseFormValues>;
-  errors: FieldErrors<CreateExpenseFormValues>;
-};
+import type { ExpenseFormFieldsProps } from "@/types/finance-form-fields";
 
 export default function ExpenseFormFields({
   register,

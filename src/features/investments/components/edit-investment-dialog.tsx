@@ -5,69 +5,52 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import FormDialogFooter from "@/components/form/form-dialog-footer";
 import FormDialogShell from "@/components/form/form-dialog-shell";
-import LoanFormFields from "@/features/loans/components/loan-form-fields";
-import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
-import { transformLoanFormValues } from "@/lib/form-transformers";
-import type { CreateLoanPayload } from "@/types/form-payload";
-import type { CreateLoanFormValues, LoanItem } from "@/types/loan";
+import InvestmentFormFields from "@/features/investments/components/investment-form-fields";
+import { createInvestmentSchema } from "@/features/investments/schemas/investment.schema";
+import { transformInvestmentFormValues } from "@/lib/form-transformers";
+import type { EditInvestmentDialogProps } from "@/types/finance-dialog";
+import type { CreateInvestmentFormValues } from "@/types/investment";
+import { DEFAULT_INVESTMENT_FORM_VALUES } from "@/constants/finance-form-defaults";
 
-type EditLoanDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  loan: LoanItem | null;
-  onUpdateLoan: (loanId: string, payload: CreateLoanPayload) => void;
-};
-
-export default function EditLoanDialog({
+export default function EditInvestmentDialog({
   open,
   onOpenChange,
-  loan,
-  onUpdateLoan,
-}: EditLoanDialogProps) {
+  investment,
+  onUpdateInvestment,
+}: EditInvestmentDialogProps) {
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm<CreateLoanFormValues>({
-    resolver: zodResolver(createLoanSchema),
-    defaultValues: {
-      title: "",
-      lenderName: "",
-      category: "PERSONAL",
-      principalAmount: "",
-      remainingBalance: "",
-      monthlyPayment: "",
-      interestRate: "",
-      dueDate: "",
-    },
+  } = useForm<CreateInvestmentFormValues>({
+    resolver: zodResolver(createInvestmentSchema),
+    defaultValues: DEFAULT_INVESTMENT_FORM_VALUES,
   });
 
   useEffect(() => {
-    if (!loan) return;
+    if (!investment) return;
 
     reset({
-      title: loan.title,
-      lenderName: loan.lenderName,
-      category: loan.category,
-      principalAmount: String(loan.principalAmount),
-      remainingBalance: String(loan.remainingBalance),
-      monthlyPayment: String(loan.monthlyPayment),
-      interestRate: loan.interestRate === null ? "" : String(loan.interestRate),
-      dueDate: loan.dueDate ?? "",
+      assetName: investment.assetName,
+      category: investment.category,
+      investedAmount: String(investment.investedAmount),
+      currentValue: String(investment.currentValue),
+      investedAt: investment.investedAt,
+      notes: investment.notes ?? "",
     });
-  }, [loan, reset]);
+  }, [investment, reset]);
 
   function handleCloseDialog() {
     onOpenChange(false);
   }
 
-  function onSubmit(values: CreateLoanFormValues) {
-    if (!loan) return;
+  function onSubmit(values: CreateInvestmentFormValues) {
+    if (!investment) return;
 
-    const payload = transformLoanFormValues(values);
+    const payload = transformInvestmentFormValues(values);
 
-    onUpdateLoan(loan.id, payload);
+    onUpdateInvestment(investment.id, payload);
     onOpenChange(false);
   }
 
@@ -75,8 +58,8 @@ export default function EditLoanDialog({
     <FormDialogShell
       open={open}
       onOpenChange={onOpenChange}
-      title="Edit Loan"
-      description="Update your loan record details."
+      title="Edit Investment"
+      description="Update your investment record details."
       formProps={{
         onSubmit: handleSubmit(onSubmit),
       }}
@@ -88,7 +71,7 @@ export default function EditLoanDialog({
         />
       }
     >
-      <LoanFormFields register={register} errors={errors} />
+      <InvestmentFormFields register={register} errors={errors} />
     </FormDialogShell>
   );
 }

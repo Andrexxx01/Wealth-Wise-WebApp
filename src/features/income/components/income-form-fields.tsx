@@ -1,4 +1,3 @@
-import type { FieldErrors, UseFormRegister } from "react-hook-form";
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
@@ -6,12 +5,7 @@ import {
   INCOME_CATEGORY_OPTIONS,
   INCOME_FREQUENCY_OPTIONS,
 } from "@/constants/finance-options";
-import type { CreateIncomeFormValues } from "@/types/income";
-
-type IncomeFormFieldsProps = {
-  register: UseFormRegister<CreateIncomeFormValues>;
-  errors: FieldErrors<CreateIncomeFormValues>;
-};
+import type { IncomeFormFieldsProps } from "@/types/finance-form-fields";
 
 export default function IncomeFormFields({
   register,

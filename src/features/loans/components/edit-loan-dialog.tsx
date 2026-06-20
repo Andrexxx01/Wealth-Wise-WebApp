@@ -10,15 +10,9 @@ import FormSelect from "@/components/form/form-select";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
 import { transformLoanFormValues } from "@/lib/form-transformers";
-import type { CreateLoanPayload } from "@/types/form-payload";
-import type { CreateLoanFormValues, LoanItem } from "@/types/loan";
-
-type EditLoanDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  loan: LoanItem | null;
-  onUpdateLoan: (loanId: string, payload: CreateLoanPayload) => void;
-};
+import type { EditLoanDialogProps } from "@/types/finance-dialog";
+import type { CreateLoanFormValues } from "@/types/loan";
+import { DEFAULT_LOAN_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function EditLoanDialog({
   open,
@@ -33,16 +27,7 @@ export default function EditLoanDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateLoanFormValues>({
     resolver: zodResolver(createLoanSchema),
-    defaultValues: {
-      title: "",
-      lenderName: "",
-      category: "PERSONAL",
-      principalAmount: "",
-      remainingBalance: "",
-      monthlyPayment: "",
-      interestRate: "",
-      dueDate: "",
-    },
+    defaultValues: DEFAULT_LOAN_FORM_VALUES,
   });
 
   useEffect(() => {

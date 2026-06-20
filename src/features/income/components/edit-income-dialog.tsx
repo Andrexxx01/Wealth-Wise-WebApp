@@ -8,15 +8,9 @@ import FormDialogShell from "@/components/form/form-dialog-shell";
 import IncomeFormFields from "@/features/income/components/income-form-fields";
 import { createIncomeSchema } from "@/features/income/schemas/income.schema";
 import { transformIncomeFormValues } from "@/lib/form-transformers";
-import type { CreateIncomePayload } from "@/types/form-payload";
-import type { CreateIncomeFormValues, IncomeItem } from "@/types/income";
-
-type EditIncomeDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  income: IncomeItem | null;
-  onUpdateIncome: (incomeId: string, payload: CreateIncomePayload) => void;
-};
+import type { EditIncomeDialogProps } from "@/types/finance-dialog";
+import type { CreateIncomeFormValues } from "@/types/income";
+import { DEFAULT_INCOME_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function EditIncomeDialog({
   open,
@@ -31,14 +25,7 @@ export default function EditIncomeDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateIncomeFormValues>({
     resolver: zodResolver(createIncomeSchema),
-    defaultValues: {
-      title: "",
-      category: "SALARY",
-      amount: "",
-      receivedAt: "",
-      frequency: "MONTHLY",
-      notes: "",
-    },
+    defaultValues: DEFAULT_INCOME_FORM_VALUES,
   });
 
   useEffect(() => {

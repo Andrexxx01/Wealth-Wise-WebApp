@@ -9,6 +9,7 @@ import { createIncomeSchema } from "@/features/income/schemas/income.schema";
 import { transformIncomeFormValues } from "@/lib/form-transformers";
 import type { AddIncomeDialogProps } from "@/types/finance-dialog";
 import type { CreateIncomeFormValues } from "@/types/income";
+import { DEFAULT_INCOME_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function AddIncomeDialog({
   open,
@@ -22,14 +23,7 @@ export default function AddIncomeDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateIncomeFormValues>({
     resolver: zodResolver(createIncomeSchema),
-    defaultValues: {
-      title: "",
-      category: "SALARY",
-      amount: "",
-      receivedAt: "",
-      frequency: "MONTHLY",
-      notes: "",
-    },
+    defaultValues: DEFAULT_INCOME_FORM_VALUES,
   });
 
   function handleCloseDialog() {

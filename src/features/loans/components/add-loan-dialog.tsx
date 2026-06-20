@@ -9,6 +9,7 @@ import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
 import { transformLoanFormValues } from "@/lib/form-transformers";
 import type { AddLoanDialogProps } from "@/types/finance-dialog";
 import type { CreateLoanFormValues } from "@/types/loan";
+import { DEFAULT_LOAN_FORM_VALUES } from "@/constants/finance-form-defaults";
 
 export default function AddLoanDialog({
   open,
@@ -22,16 +23,7 @@ export default function AddLoanDialog({
     formState: { errors, isSubmitting },
   } = useForm<CreateLoanFormValues>({
     resolver: zodResolver(createLoanSchema),
-    defaultValues: {
-      title: "",
-      lenderName: "",
-      category: "PERSONAL",
-      principalAmount: "",
-      remainingBalance: "",
-      monthlyPayment: "",
-      interestRate: "",
-      dueDate: "",
-    },
+    defaultValues: DEFAULT_LOAN_FORM_VALUES,
   });
 
   function handleCloseDialog() {
