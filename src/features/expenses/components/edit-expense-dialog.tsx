@@ -11,6 +11,7 @@ import { transformExpenseFormValues } from "@/lib/form-transformers";
 import type { EditExpenseDialogProps } from "@/types/finance-dialog";
 import type { CreateExpenseFormValues } from "@/types/expense";
 import { DEFAULT_EXPENSE_FORM_VALUES } from "@/constants/finance-form-defaults";
+import { mapExpenseItemToFormValues } from "@/lib/finance-form-mappers";
 
 export default function EditExpenseDialog({
   open,
@@ -31,14 +32,7 @@ export default function EditExpenseDialog({
   useEffect(() => {
     if (!expense) return;
 
-    reset({
-      title: expense.title,
-      category: expense.category,
-      type: expense.type,
-      amount: String(expense.amount),
-      spentAt: expense.spentAt,
-      notes: expense.notes ?? "",
-    });
+    reset(mapExpenseItemToFormValues(expense));
   }, [expense, reset]);
 
   function handleCloseDialog() {

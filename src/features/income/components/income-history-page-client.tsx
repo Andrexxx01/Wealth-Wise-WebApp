@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import EmptyState from "@/components/dashboard/empty-state";
@@ -9,35 +8,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditIncomeDialog from "@/features/income/components/edit-income-dialog";
-import { sortRecentIncomeItems } from "@/lib/finance-calculations";
-import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
+import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { IncomeItem } from "@/types/income";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-
+import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import { sortIncomeHistoryItems } from "@/lib/finance-history-sorters";
+import {
+  formatIncomeCategory,
+  formatIncomeFrequency,
+} from "@/lib/finance-labels";
 
 export default function IncomeHistoryPageClient() {
-  const [selectedIncome, setSelectedIncome] = useState<IncomeItem | null>(null);
-  const [isEditIncomeOpen, setIsEditIncomeOpen] = useState(false);
+  const {
+    selectedRecord: selectedIncome,
+    isEditDialogOpen: isEditIncomeOpen,
+    openEditDialog: handleOpenEditIncome,
+    handleEditDialogOpenChange: handleEditDialogChange,
+  } = useEditRecordDialog<IncomeItem>();
 
   const { incomeItems, updateIncome, deleteIncome } = useFinance();
 
-  const sortedIncomeItems = sortRecentIncomeItems(
-    incomeItems,
-    incomeItems.length,
-  );
-
-  function handleOpenEditIncome(income: IncomeItem) {
-    setSelectedIncome(income);
-    setIsEditIncomeOpen(true);
-  }
-
-  function handleEditDialogChange(open: boolean) {
-    setIsEditIncomeOpen(open);
-
-    if (!open) {
-      setSelectedIncome(null);
-    }
-  }
+  const sortedIncomeItems = sortIncomeHistoryItems(incomeItems);
 
   return (
     <>
@@ -65,7 +56,9 @@ export default function IncomeHistoryPageClient() {
                   <DashboardListItem
                     key={item.id}
                     title={item.title}
-                    subtitle={formatEnumLabel(item.category)}
+                    subtitle={`${formatIncomeCategory(
+                      item.category,
+                    )} • ${formatIncomeFrequency(item.frequency)}`}
                     value={formatCurrency(item.amount)}
                     meta={formatDate(item.receivedAt)}
                     tone="positive"

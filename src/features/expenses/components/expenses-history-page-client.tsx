@@ -1,53 +1,31 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialog";
-import { sortRecentExpenseItems } from "@/lib/finance-calculations";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { ExpenseItem } from "@/types/expense";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-
-function formatExpenseCategory(category: string) {
-  const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
-    (option) => option.value === category,
-  );
-
-  return categoryOption?.label ?? category;
-}
+import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import { sortExpenseHistoryItems } from "@/lib/finance-history-sorters";
+import { formatExpenseCategory, formatExpenseType } from "@/lib/finance-labels";
 
 export default function ExpensesHistoryPageClient() {
-  const [selectedExpense, setSelectedExpense] = useState<ExpenseItem | null>(
-    null,
-  );
-  const [isEditExpenseOpen, setIsEditExpenseOpen] = useState(false);
+  const {
+    selectedRecord: selectedExpense,
+    isEditDialogOpen: isEditExpenseOpen,
+    openEditDialog: handleOpenEditExpense,
+    handleEditDialogOpenChange: handleEditDialogChange,
+  } = useEditRecordDialog<ExpenseItem>();
 
   const { expenseItems, updateExpense, deleteExpense } = useFinance();
 
-  const sortedExpenseItems = sortRecentExpenseItems(
-    expenseItems,
-    expenseItems.length,
-  );
-
-  function handleOpenEditExpense(expense: ExpenseItem) {
-    setSelectedExpense(expense);
-    setIsEditExpenseOpen(true);
-  }
-
-  function handleEditDialogChange(open: boolean) {
-    setIsEditExpenseOpen(open);
-
-    if (!open) {
-      setSelectedExpense(null);
-    }
-  }
+  const sortedExpenseItems = sortExpenseHistoryItems(expenseItems);
 
   return (
     <>
@@ -75,7 +53,9 @@ export default function ExpensesHistoryPageClient() {
                   <DashboardListItem
                     key={item.id}
                     title={item.title}
-                    subtitle={formatExpenseCategory(item.category)}
+                    subtitle={`${formatExpenseCategory(item.category)} • ${formatExpenseType(
+                      item.type,
+                    )}`}
                     value={formatCurrency(item.amount)}
                     meta={formatDate(item.spentAt)}
                   >

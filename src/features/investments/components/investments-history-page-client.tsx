@@ -1,52 +1,31 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { InvestmentItem } from "@/types/investment";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-
-function formatInvestmentCategory(category: string) {
-  const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
-    (option) => option.value === category,
-  );
-
-  return categoryOption?.label ?? category;
-}
+import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import { sortInvestmentHistoryItems } from "@/lib/finance-history-sorters";
+import { formatInvestmentCategory } from "@/lib/finance-labels";
 
 export default function InvestmentsHistoryPageClient() {
-  const [selectedInvestment, setSelectedInvestment] =
-    useState<InvestmentItem | null>(null);
-  const [isEditInvestmentOpen, setIsEditInvestmentOpen] = useState(false);
+  const {
+    selectedRecord: selectedInvestment,
+    isEditDialogOpen: isEditInvestmentOpen,
+    openEditDialog: handleOpenEditInvestment,
+    handleEditDialogOpenChange: handleEditDialogChange,
+  } = useEditRecordDialog<InvestmentItem>();
 
   const { investmentItems, updateInvestment, deleteInvestment } = useFinance();
 
-  const sortedInvestmentItems = [...investmentItems].sort(
-    (currentItem, nextItem) =>
-      new Date(nextItem.investedAt).getTime() -
-      new Date(currentItem.investedAt).getTime(),
-  );
-
-  function handleOpenEditInvestment(investment: InvestmentItem) {
-    setSelectedInvestment(investment);
-    setIsEditInvestmentOpen(true);
-  }
-
-  function handleEditDialogChange(open: boolean) {
-    setIsEditInvestmentOpen(open);
-
-    if (!open) {
-      setSelectedInvestment(null);
-    }
-  }
+  const sortedInvestmentItems = sortInvestmentHistoryItems(investmentItems);
 
   return (
     <>

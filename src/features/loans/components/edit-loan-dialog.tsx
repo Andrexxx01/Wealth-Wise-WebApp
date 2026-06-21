@@ -13,6 +13,7 @@ import { transformLoanFormValues } from "@/lib/form-transformers";
 import type { EditLoanDialogProps } from "@/types/finance-dialog";
 import type { CreateLoanFormValues } from "@/types/loan";
 import { DEFAULT_LOAN_FORM_VALUES } from "@/constants/finance-form-defaults";
+import { mapLoanItemToFormValues } from "@/lib/finance-form-mappers";
 
 export default function EditLoanDialog({
   open,
@@ -33,16 +34,7 @@ export default function EditLoanDialog({
   useEffect(() => {
     if (!loan) return;
 
-    reset({
-      title: loan.title,
-      lenderName: loan.lenderName,
-      category: loan.category,
-      principalAmount: String(loan.principalAmount),
-      remainingBalance: String(loan.remainingBalance),
-      monthlyPayment: String(loan.monthlyPayment),
-      interestRate: loan.interestRate ? String(loan.interestRate) : "",
-      dueDate: loan.dueDate ?? "",
-    });
+    reset(mapLoanItemToFormValues(loan));
   }, [loan, reset]);
 
   function handleCloseDialog() {

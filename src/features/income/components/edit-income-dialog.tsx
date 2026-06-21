@@ -11,6 +11,7 @@ import { transformIncomeFormValues } from "@/lib/form-transformers";
 import type { EditIncomeDialogProps } from "@/types/finance-dialog";
 import type { CreateIncomeFormValues } from "@/types/income";
 import { DEFAULT_INCOME_FORM_VALUES } from "@/constants/finance-form-defaults";
+import { mapIncomeItemToFormValues } from "@/lib/finance-form-mappers";
 
 export default function EditIncomeDialog({
   open,
@@ -31,14 +32,7 @@ export default function EditIncomeDialog({
   useEffect(() => {
     if (!income) return;
 
-    reset({
-      title: income.title,
-      category: income.category,
-      amount: String(income.amount),
-      receivedAt: income.receivedAt,
-      frequency: income.frequency,
-      notes: income.notes ?? "",
-    });
+    reset(mapIncomeItemToFormValues(income));
   }, [income, reset]);
 
   function handleCloseDialog() {

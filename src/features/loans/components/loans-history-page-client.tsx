@@ -1,62 +1,31 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { LoanItem } from "@/types/loan";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-
-function formatLoanCategory(category: string) {
-  const categoryOption = LOAN_CATEGORY_OPTIONS.find(
-    (option) => option.value === category,
-  );
-
-  return categoryOption?.label ?? category;
-}
-
-function formatLoanStatus(status: string) {
-  const statusLabels: Record<string, string> = {
-    ACTIVE: "Active",
-    PAID_OFF: "Paid Off",
-    OVERDUE: "Overdue",
-  };
-
-  return statusLabels[status] ?? status;
-}
+import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import { sortLoanHistoryItems } from "@/lib/finance-history-sorters";
+import { formatLoanCategory, formatLoanStatus } from "@/lib/finance-labels";
 
 export default function LoansHistoryPageClient() {
-  const [selectedLoan, setSelectedLoan] = useState<LoanItem | null>(null);
-  const [isEditLoanOpen, setIsEditLoanOpen] = useState(false);
+  const {
+    selectedRecord: selectedLoan,
+    isEditDialogOpen: isEditLoanOpen,
+    openEditDialog: handleOpenEditLoan,
+    handleEditDialogOpenChange: handleEditDialogChange,
+  } = useEditRecordDialog<LoanItem>();
 
   const { loanItems, updateLoan, deleteLoan } = useFinance();
 
-  const sortedLoanItems = [...loanItems].sort((currentItem, nextItem) => {
-    const currentDate = currentItem.dueDate ?? currentItem.createdAt;
-    const nextDate = nextItem.dueDate ?? nextItem.createdAt;
-
-    return new Date(nextDate).getTime() - new Date(currentDate).getTime();
-  });
-
-  function handleOpenEditLoan(loan: LoanItem) {
-    setSelectedLoan(loan);
-    setIsEditLoanOpen(true);
-  }
-
-  function handleEditDialogChange(open: boolean) {
-    setIsEditLoanOpen(open);
-
-    if (!open) {
-      setSelectedLoan(null);
-    }
-  }
+  const sortedLoanItems = sortLoanHistoryItems(loanItems);
 
   return (
     <>

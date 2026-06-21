@@ -11,6 +11,7 @@ import { transformInvestmentFormValues } from "@/lib/form-transformers";
 import type { EditInvestmentDialogProps } from "@/types/finance-dialog";
 import type { CreateInvestmentFormValues } from "@/types/investment";
 import { DEFAULT_INVESTMENT_FORM_VALUES } from "@/constants/finance-form-defaults";
+import { mapInvestmentItemToFormValues } from "@/lib/finance-form-mappers";
 
 export default function EditInvestmentDialog({
   open,
@@ -31,14 +32,7 @@ export default function EditInvestmentDialog({
   useEffect(() => {
     if (!investment) return;
 
-    reset({
-      assetName: investment.assetName,
-      category: investment.category,
-      investedAmount: String(investment.investedAmount),
-      currentValue: String(investment.currentValue),
-      investedAt: investment.investedAt,
-      notes: investment.notes ?? "",
-    });
+    reset(mapInvestmentItemToFormValues(investment));
   }, [investment, reset]);
 
   function handleCloseDialog() {
