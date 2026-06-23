@@ -1,17 +1,22 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import HistorySearchInput from "@/components/dashboard/history-search-input";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import type { InvestmentItem } from "@/types/investment";
-import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 import { sortInvestmentHistoryItems } from "@/lib/finance-history-sorters";
 import { formatInvestmentCategory } from "@/lib/finance-labels";
-import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import { formatCurrency, formatDate } from "@/lib/formatters";
+import type { InvestmentItem } from "@/types/investment";
+import { doesInvestmentMatchSearch } from "@/lib/finance-history-search";
 
 export default function InvestmentsHistoryPageClient() {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     selectedRecord: selectedInvestment,
     isEditDialogOpen: isEditInvestmentOpen,
@@ -23,6 +28,14 @@ export default function InvestmentsHistoryPageClient() {
 
   const sortedInvestmentItems = sortInvestmentHistoryItems(investmentItems);
 
+  const filteredInvestmentItems = useMemo(() => {
+    return sortedInvestmentItems.filter((item) =>
+      doesInvestmentMatchSearch(item, searchQuery),
+    );
+  }, [sortedInvestmentItems, searchQuery]);
+
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   return (
     <>
       <HistoryPageShell
@@ -31,13 +44,28 @@ export default function InvestmentsHistoryPageClient() {
         description="Review every investment position you have added to WealthWise."
         backHref="/investments"
         backLabel="Back to Investments"
-        isEmpty={sortedInvestmentItems.length === 0}
-        emptyTitle="No investment records yet"
-        emptyDescription="Your full investment history will appear here after you add portfolio assets."
+        isEmpty={filteredInvestmentItems.length === 0}
+        emptyTitle={
+          hasSearchQuery
+            ? "No matching investment records"
+            : "No investment records yet"
+        }
+        emptyDescription={
+          hasSearchQuery
+            ? "Try searching by asset name, category, amount, current value, gain, or investment date."
+            : "Your full investment history will appear here after you add portfolio assets."
+        }
         emptyActionHref="/investments"
         emptyActionLabel="Add Investment"
+        toolbar={
+          <HistorySearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search investments by asset, category, amount, or date..."
+          />
+        }
       >
-        {sortedInvestmentItems.map((item) => {
+        {filteredInvestmentItems.map((item) => {
           const gainAmount = item.currentValue - item.investedAmount;
           const isPositive = gainAmount >= 0;
 
@@ -47,9 +75,9 @@ export default function InvestmentsHistoryPageClient() {
               title={item.assetName}
               subtitle={formatInvestmentCategory(item.category)}
               value={formatCurrency(item.currentValue)}
-              meta={`Invested ${formatCurrency(item.investedAmount)} • ${formatDate(
-                item.investedAt,
-              )}`}
+              meta={`Invested ${formatCurrency(
+                item.investedAmount,
+              )} • ${formatDate(item.investedAt)}`}
               tone={isPositive ? "positive" : "danger"}
             >
               <RecordActionButtons

@@ -18,6 +18,7 @@ export default function HistoryPageShell({
   emptyDescription,
   emptyActionHref,
   emptyActionLabel,
+  toolbar,
   children,
 }: HistoryPageShellProps) {
   return (
@@ -36,6 +37,8 @@ export default function HistoryPageShell({
           </Button>
         }
       />
+
+      {toolbar ? <div>{toolbar}</div> : null}
 
       <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
         <CardContent className="p-6">

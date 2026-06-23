@@ -1,20 +1,25 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import HistorySearchInput from "@/components/dashboard/history-search-input";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditIncomeDialog from "@/features/income/components/edit-income-dialog";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import type { IncomeItem } from "@/types/income";
-import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 import { sortIncomeHistoryItems } from "@/lib/finance-history-sorters";
 import {
   formatIncomeCategory,
   formatIncomeFrequency,
 } from "@/lib/finance-labels";
-import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import { formatCurrency, formatDate } from "@/lib/formatters";
+import type { IncomeItem } from "@/types/income";
+import { doesIncomeMatchSearch } from "@/lib/finance-history-search";
 
 export default function IncomeHistoryPageClient() {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     selectedRecord: selectedIncome,
     isEditDialogOpen: isEditIncomeOpen,
@@ -26,6 +31,14 @@ export default function IncomeHistoryPageClient() {
 
   const sortedIncomeItems = sortIncomeHistoryItems(incomeItems);
 
+  const filteredIncomeItems = useMemo(() => {
+    return sortedIncomeItems.filter((item) =>
+      doesIncomeMatchSearch(item, searchQuery),
+    );
+  }, [sortedIncomeItems, searchQuery]);
+
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   return (
     <>
       <HistoryPageShell
@@ -34,19 +47,34 @@ export default function IncomeHistoryPageClient() {
         description="Review every income record you have added to WealthWise."
         backHref="/income"
         backLabel="Back to Income"
-        isEmpty={sortedIncomeItems.length === 0}
-        emptyTitle="No income records yet"
-        emptyDescription="Your full income history will appear here after you add income records."
+        isEmpty={filteredIncomeItems.length === 0}
+        emptyTitle={
+          hasSearchQuery
+            ? "No matching income records"
+            : "No income records yet"
+        }
+        emptyDescription={
+          hasSearchQuery
+            ? "Try searching by title, category, frequency, amount, or received date."
+            : "Your full income history will appear here after you add income records."
+        }
         emptyActionHref="/income"
         emptyActionLabel="Add Income"
+        toolbar={
+          <HistorySearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search income by title, category, amount, or date..."
+          />
+        }
       >
-        {sortedIncomeItems.map((item) => (
+        {filteredIncomeItems.map((item) => (
           <DashboardListItem
             key={item.id}
             title={item.title}
-            subtitle={`${formatIncomeCategory(item.category)} • ${formatIncomeFrequency(
-              item.frequency,
-            )}`}
+            subtitle={`${formatIncomeCategory(
+              item.category,
+            )} • ${formatIncomeFrequency(item.frequency)}`}
             value={formatCurrency(item.amount)}
             meta={formatDate(item.receivedAt)}
             tone="positive"

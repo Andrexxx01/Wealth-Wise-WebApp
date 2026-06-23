@@ -11,5 +11,6 @@ export type HistoryPageShellProps = {
   emptyDescription: string;
   emptyActionHref: string;
   emptyActionLabel: string;
+  toolbar?: ReactNode;
   children: ReactNode;
 };

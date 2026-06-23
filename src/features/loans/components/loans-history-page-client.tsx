@@ -1,17 +1,22 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import HistorySearchInput from "@/components/dashboard/history-search-input";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import type { LoanItem } from "@/types/loan";
-import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 import { sortLoanHistoryItems } from "@/lib/finance-history-sorters";
 import { formatLoanCategory, formatLoanStatus } from "@/lib/finance-labels";
-import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import { formatCurrency, formatDate } from "@/lib/formatters";
+import type { LoanItem } from "@/types/loan";
+import { doesLoanMatchSearch } from "@/lib/finance-history-search";
 
 export default function LoansHistoryPageClient() {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     selectedRecord: selectedLoan,
     isEditDialogOpen: isEditLoanOpen,
@@ -23,6 +28,14 @@ export default function LoansHistoryPageClient() {
 
   const sortedLoanItems = sortLoanHistoryItems(loanItems);
 
+  const filteredLoanItems = useMemo(() => {
+    return sortedLoanItems.filter((item) =>
+      doesLoanMatchSearch(item, searchQuery),
+    );
+  }, [sortedLoanItems, searchQuery]);
+
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   return (
     <>
       <HistoryPageShell
@@ -31,17 +44,32 @@ export default function LoansHistoryPageClient() {
         description="Review every loan account you have added to WealthWise."
         backHref="/loans"
         backLabel="Back to Loans"
-        isEmpty={sortedLoanItems.length === 0}
-        emptyTitle="No loan records yet"
-        emptyDescription="Your full loan history will appear here after you add loan accounts."
+        isEmpty={filteredLoanItems.length === 0}
+        emptyTitle={
+          hasSearchQuery ? "No matching loan records" : "No loan records yet"
+        }
+        emptyDescription={
+          hasSearchQuery
+            ? "Try searching by loan title, lender, category, status, amount, interest rate, or due date."
+            : "Your full loan history will appear here after you add loan accounts."
+        }
         emptyActionHref="/loans"
         emptyActionLabel="Add Loan"
+        toolbar={
+          <HistorySearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search loans by title, lender, category, amount, or date..."
+          />
+        }
       >
-        {sortedLoanItems.map((item) => (
+        {filteredLoanItems.map((item) => (
           <DashboardListItem
             key={item.id}
             title={item.title}
-            subtitle={`${item.lenderName} • ${formatLoanCategory(item.category)}`}
+            subtitle={`${item.lenderName} • ${formatLoanCategory(
+              item.category,
+            )}`}
             value={formatCurrency(item.remainingBalance)}
             meta={`Monthly ${formatCurrency(item.monthlyPayment)} • ${
               item.dueDate ? formatDate(item.dueDate) : "No due date"

@@ -1,17 +1,22 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import HistorySearchInput from "@/components/dashboard/history-search-input";
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialog";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import type { ExpenseItem } from "@/types/expense";
-import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 import { sortExpenseHistoryItems } from "@/lib/finance-history-sorters";
 import { formatExpenseCategory, formatExpenseType } from "@/lib/finance-labels";
-import HistoryPageShell from "@/components/dashboard/history-page-shell";
+import { formatCurrency, formatDate } from "@/lib/formatters";
+import type { ExpenseItem } from "@/types/expense";
+import { doesExpenseMatchSearch } from "@/lib/finance-history-search";
 
 export default function ExpensesHistoryPageClient() {
+  const [searchQuery, setSearchQuery] = useState("");
+
   const {
     selectedRecord: selectedExpense,
     isEditDialogOpen: isEditExpenseOpen,
@@ -23,6 +28,14 @@ export default function ExpensesHistoryPageClient() {
 
   const sortedExpenseItems = sortExpenseHistoryItems(expenseItems);
 
+  const filteredExpenseItems = useMemo(() => {
+    return sortedExpenseItems.filter((item) =>
+      doesExpenseMatchSearch(item, searchQuery),
+    );
+  }, [sortedExpenseItems, searchQuery]);
+
+  const hasSearchQuery = searchQuery.trim().length > 0;
+
   return (
     <>
       <HistoryPageShell
@@ -31,19 +44,34 @@ export default function ExpensesHistoryPageClient() {
         description="Review every spending record you have added to WealthWise."
         backHref="/expenses"
         backLabel="Back to Expenses"
-        isEmpty={sortedExpenseItems.length === 0}
-        emptyTitle="No expense records yet"
-        emptyDescription="Your full expense history will appear here after you add spending records."
+        isEmpty={filteredExpenseItems.length === 0}
+        emptyTitle={
+          hasSearchQuery
+            ? "No matching expense records"
+            : "No expense records yet"
+        }
+        emptyDescription={
+          hasSearchQuery
+            ? "Try searching by title, category, type, amount, or spent date."
+            : "Your full expense history will appear here after you add spending records."
+        }
         emptyActionHref="/expenses"
         emptyActionLabel="Add Expense"
+        toolbar={
+          <HistorySearchInput
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search expenses by title, category, amount, or date..."
+          />
+        }
       >
-        {sortedExpenseItems.map((item) => (
+        {filteredExpenseItems.map((item) => (
           <DashboardListItem
             key={item.id}
             title={item.title}
-            subtitle={`${formatExpenseCategory(item.category)} • ${formatExpenseType(
-              item.type,
-            )}`}
+            subtitle={`${formatExpenseCategory(
+              item.category,
+            )} • ${formatExpenseType(item.type)}`}
             value={formatCurrency(item.amount)}
             meta={formatDate(item.spentAt)}
           >
