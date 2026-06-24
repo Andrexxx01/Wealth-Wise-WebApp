@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
@@ -13,10 +12,9 @@ import { formatExpenseCategory, formatExpenseType } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { ExpenseItem } from "@/types/expense";
 import { doesExpenseMatchSearch } from "@/lib/finance-history-search";
+import useHistorySearch from "@/hooks/use-history-search";
 
 export default function ExpensesHistoryPageClient() {
-  const [searchQuery, setSearchQuery] = useState("");
-
   const {
     selectedRecord: selectedExpense,
     isEditDialogOpen: isEditExpenseOpen,
@@ -28,13 +26,12 @@ export default function ExpensesHistoryPageClient() {
 
   const sortedExpenseItems = sortExpenseHistoryItems(expenseItems);
 
-  const filteredExpenseItems = useMemo(() => {
-    return sortedExpenseItems.filter((item) =>
-      doesExpenseMatchSearch(item, searchQuery),
-    );
-  }, [sortedExpenseItems, searchQuery]);
-
-  const hasSearchQuery = searchQuery.trim().length > 0;
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredItems: filteredExpenseItems,
+    hasSearchQuery,
+  } = useHistorySearch(sortedExpenseItems, doesExpenseMatchSearch);
 
   return (
     <>

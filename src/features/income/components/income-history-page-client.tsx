@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
@@ -16,9 +15,19 @@ import {
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { IncomeItem } from "@/types/income";
 import { doesIncomeMatchSearch } from "@/lib/finance-history-search";
+import useHistorySearch from "@/hooks/use-history-search";
 
 export default function IncomeHistoryPageClient() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const { incomeItems, updateIncome, deleteIncome } = useFinance();
+
+  const sortedIncomeItems = sortIncomeHistoryItems(incomeItems);
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredItems: filteredIncomeItems,
+    hasSearchQuery,
+  } = useHistorySearch(sortedIncomeItems, doesIncomeMatchSearch);
 
   const {
     selectedRecord: selectedIncome,
@@ -26,18 +35,6 @@ export default function IncomeHistoryPageClient() {
     openEditDialog: handleOpenEditIncome,
     handleEditDialogOpenChange: handleEditDialogChange,
   } = useEditRecordDialog<IncomeItem>();
-
-  const { incomeItems, updateIncome, deleteIncome } = useFinance();
-
-  const sortedIncomeItems = sortIncomeHistoryItems(incomeItems);
-
-  const filteredIncomeItems = useMemo(() => {
-    return sortedIncomeItems.filter((item) =>
-      doesIncomeMatchSearch(item, searchQuery),
-    );
-  }, [sortedIncomeItems, searchQuery]);
-
-  const hasSearchQuery = searchQuery.trim().length > 0;
 
   return (
     <>

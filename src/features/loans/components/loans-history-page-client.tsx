@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
@@ -13,10 +12,9 @@ import { formatLoanCategory, formatLoanStatus } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { LoanItem } from "@/types/loan";
 import { doesLoanMatchSearch } from "@/lib/finance-history-search";
+import useHistorySearch from "@/hooks/use-history-search";
 
 export default function LoansHistoryPageClient() {
-  const [searchQuery, setSearchQuery] = useState("");
-
   const {
     selectedRecord: selectedLoan,
     isEditDialogOpen: isEditLoanOpen,
@@ -28,13 +26,12 @@ export default function LoansHistoryPageClient() {
 
   const sortedLoanItems = sortLoanHistoryItems(loanItems);
 
-  const filteredLoanItems = useMemo(() => {
-    return sortedLoanItems.filter((item) =>
-      doesLoanMatchSearch(item, searchQuery),
-    );
-  }, [sortedLoanItems, searchQuery]);
-
-  const hasSearchQuery = searchQuery.trim().length > 0;
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredItems: filteredLoanItems,
+    hasSearchQuery,
+  } = useHistorySearch(sortedLoanItems, doesLoanMatchSearch);
 
   return (
     <>

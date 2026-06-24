@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
@@ -13,10 +12,10 @@ import { formatInvestmentCategory } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { InvestmentItem } from "@/types/investment";
 import { doesInvestmentMatchSearch } from "@/lib/finance-history-search";
+import useHistorySearch from "@/hooks/use-history-search";
+
 
 export default function InvestmentsHistoryPageClient() {
-  const [searchQuery, setSearchQuery] = useState("");
-
   const {
     selectedRecord: selectedInvestment,
     isEditDialogOpen: isEditInvestmentOpen,
@@ -28,13 +27,12 @@ export default function InvestmentsHistoryPageClient() {
 
   const sortedInvestmentItems = sortInvestmentHistoryItems(investmentItems);
 
-  const filteredInvestmentItems = useMemo(() => {
-    return sortedInvestmentItems.filter((item) =>
-      doesInvestmentMatchSearch(item, searchQuery),
-    );
-  }, [sortedInvestmentItems, searchQuery]);
-
-  const hasSearchQuery = searchQuery.trim().length > 0;
+  const {
+    searchQuery,
+    setSearchQuery,
+    filteredItems: filteredInvestmentItems,
+    hasSearchQuery,
+  } = useHistorySearch(sortedInvestmentItems, doesInvestmentMatchSearch);
 
   return (
     <>
