@@ -1,21 +1,32 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
+import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
+import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import useHistorySearch from "@/hooks/use-history-search";
+import { doesInvestmentMatchSearch } from "@/lib/finance-history-search";
 import { sortInvestmentHistoryItems } from "@/lib/finance-history-sorters";
 import { formatInvestmentCategory } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { InvestmentItem } from "@/types/investment";
-import { doesInvestmentMatchSearch } from "@/lib/finance-history-search";
-import useHistorySearch from "@/hooks/use-history-search";
 
+const ALL_FILTER_VALUE = "ALL";
+
+const investmentCategoryFilterOptions = [
+  { value: ALL_FILTER_VALUE, label: "All Categories" },
+  ...INVESTMENT_CATEGORY_OPTIONS,
+] as const;
 
 export default function InvestmentsHistoryPageClient() {
+  const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER_VALUE);
+
   const {
     selectedRecord: selectedInvestment,
     isEditDialogOpen: isEditInvestmentOpen,
@@ -30,9 +41,22 @@ export default function InvestmentsHistoryPageClient() {
   const {
     searchQuery,
     setSearchQuery,
-    filteredItems: filteredInvestmentItems,
+    filteredItems: searchMatchedInvestmentItems,
     hasSearchQuery,
   } = useHistorySearch(sortedInvestmentItems, doesInvestmentMatchSearch);
+
+  const filteredInvestmentItems = useMemo(() => {
+    return searchMatchedInvestmentItems.filter((item) => {
+      const matchesCategory =
+        categoryFilter === ALL_FILTER_VALUE || item.category === categoryFilter;
+
+      return matchesCategory;
+    });
+  }, [searchMatchedInvestmentItems, categoryFilter]);
+
+  const hasActiveFilter = categoryFilter !== ALL_FILTER_VALUE;
+
+  const isFiltering = hasSearchQuery || hasActiveFilter;
 
   return (
     <>
@@ -44,23 +68,37 @@ export default function InvestmentsHistoryPageClient() {
         backLabel="Back to Investments"
         isEmpty={filteredInvestmentItems.length === 0}
         emptyTitle={
-          hasSearchQuery
+          isFiltering
             ? "No matching investment records"
             : "No investment records yet"
         }
         emptyDescription={
-          hasSearchQuery
-            ? "Try searching by asset name, category, amount, current value, gain, or investment date."
+          isFiltering
+            ? "Try changing your search keyword or category filter."
             : "Your full investment history will appear here after you add portfolio assets."
         }
         emptyActionHref="/investments"
         emptyActionLabel="Add Investment"
         toolbar={
-          <HistorySearchInput
-            value={searchQuery}
-            onChange={setSearchQuery}
-            placeholder="Search investments by asset, category, amount, or date..."
-          />
+          <div className="space-y-4">
+            <HistorySearchInput
+              value={searchQuery}
+              onChange={setSearchQuery}
+              placeholder="Search investments by asset, category, amount, or date..."
+              resultCount={filteredInvestmentItems.length}
+              totalCount={sortedInvestmentItems.length}
+              recordLabel="investment records"
+            />
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <HistoryFilterSelect
+                label="Category"
+                value={categoryFilter}
+                onChange={setCategoryFilter}
+                options={investmentCategoryFilterOptions}
+              />
+            </div>
+          </div>
         }
       >
         {filteredInvestmentItems.map((item) => {
