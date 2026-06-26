@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
+import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import useHistoryFilters from "@/hooks/use-history-filters";
 import useHistorySearch from "@/hooks/use-history-search";
 import { doesLoanMatchSearch } from "@/lib/finance-history-search";
 import { sortLoanHistoryItems } from "@/lib/finance-history-sorters";
@@ -17,7 +18,10 @@ import { formatLoanCategory, formatLoanStatus } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { LoanItem } from "@/types/loan";
 
-const ALL_FILTER_VALUE = "ALL";
+const loanInitialFilters = {
+  category: ALL_FILTER_VALUE,
+  status: ALL_FILTER_VALUE,
+};
 
 const loanCategoryFilterOptions = [
   { value: ALL_FILTER_VALUE, label: "All Categories" },
@@ -31,10 +35,20 @@ const loanStatusFilterOptions = [
   { value: "OVERDUE", label: "Overdue" },
 ] as const;
 
-export default function LoansHistoryPageClient() {
-  const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER_VALUE);
-  const [statusFilter, setStatusFilter] = useState(ALL_FILTER_VALUE);
+function doesLoanPassFilters(
+  item: LoanItem,
+  filters: typeof loanInitialFilters,
+) {
+  const matchesCategory =
+    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
 
+  const matchesStatus =
+    filters.status === ALL_FILTER_VALUE || item.status === filters.status;
+
+  return matchesCategory && matchesStatus;
+}
+
+export default function LoansHistoryPageClient() {
   const {
     selectedRecord: selectedLoan,
     isEditDialogOpen: isEditLoanOpen,
@@ -53,20 +67,16 @@ export default function LoansHistoryPageClient() {
     hasSearchQuery,
   } = useHistorySearch(sortedLoanItems, doesLoanMatchSearch);
 
-  const filteredLoanItems = useMemo(() => {
-    return searchMatchedLoanItems.filter((item) => {
-      const matchesCategory =
-        categoryFilter === ALL_FILTER_VALUE || item.category === categoryFilter;
-
-      const matchesStatus =
-        statusFilter === ALL_FILTER_VALUE || item.status === statusFilter;
-
-      return matchesCategory && matchesStatus;
-    });
-  }, [searchMatchedLoanItems, categoryFilter, statusFilter]);
-
-  const hasActiveFilter =
-    categoryFilter !== ALL_FILTER_VALUE || statusFilter !== ALL_FILTER_VALUE;
+  const {
+    filters,
+    setFilter,
+    filteredItems: filteredLoanItems,
+    hasActiveFilter,
+  } = useHistoryFilters(
+    searchMatchedLoanItems,
+    loanInitialFilters,
+    doesLoanPassFilters,
+  );
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
 
@@ -103,15 +113,15 @@ export default function LoansHistoryPageClient() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <HistoryFilterSelect
                 label="Category"
-                value={categoryFilter}
-                onChange={setCategoryFilter}
+                value={filters.category}
+                onChange={(value) => setFilter("category", value)}
                 options={loanCategoryFilterOptions}
               />
 
               <HistoryFilterSelect
                 label="Status"
-                value={statusFilter}
-                onChange={setStatusFilter}
+                value={filters.status}
+                onChange={(value) => setFilter("status", value)}
                 options={loanStatusFilterOptions}
               />
             </div>

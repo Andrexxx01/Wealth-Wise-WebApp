@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
@@ -10,9 +9,11 @@ import {
   EXPENSE_CATEGORY_OPTIONS,
   EXPENSE_TYPE_OPTIONS,
 } from "@/constants/finance-options";
+import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import useHistoryFilters from "@/hooks/use-history-filters";
 import useHistorySearch from "@/hooks/use-history-search";
 import { doesExpenseMatchSearch } from "@/lib/finance-history-search";
 import { sortExpenseHistoryItems } from "@/lib/finance-history-sorters";
@@ -20,7 +21,10 @@ import { formatExpenseCategory, formatExpenseType } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { ExpenseItem } from "@/types/expense";
 
-const ALL_FILTER_VALUE = "ALL";
+const expenseInitialFilters = {
+  category: ALL_FILTER_VALUE,
+  type: ALL_FILTER_VALUE,
+};
 
 const expenseCategoryFilterOptions = [
   { value: ALL_FILTER_VALUE, label: "All Categories" },
@@ -32,10 +36,20 @@ const expenseTypeFilterOptions = [
   ...EXPENSE_TYPE_OPTIONS,
 ] as const;
 
-export default function ExpensesHistoryPageClient() {
-  const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER_VALUE);
-  const [typeFilter, setTypeFilter] = useState(ALL_FILTER_VALUE);
+function doesExpensePassFilters(
+  item: ExpenseItem,
+  filters: typeof expenseInitialFilters,
+) {
+  const matchesCategory =
+    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
 
+  const matchesType =
+    filters.type === ALL_FILTER_VALUE || item.type === filters.type;
+
+  return matchesCategory && matchesType;
+}
+
+export default function ExpensesHistoryPageClient() {
   const {
     selectedRecord: selectedExpense,
     isEditDialogOpen: isEditExpenseOpen,
@@ -54,20 +68,16 @@ export default function ExpensesHistoryPageClient() {
     hasSearchQuery,
   } = useHistorySearch(sortedExpenseItems, doesExpenseMatchSearch);
 
-  const filteredExpenseItems = useMemo(() => {
-    return searchMatchedExpenseItems.filter((item) => {
-      const matchesCategory =
-        categoryFilter === ALL_FILTER_VALUE || item.category === categoryFilter;
-
-      const matchesType =
-        typeFilter === ALL_FILTER_VALUE || item.type === typeFilter;
-
-      return matchesCategory && matchesType;
-    });
-  }, [searchMatchedExpenseItems, categoryFilter, typeFilter]);
-
-  const hasActiveFilter =
-    categoryFilter !== ALL_FILTER_VALUE || typeFilter !== ALL_FILTER_VALUE;
+  const {
+    filters,
+    setFilter,
+    filteredItems: filteredExpenseItems,
+    hasActiveFilter,
+  } = useHistoryFilters(
+    searchMatchedExpenseItems,
+    expenseInitialFilters,
+    doesExpensePassFilters,
+  );
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
 
@@ -104,15 +114,15 @@ export default function ExpensesHistoryPageClient() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <HistoryFilterSelect
                 label="Category"
-                value={categoryFilter}
-                onChange={setCategoryFilter}
+                value={filters.category}
+                onChange={(value) => setFilter("category", value)}
                 options={expenseCategoryFilterOptions}
               />
 
               <HistoryFilterSelect
                 label="Type"
-                value={typeFilter}
-                onChange={setTypeFilter}
+                value={filters.type}
+                onChange={(value) => setFilter("type", value)}
                 options={expenseTypeFilterOptions}
               />
             </div>

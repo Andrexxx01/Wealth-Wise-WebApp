@@ -1,15 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
+import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+import useHistoryFilters from "@/hooks/use-history-filters";
 import useHistorySearch from "@/hooks/use-history-search";
 import { doesInvestmentMatchSearch } from "@/lib/finance-history-search";
 import { sortInvestmentHistoryItems } from "@/lib/finance-history-sorters";
@@ -17,16 +18,26 @@ import { formatInvestmentCategory } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { InvestmentItem } from "@/types/investment";
 
-const ALL_FILTER_VALUE = "ALL";
+const investmentInitialFilters = {
+  category: ALL_FILTER_VALUE,
+};
 
 const investmentCategoryFilterOptions = [
   { value: ALL_FILTER_VALUE, label: "All Categories" },
   ...INVESTMENT_CATEGORY_OPTIONS,
 ] as const;
 
-export default function InvestmentsHistoryPageClient() {
-  const [categoryFilter, setCategoryFilter] = useState(ALL_FILTER_VALUE);
+function doesInvestmentPassFilters(
+  item: InvestmentItem,
+  filters: typeof investmentInitialFilters,
+) {
+  const matchesCategory =
+    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
 
+  return matchesCategory;
+}
+
+export default function InvestmentsHistoryPageClient() {
   const {
     selectedRecord: selectedInvestment,
     isEditDialogOpen: isEditInvestmentOpen,
@@ -45,16 +56,16 @@ export default function InvestmentsHistoryPageClient() {
     hasSearchQuery,
   } = useHistorySearch(sortedInvestmentItems, doesInvestmentMatchSearch);
 
-  const filteredInvestmentItems = useMemo(() => {
-    return searchMatchedInvestmentItems.filter((item) => {
-      const matchesCategory =
-        categoryFilter === ALL_FILTER_VALUE || item.category === categoryFilter;
-
-      return matchesCategory;
-    });
-  }, [searchMatchedInvestmentItems, categoryFilter]);
-
-  const hasActiveFilter = categoryFilter !== ALL_FILTER_VALUE;
+  const {
+    filters,
+    setFilter,
+    filteredItems: filteredInvestmentItems,
+    hasActiveFilter,
+  } = useHistoryFilters(
+    searchMatchedInvestmentItems,
+    investmentInitialFilters,
+    doesInvestmentPassFilters,
+  );
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
 
@@ -93,8 +104,8 @@ export default function InvestmentsHistoryPageClient() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <HistoryFilterSelect
                 label="Category"
-                value={categoryFilter}
-                onChange={setCategoryFilter}
+                value={filters.category}
+                onChange={(value) => setFilter("category", value)}
                 options={investmentCategoryFilterOptions}
               />
             </div>
