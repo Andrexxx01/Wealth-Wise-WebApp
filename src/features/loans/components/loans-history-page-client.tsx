@@ -3,7 +3,6 @@
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
-import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
@@ -21,8 +20,7 @@ import {
   loanInitialFilters,
   loanStatusFilterOptions,
 } from "@/lib/finance-history-filters";
-import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
-import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
+import HistoryControls from "@/components/dashboard/history-controls";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -77,43 +75,35 @@ export default function LoansHistoryPageClient() {
         emptyActionHref="/loans"
         emptyActionLabel="Add Loan"
         toolbar={
-          <div className="space-y-4">
-            <HistorySearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search loans by title, lender, category, amount, or date..."
-              resultCount={filteredLoanItems.length}
-              totalCount={sortedLoanItems.length}
-              recordLabel="loan records"
+          <HistoryControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Search loans by title, lender, category, amount, or date..."
+            resultCount={filteredLoanItems.length}
+            totalCount={sortedLoanItems.length}
+            recordLabel="loan records"
+            hasActiveFilter={hasActiveFilter}
+            isFiltering={isFiltering}
+            onResetFilters={resetFilters}
+            onClearAll={() => {
+              setSearchQuery("");
+              resetFilters();
+            }}
+          >
+            <HistoryFilterSelect
+              label="Category"
+              value={filters.category}
+              onChange={(value) => setFilter("category", value)}
+              options={loanCategoryFilterOptions}
             />
 
-            <HistoryFilterPanel
-              hasActiveFilter={hasActiveFilter}
-              onResetFilters={resetFilters}
-            >
-              <HistoryFilterSelect
-                label="Category"
-                value={filters.category}
-                onChange={(value) => setFilter("category", value)}
-                options={loanCategoryFilterOptions}
-              />
-
-              <HistoryFilterSelect
-                label="Status"
-                value={filters.status}
-                onChange={(value) => setFilter("status", value)}
-                options={loanStatusFilterOptions}
-              />
-            </HistoryFilterPanel>
-
-            <HistoryClearAllButton
-              isVisible={isFiltering}
-              onClearAll={() => {
-                setSearchQuery("");
-                resetFilters();
-              }}
+            <HistoryFilterSelect
+              label="Status"
+              value={filters.status}
+              onChange={(value) => setFilter("status", value)}
+              options={loanStatusFilterOptions}
             />
-          </div>
+          </HistoryControls>
         }
       >
         {filteredLoanItems.map((item) => (

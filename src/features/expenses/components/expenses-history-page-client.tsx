@@ -3,7 +3,6 @@
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
-import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialog";
@@ -21,8 +20,7 @@ import {
   expenseInitialFilters,
   expenseTypeFilterOptions,
 } from "@/lib/finance-history-filters";
-import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
-import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
+import HistoryControls from "@/components/dashboard/history-controls";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -77,43 +75,35 @@ export default function ExpensesHistoryPageClient() {
         emptyActionHref="/expenses"
         emptyActionLabel="Add Expense"
         toolbar={
-          <div className="space-y-4">
-            <HistorySearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search expenses by title, category, amount, or date..."
-              resultCount={filteredExpenseItems.length}
-              totalCount={sortedExpenseItems.length}
-              recordLabel="expense records"
+          <HistoryControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Search expenses by title, category, amount, or date..."
+            resultCount={filteredExpenseItems.length}
+            totalCount={sortedExpenseItems.length}
+            recordLabel="expense records"
+            hasActiveFilter={hasActiveFilter}
+            isFiltering={isFiltering}
+            onResetFilters={resetFilters}
+            onClearAll={() => {
+              setSearchQuery("");
+              resetFilters();
+            }}
+          >
+            <HistoryFilterSelect
+              label="Category"
+              value={filters.category}
+              onChange={(value) => setFilter("category", value)}
+              options={expenseCategoryFilterOptions}
             />
 
-            <HistoryFilterPanel
-              hasActiveFilter={hasActiveFilter}
-              onResetFilters={resetFilters}
-            >
-              <HistoryFilterSelect
-                label="Category"
-                value={filters.category}
-                onChange={(value) => setFilter("category", value)}
-                options={expenseCategoryFilterOptions}
-              />
-
-              <HistoryFilterSelect
-                label="Type"
-                value={filters.type}
-                onChange={(value) => setFilter("type", value)}
-                options={expenseTypeFilterOptions}
-              />
-            </HistoryFilterPanel>
-
-            <HistoryClearAllButton
-              isVisible={isFiltering}
-              onClearAll={() => {
-                setSearchQuery("");
-                resetFilters();
-              }}
+            <HistoryFilterSelect
+              label="Type"
+              value={filters.type}
+              onChange={(value) => setFilter("type", value)}
+              options={expenseTypeFilterOptions}
             />
-          </div>
+          </HistoryControls>
         }
       >
         {filteredExpenseItems.map((item) => (

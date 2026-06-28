@@ -3,7 +3,6 @@
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
-import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
@@ -20,8 +19,7 @@ import {
   investmentCategoryFilterOptions,
   investmentInitialFilters,
 } from "@/lib/finance-history-filters";
-import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
-import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
+import HistoryControls from "@/components/dashboard/history-controls";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -78,36 +76,28 @@ export default function InvestmentsHistoryPageClient() {
         emptyActionHref="/investments"
         emptyActionLabel="Add Investment"
         toolbar={
-          <div className="space-y-4">
-            <HistorySearchInput
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search investments by asset, category, amount, or date..."
-              resultCount={filteredInvestmentItems.length}
-              totalCount={sortedInvestmentItems.length}
-              recordLabel="investment records"
+          <HistoryControls
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            searchPlaceholder="Search investments by asset, category, amount, or date..."
+            resultCount={filteredInvestmentItems.length}
+            totalCount={sortedInvestmentItems.length}
+            recordLabel="investment records"
+            hasActiveFilter={hasActiveFilter}
+            isFiltering={isFiltering}
+            onResetFilters={resetFilters}
+            onClearAll={() => {
+              setSearchQuery("");
+              resetFilters();
+            }}
+          >
+            <HistoryFilterSelect
+              label="Category"
+              value={filters.category}
+              onChange={(value) => setFilter("category", value)}
+              options={investmentCategoryFilterOptions}
             />
-
-            <HistoryFilterPanel
-              hasActiveFilter={hasActiveFilter}
-              onResetFilters={resetFilters}
-            >
-              <HistoryFilterSelect
-                label="Category"
-                value={filters.category}
-                onChange={(value) => setFilter("category", value)}
-                options={investmentCategoryFilterOptions}
-              />
-            </HistoryFilterPanel>
-
-            <HistoryClearAllButton
-              isVisible={isFiltering}
-              onClearAll={() => {
-                setSearchQuery("");
-                resetFilters();
-              }}
-            />
-          </div>
+          </HistoryControls>
         }
       >
         {filteredInvestmentItems.map((item) => {
