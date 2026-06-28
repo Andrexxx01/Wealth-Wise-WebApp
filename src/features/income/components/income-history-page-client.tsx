@@ -5,11 +5,6 @@ import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-import { ALL_FILTER_VALUE } from "@/constants/history-filters";
-import {
-  INCOME_CATEGORY_OPTIONS,
-  INCOME_FREQUENCY_OPTIONS,
-} from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditIncomeDialog from "@/features/income/components/edit-income-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
@@ -23,35 +18,14 @@ import {
 } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { IncomeItem } from "@/types/income";
-
-const incomeInitialFilters = {
-  category: ALL_FILTER_VALUE,
-  frequency: ALL_FILTER_VALUE,
-};
-
-const incomeCategoryFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Categories" },
-  ...INCOME_CATEGORY_OPTIONS,
-] as const;
-
-const incomeFrequencyFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Frequencies" },
-  ...INCOME_FREQUENCY_OPTIONS,
-] as const;
-
-function doesIncomePassFilters(
-  item: IncomeItem,
-  filters: typeof incomeInitialFilters,
-) {
-  const matchesCategory =
-    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
-
-  const matchesFrequency =
-    filters.frequency === ALL_FILTER_VALUE ||
-    item.frequency === filters.frequency;
-
-  return matchesCategory && matchesFrequency;
-}
+import {
+  doesIncomePassFilters,
+  incomeCategoryFilterOptions,
+  incomeFrequencyFilterOptions,
+  incomeInitialFilters,
+} from "@/lib/finance-history-filters";
+import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
+import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
 
 export default function IncomeHistoryPageClient() {
   const {
@@ -75,6 +49,7 @@ export default function IncomeHistoryPageClient() {
   const {
     filters,
     setFilter,
+    resetFilters,
     filteredItems: filteredIncomeItems,
     hasActiveFilter,
   } = useHistoryFilters(
@@ -115,7 +90,10 @@ export default function IncomeHistoryPageClient() {
               recordLabel="income records"
             />
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <HistoryFilterPanel
+              hasActiveFilter={hasActiveFilter}
+              onResetFilters={resetFilters}
+            >
               <HistoryFilterSelect
                 label="Category"
                 value={filters.category}
@@ -129,7 +107,15 @@ export default function IncomeHistoryPageClient() {
                 onChange={(value) => setFilter("frequency", value)}
                 options={incomeFrequencyFilterOptions}
               />
-            </div>
+            </HistoryFilterPanel>
+            
+            <HistoryClearAllButton
+              isVisible={isFiltering}
+              onClearAll={() => {
+                setSearchQuery("");
+                resetFilters();
+              }}
+            />
           </div>
         }
       >

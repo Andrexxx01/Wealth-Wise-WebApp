@@ -5,8 +5,6 @@ import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
-import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
@@ -17,36 +15,14 @@ import { sortLoanHistoryItems } from "@/lib/finance-history-sorters";
 import { formatLoanCategory, formatLoanStatus } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { LoanItem } from "@/types/loan";
-
-const loanInitialFilters = {
-  category: ALL_FILTER_VALUE,
-  status: ALL_FILTER_VALUE,
-};
-
-const loanCategoryFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Categories" },
-  ...LOAN_CATEGORY_OPTIONS,
-] as const;
-
-const loanStatusFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Statuses" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "PAID_OFF", label: "Paid Off" },
-  { value: "OVERDUE", label: "Overdue" },
-] as const;
-
-function doesLoanPassFilters(
-  item: LoanItem,
-  filters: typeof loanInitialFilters,
-) {
-  const matchesCategory =
-    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
-
-  const matchesStatus =
-    filters.status === ALL_FILTER_VALUE || item.status === filters.status;
-
-  return matchesCategory && matchesStatus;
-}
+import {
+  doesLoanPassFilters,
+  loanCategoryFilterOptions,
+  loanInitialFilters,
+  loanStatusFilterOptions,
+} from "@/lib/finance-history-filters";
+import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
+import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -70,6 +46,7 @@ export default function LoansHistoryPageClient() {
   const {
     filters,
     setFilter,
+    resetFilters,
     filteredItems: filteredLoanItems,
     hasActiveFilter,
   } = useHistoryFilters(
@@ -110,7 +87,10 @@ export default function LoansHistoryPageClient() {
               recordLabel="loan records"
             />
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <HistoryFilterPanel
+              hasActiveFilter={hasActiveFilter}
+              onResetFilters={resetFilters}
+            >
               <HistoryFilterSelect
                 label="Category"
                 value={filters.category}
@@ -124,7 +104,15 @@ export default function LoansHistoryPageClient() {
                 onChange={(value) => setFilter("status", value)}
                 options={loanStatusFilterOptions}
               />
-            </div>
+            </HistoryFilterPanel>
+
+            <HistoryClearAllButton
+              isVisible={isFiltering}
+              onClearAll={() => {
+                setSearchQuery("");
+                resetFilters();
+              }}
+            />
           </div>
         }
       >

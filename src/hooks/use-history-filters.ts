@@ -27,13 +27,10 @@ export default function useHistoryFilters<
   );
 
   function setFilter(filterKey: keyof TFilterValues, value: string) {
-    setFilters(
-      (currentFilters) =>
-        ({
-          ...currentFilters,
-          [filterKey]: value,
-        }) as TFilterValues,
-    );
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      [filterKey]: value,
+    }));
   }
 
   function resetFilters() {

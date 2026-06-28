@@ -5,8 +5,6 @@ import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
-import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
@@ -17,25 +15,13 @@ import { sortInvestmentHistoryItems } from "@/lib/finance-history-sorters";
 import { formatInvestmentCategory } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { InvestmentItem } from "@/types/investment";
-
-const investmentInitialFilters = {
-  category: ALL_FILTER_VALUE,
-};
-
-const investmentCategoryFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Categories" },
-  ...INVESTMENT_CATEGORY_OPTIONS,
-] as const;
-
-function doesInvestmentPassFilters(
-  item: InvestmentItem,
-  filters: typeof investmentInitialFilters,
-) {
-  const matchesCategory =
-    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
-
-  return matchesCategory;
-}
+import {
+  doesInvestmentPassFilters,
+  investmentCategoryFilterOptions,
+  investmentInitialFilters,
+} from "@/lib/finance-history-filters";
+import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
+import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -59,6 +45,7 @@ export default function InvestmentsHistoryPageClient() {
   const {
     filters,
     setFilter,
+    resetFilters,
     filteredItems: filteredInvestmentItems,
     hasActiveFilter,
   } = useHistoryFilters(
@@ -101,14 +88,25 @@ export default function InvestmentsHistoryPageClient() {
               recordLabel="investment records"
             />
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <HistoryFilterPanel
+              hasActiveFilter={hasActiveFilter}
+              onResetFilters={resetFilters}
+            >
               <HistoryFilterSelect
                 label="Category"
                 value={filters.category}
                 onChange={(value) => setFilter("category", value)}
                 options={investmentCategoryFilterOptions}
               />
-            </div>
+            </HistoryFilterPanel>
+
+            <HistoryClearAllButton
+              isVisible={isFiltering}
+              onClearAll={() => {
+                setSearchQuery("");
+                resetFilters();
+              }}
+            />
           </div>
         }
       >

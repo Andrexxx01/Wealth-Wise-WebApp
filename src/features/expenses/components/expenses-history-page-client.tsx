@@ -5,11 +5,6 @@ import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import HistorySearchInput from "@/components/dashboard/history-search-input";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
-import {
-  EXPENSE_CATEGORY_OPTIONS,
-  EXPENSE_TYPE_OPTIONS,
-} from "@/constants/finance-options";
-import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import EditExpenseDialog from "@/features/expenses/components/edit-expense-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
@@ -20,34 +15,14 @@ import { sortExpenseHistoryItems } from "@/lib/finance-history-sorters";
 import { formatExpenseCategory, formatExpenseType } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import type { ExpenseItem } from "@/types/expense";
-
-const expenseInitialFilters = {
-  category: ALL_FILTER_VALUE,
-  type: ALL_FILTER_VALUE,
-};
-
-const expenseCategoryFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Categories" },
-  ...EXPENSE_CATEGORY_OPTIONS,
-] as const;
-
-const expenseTypeFilterOptions = [
-  { value: ALL_FILTER_VALUE, label: "All Types" },
-  ...EXPENSE_TYPE_OPTIONS,
-] as const;
-
-function doesExpensePassFilters(
-  item: ExpenseItem,
-  filters: typeof expenseInitialFilters,
-) {
-  const matchesCategory =
-    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
-
-  const matchesType =
-    filters.type === ALL_FILTER_VALUE || item.type === filters.type;
-
-  return matchesCategory && matchesType;
-}
+import {
+  doesExpensePassFilters,
+  expenseCategoryFilterOptions,
+  expenseInitialFilters,
+  expenseTypeFilterOptions,
+} from "@/lib/finance-history-filters";
+import HistoryFilterPanel from "@/components/dashboard/history-filter-panel";
+import HistoryClearAllButton from "@/components/dashboard/history-clear-all-button";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -71,6 +46,7 @@ export default function ExpensesHistoryPageClient() {
   const {
     filters,
     setFilter,
+    resetFilters,
     filteredItems: filteredExpenseItems,
     hasActiveFilter,
   } = useHistoryFilters(
@@ -111,7 +87,10 @@ export default function ExpensesHistoryPageClient() {
               recordLabel="expense records"
             />
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <HistoryFilterPanel
+              hasActiveFilter={hasActiveFilter}
+              onResetFilters={resetFilters}
+            >
               <HistoryFilterSelect
                 label="Category"
                 value={filters.category}
@@ -125,7 +104,15 @@ export default function ExpensesHistoryPageClient() {
                 onChange={(value) => setFilter("type", value)}
                 options={expenseTypeFilterOptions}
               />
-            </div>
+            </HistoryFilterPanel>
+
+            <HistoryClearAllButton
+              isVisible={isFiltering}
+              onClearAll={() => {
+                setSearchQuery("");
+                resetFilters();
+              }}
+            />
           </div>
         }
       >
