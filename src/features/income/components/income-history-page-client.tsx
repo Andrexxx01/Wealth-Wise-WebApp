@@ -24,6 +24,7 @@ import {
   incomeInitialFilters,
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
+import HistoryDateFilter from "@/components/dashboard/history-date-filter";
 
 export default function IncomeHistoryPageClient() {
   const {
@@ -105,6 +106,18 @@ export default function IncomeHistoryPageClient() {
               value={filters.frequency}
               onChange={(value) => setFilter("frequency", value)}
               options={incomeFrequencyFilterOptions}
+            />
+
+            <HistoryDateFilter
+              label="Date From"
+              value={filters.dateFrom}
+              onChange={(value) => setFilter("dateFrom", value)}
+            />
+
+            <HistoryDateFilter
+              label="Date To"
+              value={filters.dateTo}
+              onChange={(value) => setFilter("dateTo", value)}
             />
           </HistoryControls>
         }

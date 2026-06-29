@@ -21,6 +21,7 @@ import {
   loanStatusFilterOptions,
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
+import HistoryDateFilter from "@/components/dashboard/history-date-filter";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -69,7 +70,7 @@ export default function LoansHistoryPageClient() {
         }
         emptyDescription={
           isFiltering
-            ? "Try changing your search keyword, category filter, or status filter."
+            ? "Try changing your search keyword, category filter, status filter, or due date range."
             : "Your full loan history will appear here after you add loan accounts."
         }
         emptyActionHref="/loans"
@@ -102,6 +103,18 @@ export default function LoansHistoryPageClient() {
               value={filters.status}
               onChange={(value) => setFilter("status", value)}
               options={loanStatusFilterOptions}
+            />
+
+            <HistoryDateFilter
+              label="Due Date From"
+              value={filters.dateFrom}
+              onChange={(value) => setFilter("dateFrom", value)}
+            />
+
+            <HistoryDateFilter
+              label="Due Date To"
+              value={filters.dateTo}
+              onChange={(value) => setFilter("dateTo", value)}
             />
           </HistoryControls>
         }

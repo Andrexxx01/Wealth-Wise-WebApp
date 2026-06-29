@@ -12,9 +12,37 @@ import type { IncomeItem } from "@/types/income";
 import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 
+function isDateWithinRange(
+  dateValue: string,
+  dateFrom: string,
+  dateTo: string,
+) {
+  const itemTime = new Date(dateValue).getTime();
+
+  if (dateFrom) {
+    const fromTime = new Date(dateFrom).getTime();
+
+    if (itemTime < fromTime) {
+      return false;
+    }
+  }
+
+  if (dateTo) {
+    const toTime = new Date(dateTo).getTime();
+
+    if (itemTime > toTime) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export const incomeInitialFilters = {
   category: ALL_FILTER_VALUE,
   frequency: ALL_FILTER_VALUE,
+  dateFrom: "",
+  dateTo: "",
 };
 
 export const incomeCategoryFilterOptions = [
@@ -38,12 +66,20 @@ export function doesIncomePassFilters(
     filters.frequency === ALL_FILTER_VALUE ||
     item.frequency === filters.frequency;
 
-  return matchesCategory && matchesFrequency;
+  const matchesDate = isDateWithinRange(
+    item.receivedAt,
+    filters.dateFrom,
+    filters.dateTo,
+  );
+
+  return matchesCategory && matchesFrequency && matchesDate;
 }
 
 export const expenseInitialFilters = {
   category: ALL_FILTER_VALUE,
   type: ALL_FILTER_VALUE,
+  dateFrom: "",
+  dateTo: "",
 };
 
 export const expenseCategoryFilterOptions = [
@@ -66,11 +102,19 @@ export function doesExpensePassFilters(
   const matchesType =
     filters.type === ALL_FILTER_VALUE || item.type === filters.type;
 
-  return matchesCategory && matchesType;
+  const matchesDate = isDateWithinRange(
+    item.spentAt,
+    filters.dateFrom,
+    filters.dateTo,
+  );
+
+  return matchesCategory && matchesType && matchesDate;
 }
 
 export const investmentInitialFilters = {
   category: ALL_FILTER_VALUE,
+  dateFrom: "",
+  dateTo: "",
 };
 
 export const investmentCategoryFilterOptions = [
@@ -82,14 +126,23 @@ export function doesInvestmentPassFilters(
   item: InvestmentItem,
   filters: typeof investmentInitialFilters,
 ) {
-  return (
-    filters.category === ALL_FILTER_VALUE || item.category === filters.category
+  const matchesCategory =
+    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
+
+  const matchesDate = isDateWithinRange(
+    item.investedAt,
+    filters.dateFrom,
+    filters.dateTo,
   );
+
+  return matchesCategory && matchesDate;
 }
 
 export const loanInitialFilters = {
   category: ALL_FILTER_VALUE,
   status: ALL_FILTER_VALUE,
+  dateFrom: "",
+  dateTo: "",
 };
 
 export const loanCategoryFilterOptions = [
@@ -114,5 +167,9 @@ export function doesLoanPassFilters(
   const matchesStatus =
     filters.status === ALL_FILTER_VALUE || item.status === filters.status;
 
-  return matchesCategory && matchesStatus;
+  const matchesDate = item.dueDate
+    ? isDateWithinRange(item.dueDate, filters.dateFrom, filters.dateTo)
+    : !filters.dateFrom && !filters.dateTo;
+
+  return matchesCategory && matchesStatus && matchesDate;
 }

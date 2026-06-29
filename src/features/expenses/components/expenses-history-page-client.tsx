@@ -21,6 +21,7 @@ import {
   expenseTypeFilterOptions,
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
+import HistoryDateFilter from "@/components/dashboard/history-date-filter";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -69,7 +70,7 @@ export default function ExpensesHistoryPageClient() {
         }
         emptyDescription={
           isFiltering
-            ? "Try changing your search keyword, category filter, or type filter."
+            ? "Try changing your search keyword, category filter, type filter, or date range."
             : "Your full expense history will appear here after you add spending records."
         }
         emptyActionHref="/expenses"
@@ -102,6 +103,18 @@ export default function ExpensesHistoryPageClient() {
               value={filters.type}
               onChange={(value) => setFilter("type", value)}
               options={expenseTypeFilterOptions}
+            />
+
+            <HistoryDateFilter
+              label="Date From"
+              value={filters.dateFrom}
+              onChange={(value) => setFilter("dateFrom", value)}
+            />
+
+            <HistoryDateFilter
+              label="Date To"
+              value={filters.dateTo}
+              onChange={(value) => setFilter("dateTo", value)}
             />
           </HistoryControls>
         }

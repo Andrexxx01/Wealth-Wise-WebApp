@@ -20,6 +20,7 @@ import {
   investmentInitialFilters,
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
+import HistoryDateFilter from "@/components/dashboard/history-date-filter";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -70,7 +71,7 @@ export default function InvestmentsHistoryPageClient() {
         }
         emptyDescription={
           isFiltering
-            ? "Try changing your search keyword or category filter."
+            ? "Try changing your search keyword, category filter, or date range."
             : "Your full investment history will appear here after you add portfolio assets."
         }
         emptyActionHref="/investments"
@@ -96,6 +97,18 @@ export default function InvestmentsHistoryPageClient() {
               value={filters.category}
               onChange={(value) => setFilter("category", value)}
               options={investmentCategoryFilterOptions}
+            />
+
+            <HistoryDateFilter
+              label="Date From"
+              value={filters.dateFrom}
+              onChange={(value) => setFilter("dateFrom", value)}
+            />
+
+            <HistoryDateFilter
+              label="Date To"
+              value={filters.dateTo}
+              onChange={(value) => setFilter("dateTo", value)}
             />
           </HistoryControls>
         }
