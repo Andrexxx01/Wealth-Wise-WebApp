@@ -21,7 +21,7 @@ import {
   loanStatusFilterOptions,
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
-import HistoryDateFilter from "@/components/dashboard/history-date-filter";
+import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -105,16 +105,13 @@ export default function LoansHistoryPageClient() {
               options={loanStatusFilterOptions}
             />
 
-            <HistoryDateFilter
-              label="Due Date From"
-              value={filters.dateFrom}
-              onChange={(value) => setFilter("dateFrom", value)}
-            />
-
-            <HistoryDateFilter
-              label="Due Date To"
-              value={filters.dateTo}
-              onChange={(value) => setFilter("dateTo", value)}
+            <HistoryDateRangeFilter
+              fromLabel="Due Date From"
+              toLabel="Due Date To"
+              dateFrom={filters.dateFrom}
+              dateTo={filters.dateTo}
+              onDateFromChange={(value) => setFilter("dateFrom", value)}
+              onDateToChange={(value) => setFilter("dateTo", value)}
             />
           </HistoryControls>
         }

@@ -20,7 +20,7 @@ import {
   investmentInitialFilters,
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
-import HistoryDateFilter from "@/components/dashboard/history-date-filter";
+import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -99,16 +99,11 @@ export default function InvestmentsHistoryPageClient() {
               options={investmentCategoryFilterOptions}
             />
 
-            <HistoryDateFilter
-              label="Date From"
-              value={filters.dateFrom}
-              onChange={(value) => setFilter("dateFrom", value)}
-            />
-
-            <HistoryDateFilter
-              label="Date To"
-              value={filters.dateTo}
-              onChange={(value) => setFilter("dateTo", value)}
+            <HistoryDateRangeFilter
+              dateFrom={filters.dateFrom}
+              dateTo={filters.dateTo}
+              onDateFromChange={(value) => setFilter("dateFrom", value)}
+              onDateToChange={(value) => setFilter("dateTo", value)}
             />
           </HistoryControls>
         }
