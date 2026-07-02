@@ -28,6 +28,7 @@ import {
   historySortOptions,
   type HistorySortValue,
 } from "@/lib/history-sort-options";
+import useHistoryClearAll from "@/hooks/use-history-clear-all";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -44,6 +45,7 @@ export default function ExpensesHistoryPageClient() {
   const {
     searchQuery,
     setSearchQuery,
+    resetSearch,
     filteredItems: searchMatchedExpenseItems,
     hasSearchQuery,
   } = useHistorySearch(sortedExpenseItems, doesExpenseMatchSearch);
@@ -69,6 +71,12 @@ export default function ExpensesHistoryPageClient() {
     items: filteredExpenseItems,
     getDateValue: (item) => item.spentAt,
     getAmountValue: (item) => item.amount,
+  });
+
+  const handleClearAll = useHistoryClearAll({
+    resetSearch,
+    resetFilters,
+    resetSort,
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
@@ -103,11 +111,7 @@ export default function ExpensesHistoryPageClient() {
             hasActiveFilter={hasActiveFilter}
             isFiltering={isFiltering}
             onResetFilters={resetFilters}
-            onClearAll={() => {
-              setSearchQuery("");
-              resetFilters();
-              resetSort();
-            }}
+            onClearAll={handleClearAll}
           >
             <HistoryFilterSelect
               label="Category"

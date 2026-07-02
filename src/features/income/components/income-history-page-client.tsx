@@ -31,6 +31,7 @@ import {
   historySortOptions,
   type HistorySortValue,
 } from "@/lib/history-sort-options";
+import useHistoryClearAll from "@/hooks/use-history-clear-all";
 
 export default function IncomeHistoryPageClient() {
   const {
@@ -47,6 +48,7 @@ export default function IncomeHistoryPageClient() {
   const {
     searchQuery,
     setSearchQuery,
+    resetSearch,
     filteredItems: searchMatchedIncomeItems,
     hasSearchQuery,
   } = useHistorySearch(sortedIncomeItems, doesIncomeMatchSearch);
@@ -72,6 +74,12 @@ export default function IncomeHistoryPageClient() {
     items: filteredIncomeItems,
     getDateValue: (item) => item.receivedAt,
     getAmountValue: (item) => item.amount,
+  });
+
+  const handleClearAll = useHistoryClearAll({
+    resetSearch,
+    resetFilters,
+    resetSort,
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
@@ -106,11 +114,7 @@ export default function IncomeHistoryPageClient() {
             hasActiveFilter={hasActiveFilter}
             isFiltering={isFiltering}
             onResetFilters={resetFilters}
-            onClearAll={() => {
-              setSearchQuery("");
-              resetFilters();
-              resetSort();
-            }}
+            onClearAll={handleClearAll}
           >
             <HistoryFilterSelect
               label="Category"

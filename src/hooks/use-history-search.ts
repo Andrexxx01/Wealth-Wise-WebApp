@@ -19,9 +19,14 @@ export default function useHistorySearch<TItem>(
 
   const hasSearchQuery = searchQuery.trim().length > 0;
 
+  function resetSearch() {
+    setSearchQuery("");
+  }
+
   return {
     searchQuery,
     setSearchQuery,
+    resetSearch,
     filteredItems,
     hasSearchQuery,
   };

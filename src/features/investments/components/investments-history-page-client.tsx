@@ -27,6 +27,7 @@ import {
   historySortOptions,
   type HistorySortValue,
 } from "@/lib/history-sort-options";
+import useHistoryClearAll from "@/hooks/use-history-clear-all";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -43,6 +44,7 @@ export default function InvestmentsHistoryPageClient() {
   const {
     searchQuery,
     setSearchQuery,
+    resetSearch,
     filteredItems: searchMatchedInvestmentItems,
     hasSearchQuery,
   } = useHistorySearch(sortedInvestmentItems, doesInvestmentMatchSearch);
@@ -68,6 +70,12 @@ export default function InvestmentsHistoryPageClient() {
     items: filteredInvestmentItems,
     getDateValue: (item) => item.investedAt,
     getAmountValue: (item) => item.currentValue,
+  });
+
+  const handleClearAll = useHistoryClearAll({
+    resetSearch,
+    resetFilters,
+    resetSort,
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
@@ -104,11 +112,7 @@ export default function InvestmentsHistoryPageClient() {
             hasActiveFilter={hasActiveFilter}
             isFiltering={isFiltering}
             onResetFilters={resetFilters}
-            onClearAll={() => {
-              setSearchQuery("");
-              resetFilters();
-              resetSort();
-            }}
+            onClearAll={handleClearAll}
           >
             <HistoryFilterSelect
               label="Category"

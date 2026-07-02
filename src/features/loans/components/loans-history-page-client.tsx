@@ -28,6 +28,7 @@ import {
   historySortOptions,
   type HistorySortValue,
 } from "@/lib/history-sort-options";
+import useHistoryClearAll from "@/hooks/use-history-clear-all";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -44,6 +45,7 @@ export default function LoansHistoryPageClient() {
   const {
     searchQuery,
     setSearchQuery,
+    resetSearch,
     filteredItems: searchMatchedLoanItems,
     hasSearchQuery,
   } = useHistorySearch(sortedLoanItems, doesLoanMatchSearch);
@@ -69,6 +71,12 @@ export default function LoansHistoryPageClient() {
     items: filteredLoanItems,
     getDateValue: (item) => item.dueDate ?? item.createdAt,
     getAmountValue: (item) => item.remainingBalance,
+  });
+
+  const handleClearAll = useHistoryClearAll({
+    resetSearch,
+    resetFilters,
+    resetSort,
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
@@ -103,11 +111,7 @@ export default function LoansHistoryPageClient() {
             hasActiveFilter={hasActiveFilter}
             isFiltering={isFiltering}
             onResetFilters={resetFilters}
-            onClearAll={() => {
-              setSearchQuery("");
-              resetFilters();
-              resetSort();
-            }}
+            onClearAll={handleClearAll}
           >
             <HistoryFilterSelect
               label="Category"
