@@ -21,6 +21,12 @@ import {
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
 import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
+import HistorySortSelect from "@/components/dashboard/history-sort-select";
+import useHistorySort from "@/hooks/use-history-sort";
+import {
+  historySortOptions,
+  type HistorySortValue,
+} from "@/lib/history-sort-options";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -52,6 +58,17 @@ export default function InvestmentsHistoryPageClient() {
     investmentInitialFilters,
     doesInvestmentPassFilters,
   );
+
+  const {
+    sortValue,
+    setSortValue,
+    resetSort,
+    sortedItems: visibleInvestmentItems,
+  } = useHistorySort({
+    items: filteredInvestmentItems,
+    getDateValue: (item) => item.investedAt,
+    getAmountValue: (item) => item.currentValue,
+  });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
 
@@ -90,6 +107,7 @@ export default function InvestmentsHistoryPageClient() {
             onClearAll={() => {
               setSearchQuery("");
               resetFilters();
+              resetSort();
             }}
           >
             <HistoryFilterSelect
@@ -105,10 +123,16 @@ export default function InvestmentsHistoryPageClient() {
               onDateFromChange={(value) => setFilter("dateFrom", value)}
               onDateToChange={(value) => setFilter("dateTo", value)}
             />
+
+            <HistorySortSelect
+              value={sortValue}
+              onChange={(value) => setSortValue(value as HistorySortValue)}
+              options={historySortOptions}
+            />
           </HistoryControls>
         }
       >
-        {filteredInvestmentItems.map((item) => {
+        {visibleInvestmentItems.map((item) => {
           const gainAmount = item.currentValue - item.investedAmount;
           const isPositive = gainAmount >= 0;
 

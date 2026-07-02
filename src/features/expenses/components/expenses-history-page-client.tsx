@@ -22,6 +22,12 @@ import {
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
 import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
+import HistorySortSelect from "@/components/dashboard/history-sort-select";
+import useHistorySort from "@/hooks/use-history-sort";
+import {
+  historySortOptions,
+  type HistorySortValue,
+} from "@/lib/history-sort-options";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -53,6 +59,17 @@ export default function ExpensesHistoryPageClient() {
     expenseInitialFilters,
     doesExpensePassFilters,
   );
+
+  const {
+    sortValue,
+    setSortValue,
+    resetSort,
+    sortedItems: visibleExpenseItems,
+  } = useHistorySort({
+    items: filteredExpenseItems,
+    getDateValue: (item) => item.spentAt,
+    getAmountValue: (item) => item.amount,
+  });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
 
@@ -89,6 +106,7 @@ export default function ExpensesHistoryPageClient() {
             onClearAll={() => {
               setSearchQuery("");
               resetFilters();
+              resetSort();
             }}
           >
             <HistoryFilterSelect
@@ -111,10 +129,16 @@ export default function ExpensesHistoryPageClient() {
               onDateFromChange={(value) => setFilter("dateFrom", value)}
               onDateToChange={(value) => setFilter("dateTo", value)}
             />
+
+            <HistorySortSelect
+              value={sortValue}
+              onChange={(value) => setSortValue(value as HistorySortValue)}
+              options={historySortOptions}
+            />
           </HistoryControls>
         }
       >
-        {filteredExpenseItems.map((item) => (
+        {visibleExpenseItems.map((item) => (
           <DashboardListItem
             key={item.id}
             title={item.title}

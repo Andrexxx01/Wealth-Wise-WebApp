@@ -22,6 +22,12 @@ import {
 } from "@/lib/finance-history-filters";
 import HistoryControls from "@/components/dashboard/history-controls";
 import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
+import HistorySortSelect from "@/components/dashboard/history-sort-select";
+import useHistorySort from "@/hooks/use-history-sort";
+import {
+  historySortOptions,
+  type HistorySortValue,
+} from "@/lib/history-sort-options";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -53,6 +59,17 @@ export default function LoansHistoryPageClient() {
     loanInitialFilters,
     doesLoanPassFilters,
   );
+
+  const {
+    sortValue,
+    setSortValue,
+    resetSort,
+    sortedItems: visibleLoanItems,
+  } = useHistorySort({
+    items: filteredLoanItems,
+    getDateValue: (item) => item.dueDate ?? item.createdAt,
+    getAmountValue: (item) => item.remainingBalance,
+  });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
 
@@ -89,6 +106,7 @@ export default function LoansHistoryPageClient() {
             onClearAll={() => {
               setSearchQuery("");
               resetFilters();
+              resetSort();
             }}
           >
             <HistoryFilterSelect
@@ -113,10 +131,16 @@ export default function LoansHistoryPageClient() {
               onDateFromChange={(value) => setFilter("dateFrom", value)}
               onDateToChange={(value) => setFilter("dateTo", value)}
             />
+
+            <HistorySortSelect
+              value={sortValue}
+              onChange={(value) => setSortValue(value as HistorySortValue)}
+              options={historySortOptions}
+            />
           </HistoryControls>
         }
       >
-        {filteredLoanItems.map((item) => (
+        {visibleLoanItems.map((item) => (
           <DashboardListItem
             key={item.id}
             title={item.title}
