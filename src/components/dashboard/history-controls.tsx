@@ -16,6 +16,7 @@ type HistoryControlsProps = {
   isFiltering: boolean;
   onResetFilters: () => void;
   onClearAll: () => void;
+  sortControl?: ReactNode;
   children: ReactNode;
 };
 
@@ -30,6 +31,7 @@ export default function HistoryControls({
   isFiltering,
   onResetFilters,
   onClearAll,
+  sortControl,
   children,
 }: HistoryControlsProps) {
   return (
@@ -49,6 +51,12 @@ export default function HistoryControls({
       >
         {children}
       </HistoryFilterPanel>
+
+      {sortControl ? (
+        <div className="rounded-[28px] border border-slate-200 bg-white p-4">
+          {sortControl}
+        </div>
+      ) : null}
 
       <HistoryClearAllButton isVisible={isFiltering} onClearAll={onClearAll} />
     </div>

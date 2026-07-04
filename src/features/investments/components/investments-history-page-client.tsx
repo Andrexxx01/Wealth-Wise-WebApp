@@ -113,6 +113,13 @@ export default function InvestmentsHistoryPageClient() {
             isFiltering={isFiltering}
             onResetFilters={resetFilters}
             onClearAll={handleClearAll}
+            sortControl={
+              <HistorySortSelect
+                value={sortValue}
+                onChange={(value) => setSortValue(value as HistorySortValue)}
+                options={historySortOptions}
+              />
+            }
           >
             <HistoryFilterSelect
               label="Category"
@@ -126,12 +133,6 @@ export default function InvestmentsHistoryPageClient() {
               dateTo={filters.dateTo}
               onDateFromChange={(value) => setFilter("dateFrom", value)}
               onDateToChange={(value) => setFilter("dateTo", value)}
-            />
-
-            <HistorySortSelect
-              value={sortValue}
-              onChange={(value) => setSortValue(value as HistorySortValue)}
-              options={historySortOptions}
             />
           </HistoryControls>
         }
