@@ -32,6 +32,7 @@ import {
   type HistorySortValue,
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
+import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
 
 export default function IncomeHistoryPageClient() {
   const {
@@ -85,6 +86,16 @@ export default function IncomeHistoryPageClient() {
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
+
+  const totalVisibleIncome = visibleIncomeItems.reduce(
+    (total, item) => total + item.amount,
+    0,
+  );
+
+  const averageVisibleIncome =
+    visibleIncomeItems.length > 0
+      ? totalVisibleIncome / visibleIncomeItems.length
+      : 0;
 
   return (
     <>
@@ -148,6 +159,26 @@ export default function IncomeHistoryPageClient() {
           </HistoryControls>
         }
       >
+        <HistorySummaryGrid
+          items={[
+            {
+              label: "Total Income",
+              value: formatCurrency(totalVisibleIncome),
+              description: "Total amount from visible records.",
+            },
+            {
+              label: "Records",
+              value: String(visibleIncomeItems.length),
+              description: "Income records currently shown.",
+            },
+            {
+              label: "Average Income",
+              value: formatCurrency(averageVisibleIncome),
+              description: "Average amount per visible record.",
+            },
+          ]}
+        />
+        
         {visibleIncomeItems.map((item) => (
           <DashboardListItem
             key={item.id}

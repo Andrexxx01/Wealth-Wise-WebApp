@@ -28,6 +28,7 @@ import {
   type HistorySortValue,
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
+import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -81,6 +82,16 @@ export default function InvestmentsHistoryPageClient() {
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
+
+  const totalVisibleCurrentValue = visibleInvestmentItems.reduce(
+    (total, item) => total + item.currentValue,
+    0,
+  );
+
+  const averageVisibleCurrentValue =
+    visibleInvestmentItems.length > 0
+      ? totalVisibleCurrentValue / visibleInvestmentItems.length
+      : 0;
 
   return (
     <>
@@ -139,6 +150,26 @@ export default function InvestmentsHistoryPageClient() {
           </HistoryControls>
         }
       >
+        <HistorySummaryGrid
+          items={[
+            {
+              label: "Total Current Value",
+              value: formatCurrency(totalVisibleCurrentValue),
+              description: "Total current value from visible records.",
+            },
+            {
+              label: "Records",
+              value: String(visibleInvestmentItems.length),
+              description: "Investment records currently shown.",
+            },
+            {
+              label: "Average Current Value",
+              value: formatCurrency(averageVisibleCurrentValue),
+              description: "Average current value per visible record.",
+            },
+          ]}
+        />
+        
         {visibleInvestmentItems.map((item) => {
           const gainAmount = item.currentValue - item.investedAmount;
           const isPositive = gainAmount >= 0;

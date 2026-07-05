@@ -29,6 +29,7 @@ import {
   type HistorySortValue,
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
+import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -82,6 +83,16 @@ export default function ExpensesHistoryPageClient() {
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
+
+  const totalVisibleExpenses = visibleExpenseItems.reduce(
+    (total, item) => total + item.amount,
+    0,
+  );
+
+  const averageVisibleExpense =
+    visibleExpenseItems.length > 0
+      ? totalVisibleExpenses / visibleExpenseItems.length
+      : 0;
 
   return (
     <>
@@ -145,6 +156,26 @@ export default function ExpensesHistoryPageClient() {
           </HistoryControls>
         }
       >
+        <HistorySummaryGrid
+          items={[
+            {
+              label: "Total Expenses",
+              value: formatCurrency(totalVisibleExpenses),
+              description: "Total amount from visible records.",
+            },
+            {
+              label: "Records",
+              value: String(visibleExpenseItems.length),
+              description: "Expense records currently shown.",
+            },
+            {
+              label: "Average Expense",
+              value: formatCurrency(averageVisibleExpense),
+              description: "Average amount per visible record.",
+            },
+          ]}
+        />
+        
         {visibleExpenseItems.map((item) => (
           <DashboardListItem
             key={item.id}

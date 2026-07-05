@@ -29,6 +29,7 @@ import {
   type HistorySortValue,
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
+import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
 
 export default function LoansHistoryPageClient() {
   const {
@@ -82,6 +83,16 @@ export default function LoansHistoryPageClient() {
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
+
+  const totalRemainingBalance = visibleLoanItems.reduce(
+    (total, item) => total + item.remainingBalance,
+    0,
+  );
+
+  const averageRemainingBalance =
+    visibleLoanItems.length > 0
+      ? totalRemainingBalance / visibleLoanItems.length
+      : 0;
 
   return (
     <>
@@ -147,6 +158,26 @@ export default function LoansHistoryPageClient() {
           </HistoryControls>
         }
       >
+        <HistorySummaryGrid
+          items={[
+            {
+              label: "Remaining Balance",
+              value: formatCurrency(totalRemainingBalance),
+              description: "Outstanding balance from visible records.",
+            },
+            {
+              label: "Records",
+              value: String(visibleLoanItems.length),
+              description: "Loan records currently shown.",
+            },
+            {
+              label: "Average Balance",
+              value: formatCurrency(averageRemainingBalance),
+              description: "Average remaining balance.",
+            },
+          ]}
+        />
+        
         {visibleLoanItems.map((item) => (
           <DashboardListItem
             key={item.id}
