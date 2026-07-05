@@ -66,6 +66,7 @@ export default function LoansHistoryPageClient() {
     sortValue,
     setSortValue,
     resetSort,
+    hasActiveSort,
     sortedItems: visibleLoanItems,
   } = useHistorySort({
     items: filteredLoanItems,
@@ -80,6 +81,7 @@ export default function LoansHistoryPageClient() {
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
+  const hasActiveControls = isFiltering || hasActiveSort;
 
   return (
     <>
@@ -109,7 +111,7 @@ export default function LoansHistoryPageClient() {
             totalCount={sortedLoanItems.length}
             recordLabel="loan records"
             hasActiveFilter={hasActiveFilter}
-            isFiltering={isFiltering}
+            showClearAllButton={hasActiveControls}
             onResetFilters={resetFilters}
             onClearAll={handleClearAll}
             sortControl={

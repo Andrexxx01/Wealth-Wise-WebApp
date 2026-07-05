@@ -65,6 +65,7 @@ export default function InvestmentsHistoryPageClient() {
     sortValue,
     setSortValue,
     resetSort,
+    hasActiveSort,
     sortedItems: visibleInvestmentItems,
   } = useHistorySort({
     items: filteredInvestmentItems,
@@ -79,6 +80,7 @@ export default function InvestmentsHistoryPageClient() {
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
+  const hasActiveControls = isFiltering || hasActiveSort;
 
   return (
     <>
@@ -110,7 +112,7 @@ export default function InvestmentsHistoryPageClient() {
             totalCount={sortedInvestmentItems.length}
             recordLabel="investment records"
             hasActiveFilter={hasActiveFilter}
-            isFiltering={isFiltering}
+            showClearAllButton={hasActiveControls}
             onResetFilters={resetFilters}
             onClearAll={handleClearAll}
             sortControl={

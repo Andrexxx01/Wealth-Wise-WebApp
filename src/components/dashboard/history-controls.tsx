@@ -13,7 +13,7 @@ type HistoryControlsProps = {
   totalCount: number;
   recordLabel: string;
   hasActiveFilter: boolean;
-  isFiltering: boolean;
+  showClearAllButton: boolean;
   onResetFilters: () => void;
   onClearAll: () => void;
   sortControl?: ReactNode;
@@ -28,7 +28,7 @@ export default function HistoryControls({
   totalCount,
   recordLabel,
   hasActiveFilter,
-  isFiltering,
+  showClearAllButton,
   onResetFilters,
   onClearAll,
   sortControl,
@@ -58,7 +58,10 @@ export default function HistoryControls({
         </div>
       ) : null}
 
-      <HistoryClearAllButton isVisible={isFiltering} onClearAll={onClearAll} />
+      <HistoryClearAllButton
+        isVisible={showClearAllButton}
+        onClearAll={onClearAll}
+      />
     </div>
   );
 }

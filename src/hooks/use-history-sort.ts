@@ -76,6 +76,8 @@ export default function useHistorySort<TItem>({
     });
   }, [items, sortValue, getDateValue, getAmountValue]);
 
+  const hasActiveSort = sortValue !== HISTORY_SORT_VALUES.NEWEST;
+
   function resetSort() {
     setSortValue(HISTORY_SORT_VALUES.NEWEST);
   }
@@ -84,6 +86,7 @@ export default function useHistorySort<TItem>({
     sortValue,
     setSortValue,
     resetSort,
+    hasActiveSort,
     sortedItems,
   };
 }

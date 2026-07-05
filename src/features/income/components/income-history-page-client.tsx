@@ -69,6 +69,7 @@ export default function IncomeHistoryPageClient() {
     sortValue,
     setSortValue,
     resetSort,
+    hasActiveSort,
     sortedItems: visibleIncomeItems,
   } = useHistorySort({
     items: filteredIncomeItems,
@@ -83,6 +84,7 @@ export default function IncomeHistoryPageClient() {
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
+  const hasActiveControls = isFiltering || hasActiveSort;
 
   return (
     <>
@@ -112,7 +114,7 @@ export default function IncomeHistoryPageClient() {
             totalCount={sortedIncomeItems.length}
             recordLabel="income records"
             hasActiveFilter={hasActiveFilter}
-            isFiltering={isFiltering}
+            showClearAllButton={hasActiveControls}
             onResetFilters={resetFilters}
             onClearAll={handleClearAll}
             sortControl={

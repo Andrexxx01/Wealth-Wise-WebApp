@@ -66,6 +66,7 @@ export default function ExpensesHistoryPageClient() {
     sortValue,
     setSortValue,
     resetSort,
+    hasActiveSort,
     sortedItems: visibleExpenseItems,
   } = useHistorySort({
     items: filteredExpenseItems,
@@ -80,6 +81,7 @@ export default function ExpensesHistoryPageClient() {
   });
 
   const isFiltering = hasSearchQuery || hasActiveFilter;
+  const hasActiveControls = isFiltering || hasActiveSort;
 
   return (
     <>
@@ -109,7 +111,7 @@ export default function ExpensesHistoryPageClient() {
             totalCount={sortedExpenseItems.length}
             recordLabel="expense records"
             hasActiveFilter={hasActiveFilter}
-            isFiltering={isFiltering}
+            showClearAllButton={hasActiveControls}
             onResetFilters={resetFilters}
             onClearAll={handleClearAll}
             sortControl={
