@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String?
+  email        String       @unique
+  passwordHash String
+
+  incomes      Income[]
+  expenses     Expense[]
+  investments  Investment[]
+  loans        Loan[]
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Income {
+  id         String   @id @default(cuid())
+  userId     String
+
+  title      String
+  category   String
+  amount     Decimal  @db.Decimal(12, 2)
+  receivedAt DateTime
+  frequency  String
+  notes      String?
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([receivedAt])
+}
+
+model Expense {
+  id        String   @id @default(cuid())
+  userId    String
+
+  title     String
+  category  String
+  type      String
+  amount    Decimal  @db.Decimal(12, 2)
+  spentAt   DateTime
+  notes     String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([spentAt])
+}
+
+model Investment {
+  id             String   @id @default(cuid())
+  userId         String
+
+  assetName      String
+  category       String
+  investedAmount Decimal  @db.Decimal(12, 2)
+  currentValue   Decimal  @db.Decimal(12, 2)
+  investedAt     DateTime
+  notes          String?
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([investedAt])
+}
+
+model Loan {
+  id               String    @id @default(cuid())
+  userId           String
+
+  title            String
+  lenderName       String
+  category         String
+  principalAmount  Decimal   @db.Decimal(12, 2)
+  remainingBalance Decimal   @db.Decimal(12, 2)
+  monthlyPayment   Decimal   @db.Decimal(12, 2)
+  interestRate     Decimal?  @db.Decimal(5, 2)
+  dueDate          DateTime?
+  status           String    @default("ACTIVE")
+
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([dueDate])
+  @@index([status])
+}
