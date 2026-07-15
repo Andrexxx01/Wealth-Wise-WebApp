@@ -15,6 +15,8 @@ export type FinanceContextValue = {
   expenseItems: ExpenseItem[];
   investmentItems: InvestmentItem[];
   loanItems: LoanItem[];
+  isIncomeLoading: boolean;
+  incomeError: string | null;
 
   createIncome: (payload: CreateIncomePayload) => void;
   createExpense: (payload: CreateExpensePayload) => void;

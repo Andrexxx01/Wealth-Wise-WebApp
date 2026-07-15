@@ -1,6 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import {
   clearFinanceStorageData,
   loadFinanceStorageData,
@@ -24,6 +29,12 @@ import type {
 import type { IncomeItem } from "@/types/income";
 import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
+import {
+  createIncomeItem,
+  deleteIncomeItem,
+  getIncomeItems,
+  updateIncomeItem,
+} from "@/features/income/api/income-api";
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
@@ -38,18 +49,19 @@ function createTemporaryId(prefix: string) {
 export default function FinanceProvider({ children }: FinanceProviderProps) {
   const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
 
-  const [incomeItems, setIncomeItems] = useState<IncomeItem[]>(mockIncomeItems);
   const [expenseItems, setExpenseItems] =
     useState<ExpenseItem[]>(mockExpenseItems);
   const [investmentItems, setInvestmentItems] =
     useState<InvestmentItem[]>(mockInvestmentItems);
   const [loanItems, setLoanItems] = useState<LoanItem[]>(mockLoanItems);
+  const [incomeItems, setIncomeItems] = useState<IncomeItem[]>([]);
+  const [isIncomeLoading, setIsIncomeLoading] = useState(true);
+  const [incomeError, setIncomeError] = useState<string | null>(null);
 
   useEffect(() => {
     const storedData = loadFinanceStorageData();
 
     if (storedData) {
-      setIncomeItems(storedData.incomeItems);
       setExpenseItems(storedData.expenseItems);
       setInvestmentItems(storedData.investmentItems);
       setLoanItems(storedData.loanItems);
@@ -69,45 +81,50 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     });
   }, [hasLoadedStorage, incomeItems, expenseItems, investmentItems, loanItems]);
 
-  function createIncome(payload: CreateIncomePayload) {
-    const now = new Date().toISOString();
+  useEffect(() => {
+    let isMounted = true;
 
-    const newIncome: IncomeItem = {
-      id: createTemporaryId("income"),
-      userId: "user_1",
-      title: payload.title,
-      category: payload.category,
-      amount: payload.amount,
-      receivedAt: payload.receivedAt,
-      frequency: payload.frequency,
-      notes: payload.notes,
-      createdAt: now,
-      updatedAt: now,
+    async function loadIncomeItems() {
+      try {
+        setIsIncomeLoading(true);
+        setIncomeError(null);
+
+        const data = await getIncomeItems();
+
+        if (isMounted) {
+          setIncomeItems(data);
+        }
+      } catch (error) {
+        console.error("Failed to load income items:", error);
+
+        if (isMounted) {
+          setIncomeError("Failed to load income records.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsIncomeLoading(false);
+        }
+      }
+    }
+
+    loadIncomeItems();
+
+    return () => {
+      isMounted = false;
     };
+  }, []);
 
-    setIncomeItems((currentItems) => [newIncome, ...currentItems]);
+  async function createIncome(payload: CreateIncomePayload) {
+    const createdIncome = await createIncomeItem(payload);
+
+    setIncomeItems((currentItems) => [createdIncome, ...currentItems]);
   }
 
-  function updateIncome(incomeId: string, payload: CreateIncomePayload) {
-    const now = new Date().toISOString();
+  async function updateIncome(incomeId: string, payload: CreateIncomePayload) {
+    const updatedIncome = await updateIncomeItem(incomeId, payload);
 
     setIncomeItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== incomeId) {
-          return item;
-        }
-
-        return {
-          ...item,
-          title: payload.title,
-          category: payload.category,
-          amount: payload.amount,
-          receivedAt: payload.receivedAt,
-          frequency: payload.frequency,
-          notes: payload.notes,
-          updatedAt: now,
-        };
-      }),
+      currentItems.map((item) => (item.id === incomeId ? updatedIncome : item)),
     );
   }
 
@@ -252,7 +269,9 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function deleteIncome(incomeId: string) {
+  async function deleteIncome(incomeId: string) {
+    await deleteIncomeItem(incomeId);
+
     setIncomeItems((currentItems) =>
       currentItems.filter((item) => item.id !== incomeId),
     );
@@ -279,7 +298,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   function resetFinanceData() {
     clearFinanceStorageData();
 
-    setIncomeItems(mockIncomeItems);
     setExpenseItems(mockExpenseItems);
     setInvestmentItems(mockInvestmentItems);
     setLoanItems(mockLoanItems);
@@ -303,6 +321,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     updateExpense,
     updateInvestment,
     updateLoan,
+    isIncomeLoading,
+    incomeError,
   };
 
   return (
