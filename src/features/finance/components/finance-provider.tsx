@@ -35,6 +35,12 @@ import {
   getIncomeItems,
   updateIncomeItem,
 } from "@/features/income/api/income-api";
+import {
+  createExpenseItem,
+  deleteExpenseItem,
+  getExpenseItems,
+  updateExpenseItem,
+} from "@/features/expenses/api/expense-api";
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
@@ -49,8 +55,9 @@ function createTemporaryId(prefix: string) {
 export default function FinanceProvider({ children }: FinanceProviderProps) {
   const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
 
-  const [expenseItems, setExpenseItems] =
-    useState<ExpenseItem[]>(mockExpenseItems);
+  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([]);
+  const [isExpenseLoading, setIsExpenseLoading] = useState(true);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
   const [investmentItems, setInvestmentItems] =
     useState<InvestmentItem[]>(mockInvestmentItems);
   const [loanItems, setLoanItems] = useState<LoanItem[]>(mockLoanItems);
@@ -62,7 +69,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     const storedData = loadFinanceStorageData();
 
     if (storedData) {
-      setExpenseItems(storedData.expenseItems);
       setInvestmentItems(storedData.investmentItems);
       setLoanItems(storedData.loanItems);
     }
@@ -114,6 +120,39 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadExpenseItems() {
+      try {
+        setIsExpenseLoading(true);
+        setExpenseError(null);
+
+        const data = await getExpenseItems();
+
+        if (isMounted) {
+          setExpenseItems(data);
+        }
+      } catch (error) {
+        console.error("Failed to load expense items:", error);
+
+        if (isMounted) {
+          setExpenseError("Failed to load expense records.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsExpenseLoading(false);
+        }
+      }
+    }
+
+    loadExpenseItems();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function createIncome(payload: CreateIncomePayload) {
     const createdIncome = await createIncomeItem(payload);
 
@@ -128,45 +167,22 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function createExpense(payload: CreateExpensePayload) {
-    const now = new Date().toISOString();
+  async function createExpense(payload: CreateExpensePayload) {
+    const createdExpense = await createExpenseItem(payload);
 
-    const newExpense: ExpenseItem = {
-      id: createTemporaryId("expense"),
-      userId: "user_1",
-      title: payload.title,
-      category: payload.category,
-      type: payload.type,
-      amount: payload.amount,
-      spentAt: payload.spentAt,
-      notes: payload.notes,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setExpenseItems((currentItems) => [newExpense, ...currentItems]);
+    setExpenseItems((currentItems) => [createdExpense, ...currentItems]);
   }
 
-  function updateExpense(expenseId: string, payload: CreateExpensePayload) {
-    const now = new Date().toISOString();
+  async function updateExpense(
+    expenseId: string,
+    payload: CreateExpensePayload,
+  ) {
+    const updatedExpense = await updateExpenseItem(expenseId, payload);
 
     setExpenseItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== expenseId) {
-          return item;
-        }
-
-        return {
-          ...item,
-          title: payload.title,
-          category: payload.category,
-          type: payload.type,
-          amount: payload.amount,
-          spentAt: payload.spentAt,
-          notes: payload.notes,
-          updatedAt: now,
-        };
-      }),
+      currentItems.map((item) =>
+        item.id === expenseId ? updatedExpense : item,
+      ),
     );
   }
 
@@ -277,7 +293,9 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function deleteExpense(expenseId: string) {
+  async function deleteExpense(expenseId: string) {
+    await deleteExpenseItem(expenseId);
+
     setExpenseItems((currentItems) =>
       currentItems.filter((item) => item.id !== expenseId),
     );
@@ -298,7 +316,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   function resetFinanceData() {
     clearFinanceStorageData();
 
-    setExpenseItems(mockExpenseItems);
     setInvestmentItems(mockInvestmentItems);
     setLoanItems(mockLoanItems);
   }
@@ -323,6 +340,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     updateLoan,
     isIncomeLoading,
     incomeError,
+    isExpenseLoading,
+    expenseError,
   };
 
   return (

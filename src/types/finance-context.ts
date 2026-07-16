@@ -15,26 +15,38 @@ export type FinanceContextValue = {
   expenseItems: ExpenseItem[];
   investmentItems: InvestmentItem[];
   loanItems: LoanItem[];
+
   isIncomeLoading: boolean;
   incomeError: string | null;
 
-  createIncome: (payload: CreateIncomePayload) => void;
-  createExpense: (payload: CreateExpensePayload) => void;
+  isExpenseLoading: boolean;
+  expenseError: string | null;
+
+  createIncome: (payload: CreateIncomePayload) => Promise<void>;
+  createExpense: (payload: CreateExpensePayload) => Promise<void>;
   createInvestment: (payload: CreateInvestmentPayload) => void;
   createLoan: (payload: CreateLoanPayload) => void;
 
-  deleteIncome: (incomeId: string) => void;
-  deleteExpense: (expenseId: string) => void;
-  deleteInvestment: (investmentId: string) => void;
-  deleteLoan: (loanId: string) => void;
-  resetFinanceData: () => void;
-  updateIncome: (incomeId: string, payload: CreateIncomePayload) => void;
-  updateExpense: (expenseId: string, payload: CreateExpensePayload) => void;
+  updateIncome: (
+    incomeId: string,
+    payload: CreateIncomePayload,
+  ) => Promise<void>;
+  updateExpense: (
+    expenseId: string,
+    payload: CreateExpensePayload,
+  ) => Promise<void>;
   updateInvestment: (
     investmentId: string,
     payload: CreateInvestmentPayload,
   ) => void;
   updateLoan: (loanId: string, payload: CreateLoanPayload) => void;
+
+  deleteIncome: (incomeId: string) => Promise<void>;
+  deleteExpense: (expenseId: string) => Promise<void>;
+  deleteInvestment: (investmentId: string) => void;
+  deleteLoan: (loanId: string) => void;
+
+  resetFinanceData: () => void;
 };
 
 export type FinanceProviderProps = {
