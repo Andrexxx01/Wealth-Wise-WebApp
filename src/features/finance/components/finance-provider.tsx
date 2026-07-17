@@ -41,6 +41,12 @@ import {
   getExpenseItems,
   updateExpenseItem,
 } from "@/features/expenses/api/expense-api";
+import {
+  createInvestmentItem,
+  deleteInvestmentItem,
+  getInvestmentItems,
+  updateInvestmentItem,
+} from "@/features/investments/api/investment-api";
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
@@ -58,8 +64,9 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([]);
   const [isExpenseLoading, setIsExpenseLoading] = useState(true);
   const [expenseError, setExpenseError] = useState<string | null>(null);
-  const [investmentItems, setInvestmentItems] =
-    useState<InvestmentItem[]>(mockInvestmentItems);
+  const [investmentItems, setInvestmentItems] = useState<InvestmentItem[]>([]);
+  const [isInvestmentLoading, setIsInvestmentLoading] = useState(true);
+  const [investmentError, setInvestmentError] = useState<string | null>(null);
   const [loanItems, setLoanItems] = useState<LoanItem[]>(mockLoanItems);
   const [incomeItems, setIncomeItems] = useState<IncomeItem[]>([]);
   const [isIncomeLoading, setIsIncomeLoading] = useState(true);
@@ -69,7 +76,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     const storedData = loadFinanceStorageData();
 
     if (storedData) {
-      setInvestmentItems(storedData.investmentItems);
       setLoanItems(storedData.loanItems);
     }
 
@@ -153,6 +159,39 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadInvestmentItems() {
+      try {
+        setIsInvestmentLoading(true);
+        setInvestmentError(null);
+
+        const data = await getInvestmentItems();
+
+        if (isMounted) {
+          setInvestmentItems(data);
+        }
+      } catch (error) {
+        console.error("Failed to load investment items:", error);
+
+        if (isMounted) {
+          setInvestmentError("Failed to load investment records.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsInvestmentLoading(false);
+        }
+      }
+    }
+
+    loadInvestmentItems();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function createIncome(payload: CreateIncomePayload) {
     const createdIncome = await createIncomeItem(payload);
 
@@ -186,48 +225,22 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function createInvestment(payload: CreateInvestmentPayload) {
-    const now = new Date().toISOString();
+  async function createInvestment(payload: CreateInvestmentPayload) {
+    const createdInvestment = await createInvestmentItem(payload);
 
-    const newInvestment: InvestmentItem = {
-      id: createTemporaryId("investment"),
-      userId: "user_1",
-      assetName: payload.assetName,
-      category: payload.category,
-      investedAmount: payload.investedAmount,
-      currentValue: payload.currentValue,
-      investedAt: payload.investedAt,
-      notes: payload.notes,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setInvestmentItems((currentItems) => [newInvestment, ...currentItems]);
+    setInvestmentItems((currentItems) => [createdInvestment, ...currentItems]);
   }
 
-  function updateInvestment(
+  async function updateInvestment(
     investmentId: string,
     payload: CreateInvestmentPayload,
   ) {
-    const now = new Date().toISOString();
+    const updatedInvestment = await updateInvestmentItem(investmentId, payload);
 
     setInvestmentItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== investmentId) {
-          return item;
-        }
-
-        return {
-          ...item,
-          assetName: payload.assetName,
-          category: payload.category,
-          investedAmount: payload.investedAmount,
-          currentValue: payload.currentValue,
-          investedAt: payload.investedAt,
-          notes: payload.notes,
-          updatedAt: now,
-        };
-      }),
+      currentItems.map((item) =>
+        item.id === investmentId ? updatedInvestment : item,
+      ),
     );
   }
 
@@ -301,7 +314,9 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function deleteInvestment(investmentId: string) {
+  async function deleteInvestment(investmentId: string) {
+    await deleteInvestmentItem(investmentId);
+
     setInvestmentItems((currentItems) =>
       currentItems.filter((item) => item.id !== investmentId),
     );
@@ -316,7 +331,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   function resetFinanceData() {
     clearFinanceStorageData();
 
-    setInvestmentItems(mockInvestmentItems);
     setLoanItems(mockLoanItems);
   }
 
@@ -342,6 +356,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     incomeError,
     isExpenseLoading,
     expenseError,
+    isInvestmentLoading,
+    investmentError,
   };
 
   return (

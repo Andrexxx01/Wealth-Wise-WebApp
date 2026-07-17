@@ -22,9 +22,12 @@ export type FinanceContextValue = {
   isExpenseLoading: boolean;
   expenseError: string | null;
 
+  isInvestmentLoading: boolean;
+  investmentError: string | null;
+
   createIncome: (payload: CreateIncomePayload) => Promise<void>;
   createExpense: (payload: CreateExpensePayload) => Promise<void>;
-  createInvestment: (payload: CreateInvestmentPayload) => void;
+  createInvestment: (payload: CreateInvestmentPayload) => Promise<void>;
   createLoan: (payload: CreateLoanPayload) => void;
 
   updateIncome: (
@@ -38,12 +41,12 @@ export type FinanceContextValue = {
   updateInvestment: (
     investmentId: string,
     payload: CreateInvestmentPayload,
-  ) => void;
+  ) => Promise<void>;
   updateLoan: (loanId: string, payload: CreateLoanPayload) => void;
 
   deleteIncome: (incomeId: string) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
-  deleteInvestment: (investmentId: string) => void;
+  deleteInvestment: (investmentId: string) => Promise<void>;
   deleteLoan: (loanId: string) => void;
 
   resetFinanceData: () => void;
