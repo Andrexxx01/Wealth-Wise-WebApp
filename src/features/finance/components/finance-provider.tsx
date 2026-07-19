@@ -1,20 +1,7 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-import {
-  clearFinanceStorageData,
-  loadFinanceStorageData,
-  saveFinanceStorageData,
-} from "@/lib/finance-storage";
-import { mockExpenseItems } from "@/lib/mock-data/expense";
-import { mockIncomeItems } from "@/lib/mock-data/income";
-import { mockInvestmentItems } from "@/lib/mock-data/investment";
-import { mockLoanItems } from "@/lib/mock-data/loan";
+import { createContext, useContext, useEffect, useState } from "react";
+import { clearFinanceStorageData } from "@/lib/finance-storage";
 import type { ExpenseItem } from "@/types/expense";
 import type {
   CreateExpensePayload,
@@ -47,51 +34,31 @@ import {
   getInvestmentItems,
   updateInvestmentItem,
 } from "@/features/investments/api/investment-api";
+import {
+  createLoanItem,
+  deleteLoanItem,
+  getLoanItems,
+  updateLoanItem,
+} from "@/features/loans/api/loan-api";
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
-function createTemporaryId(prefix: string) {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return `${prefix}_${crypto.randomUUID()}`;
-  }
-
-  return `${prefix}_${Date.now()}`;
-}
-
 export default function FinanceProvider({ children }: FinanceProviderProps) {
-  const [hasLoadedStorage, setHasLoadedStorage] = useState(false);
-
-  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([]);
-  const [isExpenseLoading, setIsExpenseLoading] = useState(true);
-  const [expenseError, setExpenseError] = useState<string | null>(null);
-  const [investmentItems, setInvestmentItems] = useState<InvestmentItem[]>([]);
-  const [isInvestmentLoading, setIsInvestmentLoading] = useState(true);
-  const [investmentError, setInvestmentError] = useState<string | null>(null);
-  const [loanItems, setLoanItems] = useState<LoanItem[]>(mockLoanItems);
   const [incomeItems, setIncomeItems] = useState<IncomeItem[]>([]);
   const [isIncomeLoading, setIsIncomeLoading] = useState(true);
   const [incomeError, setIncomeError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const storedData = loadFinanceStorageData();
+  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([]);
+  const [isExpenseLoading, setIsExpenseLoading] = useState(true);
+  const [expenseError, setExpenseError] = useState<string | null>(null);
 
-    if (storedData) {
-      setLoanItems(storedData.loanItems);
-    }
+  const [investmentItems, setInvestmentItems] = useState<InvestmentItem[]>([]);
+  const [isInvestmentLoading, setIsInvestmentLoading] = useState(true);
+  const [investmentError, setInvestmentError] = useState<string | null>(null);
 
-    setHasLoadedStorage(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hasLoadedStorage) return;
-
-    saveFinanceStorageData({
-      incomeItems,
-      expenseItems,
-      investmentItems,
-      loanItems,
-    });
-  }, [hasLoadedStorage, incomeItems, expenseItems, investmentItems, loanItems]);
+  const [loanItems, setLoanItems] = useState<LoanItem[]>([]);
+  const [isLoanLoading, setIsLoanLoading] = useState(true);
+  const [loanError, setLoanError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -192,6 +159,39 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadLoanItems() {
+      try {
+        setIsLoanLoading(true);
+        setLoanError(null);
+
+        const data = await getLoanItems();
+
+        if (isMounted) {
+          setLoanItems(data);
+        }
+      } catch (error) {
+        console.error("Failed to load loan items:", error);
+
+        if (isMounted) {
+          setLoanError("Failed to load loan records.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoanLoading(false);
+        }
+      }
+    }
+
+    loadLoanItems();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   async function createIncome(payload: CreateIncomePayload) {
     const createdIncome = await createIncomeItem(payload);
 
@@ -203,6 +203,14 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     setIncomeItems((currentItems) =>
       currentItems.map((item) => (item.id === incomeId ? updatedIncome : item)),
+    );
+  }
+
+  async function deleteIncome(incomeId: string) {
+    await deleteIncomeItem(incomeId);
+
+    setIncomeItems((currentItems) =>
+      currentItems.filter((item) => item.id !== incomeId),
     );
   }
 
@@ -225,6 +233,14 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
+  async function deleteExpense(expenseId: string) {
+    await deleteExpenseItem(expenseId);
+
+    setExpenseItems((currentItems) =>
+      currentItems.filter((item) => item.id !== expenseId),
+    );
+  }
+
   async function createInvestment(payload: CreateInvestmentPayload) {
     const createdInvestment = await createInvestmentItem(payload);
 
@@ -244,76 +260,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function createLoan(payload: CreateLoanPayload) {
-    const now = new Date().toISOString();
-
-    const status: LoanItem["status"] =
-      payload.remainingBalance <= 0 ? "PAID_OFF" : "ACTIVE";
-
-    const newLoan: LoanItem = {
-      id: createTemporaryId("loan"),
-      userId: "user_1",
-      title: payload.title,
-      lenderName: payload.lenderName,
-      category: payload.category,
-      principalAmount: payload.principalAmount,
-      remainingBalance: payload.remainingBalance,
-      monthlyPayment: payload.monthlyPayment,
-      interestRate: payload.interestRate,
-      dueDate: payload.dueDate,
-      status,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    setLoanItems((currentItems) => [newLoan, ...currentItems]);
-  }
-
-  function updateLoan(loanId: string, payload: CreateLoanPayload) {
-    const now = new Date().toISOString();
-
-    setLoanItems((currentItems) =>
-      currentItems.map((item) => {
-        if (item.id !== loanId) {
-          return item;
-        }
-
-        const status: LoanItem["status"] =
-          payload.remainingBalance <= 0 ? "PAID_OFF" : "ACTIVE";
-
-        return {
-          ...item,
-          title: payload.title,
-          lenderName: payload.lenderName,
-          category: payload.category,
-          principalAmount: payload.principalAmount,
-          remainingBalance: payload.remainingBalance,
-          monthlyPayment: payload.monthlyPayment,
-          interestRate: payload.interestRate,
-          dueDate: payload.dueDate,
-          status,
-          updatedAt: now,
-        };
-      }),
-    );
-  }
-
-  async function deleteIncome(incomeId: string) {
-    await deleteIncomeItem(incomeId);
-
-    setIncomeItems((currentItems) =>
-      currentItems.filter((item) => item.id !== incomeId),
-    );
-  }
-
-  async function deleteExpense(expenseId: string) {
-    await deleteExpenseItem(expenseId);
-
-    setExpenseItems((currentItems) =>
-      currentItems.filter((item) => item.id !== expenseId),
-    );
-  }
-
   async function deleteInvestment(investmentId: string) {
     await deleteInvestmentItem(investmentId);
 
@@ -322,7 +268,23 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     );
   }
 
-  function deleteLoan(loanId: string) {
+  async function createLoan(payload: CreateLoanPayload) {
+    const createdLoan = await createLoanItem(payload);
+
+    setLoanItems((currentItems) => [createdLoan, ...currentItems]);
+  }
+
+  async function updateLoan(loanId: string, payload: CreateLoanPayload) {
+    const updatedLoan = await updateLoanItem(loanId, payload);
+
+    setLoanItems((currentItems) =>
+      currentItems.map((item) => (item.id === loanId ? updatedLoan : item)),
+    );
+  }
+
+  async function deleteLoan(loanId: string) {
+    await deleteLoanItem(loanId);
+
     setLoanItems((currentItems) =>
       currentItems.filter((item) => item.id !== loanId),
     );
@@ -330,8 +292,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
   function resetFinanceData() {
     clearFinanceStorageData();
-
-    setLoanItems(mockLoanItems);
   }
 
   const value: FinanceContextValue = {
@@ -339,25 +299,32 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     expenseItems,
     investmentItems,
     loanItems,
-    createIncome,
-    createExpense,
-    createInvestment,
-    createLoan,
-    deleteIncome,
-    deleteExpense,
-    deleteInvestment,
-    deleteLoan,
-    resetFinanceData,
-    updateIncome,
-    updateExpense,
-    updateInvestment,
-    updateLoan,
+
     isIncomeLoading,
     incomeError,
     isExpenseLoading,
     expenseError,
     isInvestmentLoading,
     investmentError,
+    isLoanLoading,
+    loanError,
+
+    createIncome,
+    createExpense,
+    createInvestment,
+    createLoan,
+
+    updateIncome,
+    updateExpense,
+    updateInvestment,
+    updateLoan,
+
+    deleteIncome,
+    deleteExpense,
+    deleteInvestment,
+    deleteLoan,
+
+    resetFinanceData,
   };
 
   return (
