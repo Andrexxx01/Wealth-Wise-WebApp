@@ -39,12 +39,17 @@ export default function AddLoanDialog({
     onOpenChange(nextOpen);
   }
 
-  function onSubmit(values: CreateLoanFormValues) {
-    const payload = transformLoanFormValues(values);
+  async function onSubmit(values: CreateLoanFormValues) {
+    try {
+      const payload = transformLoanFormValues(values);
 
-    onCreateLoan(payload);
-    reset();
-    onOpenChange(false);
+      await onCreateLoan(payload);
+
+      reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to create loan:", error);
+    }
   }
 
   return (

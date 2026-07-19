@@ -39,12 +39,17 @@ export default function AddIncomeDialog({
     onOpenChange(nextOpen);
   }
 
-  function onSubmit(values: CreateIncomeFormValues) {
-    const payload = transformIncomeFormValues(values);
+  async function onSubmit(values: CreateIncomeFormValues) {
+    try {
+      const payload = transformIncomeFormValues(values);
 
-    onCreateIncome(payload);
-    reset();
-    onOpenChange(false);
+      await onCreateIncome(payload);
+
+      reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to create income:", error);
+    }
   }
 
   return (

@@ -39,12 +39,17 @@ export default function AddInvestmentDialog({
     onOpenChange(nextOpen);
   }
 
-  function onSubmit(values: CreateInvestmentFormValues) {
-    const payload = transformInvestmentFormValues(values);
+  async function onSubmit(values: CreateInvestmentFormValues) {
+    try {
+      const payload = transformInvestmentFormValues(values);
 
-    onCreateInvestment(payload);
-    reset();
-    onOpenChange(false);
+      await onCreateInvestment(payload);
+
+      reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to create investment:", error);
+    }
   }
 
   return (

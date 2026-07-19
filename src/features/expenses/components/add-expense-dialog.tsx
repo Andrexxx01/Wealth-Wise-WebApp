@@ -39,12 +39,17 @@ export default function AddExpenseDialog({
     onOpenChange(nextOpen);
   }
 
-  function onSubmit(values: CreateExpenseFormValues) {
-    const payload = transformExpenseFormValues(values);
+  async function onSubmit(values: CreateExpenseFormValues) {
+    try {
+      const payload = transformExpenseFormValues(values);
 
-    onCreateExpense(payload);
-    reset();
-    onOpenChange(false);
+      await onCreateExpense(payload);
+
+      reset();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to create expense:", error);
+    }
   }
 
   return (

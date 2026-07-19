@@ -12,33 +12,39 @@ import type { LoanItem } from "@/types/loan";
 export type AddIncomeDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateIncome: (payload: CreateIncomePayload) => void;
+  onCreateIncome: (payload: CreateIncomePayload) => Promise<void>;
 };
 
 export type EditIncomeDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   income: IncomeItem | null;
-  onUpdateIncome: (incomeId: string, payload: CreateIncomePayload) => void;
+  onUpdateIncome: (
+    incomeId: string,
+    payload: CreateIncomePayload,
+  ) => Promise<void>;
 };
 
 export type AddExpenseDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateExpense: (payload: CreateExpensePayload) => void;
+  onCreateExpense: (payload: CreateExpensePayload) => Promise<void>;
 };
 
 export type EditExpenseDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   expense: ExpenseItem | null;
-  onUpdateExpense: (expenseId: string, payload: CreateExpensePayload) => void;
+  onUpdateExpense: (
+    expenseId: string,
+    payload: CreateExpensePayload,
+  ) => Promise<void>;
 };
 
 export type AddInvestmentDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateInvestment: (payload: CreateInvestmentPayload) => void;
+  onCreateInvestment: (payload: CreateInvestmentPayload) => Promise<void>;
 };
 
 export type EditInvestmentDialogProps = {
@@ -48,18 +54,18 @@ export type EditInvestmentDialogProps = {
   onUpdateInvestment: (
     investmentId: string,
     payload: CreateInvestmentPayload,
-  ) => void;
+  ) => Promise<void>;
 };
 
 export type AddLoanDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreateLoan: (payload: CreateLoanPayload) => void;
+  onCreateLoan: (payload: CreateLoanPayload) => Promise<void>;
 };
 
 export type EditLoanDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   loan: LoanItem | null;
-  onUpdateLoan: (loanId: string, payload: CreateLoanPayload) => void;
+  onUpdateLoan: (loanId: string, payload: CreateLoanPayload) => Promise<void>;
 };
