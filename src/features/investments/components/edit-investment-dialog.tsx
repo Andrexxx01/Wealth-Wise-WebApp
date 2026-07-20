@@ -39,13 +39,18 @@ export default function EditInvestmentDialog({
     onOpenChange(false);
   }
 
-  function onSubmit(values: CreateInvestmentFormValues) {
+  async function onSubmit(values: CreateInvestmentFormValues) {
     if (!investment) return;
 
-    const payload = transformInvestmentFormValues(values);
+    try {
+      const payload = transformInvestmentFormValues(values);
 
-    onUpdateInvestment(investment.id, payload);
-    onOpenChange(false);
+      await onUpdateInvestment(investment.id, payload);
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to update investment:", error);
+    }
   }
 
   return (

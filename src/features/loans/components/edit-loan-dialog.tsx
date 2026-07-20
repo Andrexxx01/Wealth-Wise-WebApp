@@ -41,13 +41,18 @@ export default function EditLoanDialog({
     onOpenChange(false);
   }
 
-  function onSubmit(values: CreateLoanFormValues) {
+  async function onSubmit(values: CreateLoanFormValues) {
     if (!loan) return;
 
-    const payload = transformLoanFormValues(values);
+    try {
+      const payload = transformLoanFormValues(values);
 
-    onUpdateLoan(loan.id, payload);
-    onOpenChange(false);
+      await onUpdateLoan(loan.id, payload);
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to update loan:", error);
+    }
   }
 
   return (

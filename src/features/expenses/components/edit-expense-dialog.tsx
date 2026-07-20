@@ -39,13 +39,18 @@ export default function EditExpenseDialog({
     onOpenChange(false);
   }
 
-  function onSubmit(values: CreateExpenseFormValues) {
+  async function onSubmit(values: CreateExpenseFormValues) {
     if (!expense) return;
 
-    const payload = transformExpenseFormValues(values);
+    try {
+      const payload = transformExpenseFormValues(values);
 
-    onUpdateExpense(expense.id, payload);
-    onOpenChange(false);
+      await onUpdateExpense(expense.id, payload);
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to update expense:", error);
+    }
   }
 
   return (

@@ -39,13 +39,18 @@ export default function EditIncomeDialog({
     onOpenChange(false);
   }
 
-  function onSubmit(values: CreateIncomeFormValues) {
+  async function onSubmit(values: CreateIncomeFormValues) {
     if (!income) return;
 
-    const payload = transformIncomeFormValues(values);
+    try {
+      const payload = transformIncomeFormValues(values);
 
-    onUpdateIncome(income.id, payload);
-    onOpenChange(false);
+      await onUpdateIncome(income.id, payload);
+
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to update income:", error);
+    }
   }
 
   return (
