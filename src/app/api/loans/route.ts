@@ -1,17 +1,28 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { serializeLoan } from "@/features/loans/lib/loan-serializer";
 import { loanApiSchema } from "@/features/loans/schemas/loan-api.schema";
-import { getDemoUserId } from "@/lib/demo-user";
+import { serializeLoan } from "@/features/loans/lib/loan-serializer";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const userId = await getDemoUserId();
+    const userId = await getCurrentUserId();
 
-    const loans = await prisma.loan.findMany({
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const loanItems = await prisma.loan.findMany({
       where: {
         userId,
       },
@@ -21,14 +32,14 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      data: loans.map(serializeLoan),
+      data: loanItems.map(serializeLoan),
     });
   } catch (error) {
     console.error("GET /api/loans error:", error);
 
     return NextResponse.json(
       {
-        message: "Failed to fetch loan records.",
+        message: "Failed to load loan records.",
       },
       {
         status: 500,
@@ -39,10 +50,21 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const body = await request.json();
     const parsedBody = loanApiSchema.parse(body);
-
-    const userId = await getDemoUserId();
 
     const loan = await prisma.loan.create({
       data: {
@@ -53,11 +75,7 @@ export async function POST(request: Request) {
         principalAmount: parsedBody.principalAmount,
         remainingBalance: parsedBody.remainingBalance,
         monthlyPayment: parsedBody.monthlyPayment,
-        interestRate:
-          parsedBody.interestRate === null ||
-          parsedBody.interestRate === undefined
-            ? null
-            : parsedBody.interestRate,
+        interestRate: parsedBody.interestRate ?? null,
         dueDate: parsedBody.dueDate ? new Date(parsedBody.dueDate) : null,
         status: parsedBody.status,
       },

@@ -1,17 +1,28 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { serializeInvestment } from "@/features/investments/lib/investment-serializer";
 import { investmentApiSchema } from "@/features/investments/schemas/investment-api.schema";
-import { getDemoUserId } from "@/lib/demo-user";
+import { serializeInvestment } from "@/features/investments/lib/investment-serializer";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const userId = await getDemoUserId();
+    const userId = await getCurrentUserId();
 
-    const investments = await prisma.investment.findMany({
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const investmentItems = await prisma.investment.findMany({
       where: {
         userId,
       },
@@ -21,14 +32,14 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      data: investments.map(serializeInvestment),
+      data: investmentItems.map(serializeInvestment),
     });
   } catch (error) {
     console.error("GET /api/investments error:", error);
 
     return NextResponse.json(
       {
-        message: "Failed to fetch investment records.",
+        message: "Failed to load investment records.",
       },
       {
         status: 500,
@@ -39,10 +50,21 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const body = await request.json();
     const parsedBody = investmentApiSchema.parse(body);
-
-    const userId = await getDemoUserId();
 
     const investment = await prisma.investment.create({
       data: {
@@ -52,7 +74,7 @@ export async function POST(request: Request) {
         investedAmount: parsedBody.investedAmount,
         currentValue: parsedBody.currentValue,
         investedAt: new Date(parsedBody.investedAt),
-        notes: parsedBody.notes?.trim() ? parsedBody.notes.trim() : null,
+        notes: parsedBody.notes ?? null,
       },
     });
 

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
-import { serializeLoan } from "@/features/loans/lib/loan-serializer";
 import { loanApiSchema } from "@/features/loans/schemas/loan-api.schema";
-import { getDemoUserId } from "@/lib/demo-user";
+import { serializeLoan } from "@/features/loans/lib/loan-serializer";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -15,11 +15,20 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const { loanId } = await context.params;
-    const body = await request.json();
-    const parsedBody = loanApiSchema.parse(body);
+    const userId = await getCurrentUserId();
 
-    const userId = await getDemoUserId();
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const { loanId } = await context.params;
 
     const existingLoan = await prisma.loan.findFirst({
       where: {
@@ -39,9 +48,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const body = await request.json();
+    const parsedBody = loanApiSchema.parse(body);
+
     const updatedLoan = await prisma.loan.update({
       where: {
-        id: loanId,
+        id: existingLoan.id,
       },
       data: {
         title: parsedBody.title,
@@ -50,11 +62,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         principalAmount: parsedBody.principalAmount,
         remainingBalance: parsedBody.remainingBalance,
         monthlyPayment: parsedBody.monthlyPayment,
-        interestRate:
-          parsedBody.interestRate === null ||
-          parsedBody.interestRate === undefined
-            ? null
-            : parsedBody.interestRate,
+        interestRate: parsedBody.interestRate ?? null,
         dueDate: parsedBody.dueDate ? new Date(parsedBody.dueDate) : null,
         status: parsedBody.status,
       },
@@ -91,8 +99,20 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const { loanId } = await context.params;
-    const userId = await getDemoUserId();
 
     const existingLoan = await prisma.loan.findFirst({
       where: {
@@ -114,7 +134,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     await prisma.loan.delete({
       where: {
-        id: loanId,
+        id: existingLoan.id,
       },
     });
 
