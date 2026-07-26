@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { expenseApiSchema } from "@/features/expenses/schemas/expense-api.schema";
 import { serializeExpense } from "@/features/expenses/lib/expense-serializer";
-import { getDemoUserId } from "@/lib/demo-user";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -15,11 +15,20 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const { expenseId } = await context.params;
-    const body = await request.json();
-    const parsedBody = expenseApiSchema.parse(body);
+    const userId = await getCurrentUserId();
 
-    const userId = await getDemoUserId();
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const { expenseId } = await context.params;
 
     const existingExpense = await prisma.expense.findFirst({
       where: {
@@ -39,9 +48,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const body = await request.json();
+    const parsedBody = expenseApiSchema.parse(body);
+
     const updatedExpense = await prisma.expense.update({
       where: {
-        id: expenseId,
+        id: existingExpense.id,
       },
       data: {
         title: parsedBody.title,
@@ -49,7 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         type: parsedBody.type,
         amount: parsedBody.amount,
         spentAt: new Date(parsedBody.spentAt),
-        notes: parsedBody.notes?.trim() ? parsedBody.notes.trim() : null,
+        notes: parsedBody.notes ?? null,
       },
     });
 
@@ -84,8 +96,20 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const { expenseId } = await context.params;
-    const userId = await getDemoUserId();
 
     const existingExpense = await prisma.expense.findFirst({
       where: {
@@ -107,7 +131,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     await prisma.expense.delete({
       where: {
-        id: expenseId,
+        id: existingExpense.id,
       },
     });
 

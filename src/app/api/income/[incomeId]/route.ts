@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { incomeApiSchema } from "@/features/income/schemas/income-api.schema";
 import { serializeIncome } from "@/features/income/lib/income-serializer";
-import { getDemoUserId } from "@/lib/demo-user";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -15,11 +15,20 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const { incomeId } = await context.params;
-    const body = await request.json();
-    const parsedBody = incomeApiSchema.parse(body);
+    const userId = await getCurrentUserId();
 
-    const userId = await getDemoUserId();
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const { incomeId } = await context.params;
 
     const existingIncome = await prisma.income.findFirst({
       where: {
@@ -39,9 +48,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
+    const body = await request.json();
+    const parsedBody = incomeApiSchema.parse(body);
+
     const updatedIncome = await prisma.income.update({
       where: {
-        id: incomeId,
+        id: existingIncome.id,
       },
       data: {
         title: parsedBody.title,
@@ -49,7 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         amount: parsedBody.amount,
         receivedAt: new Date(parsedBody.receivedAt),
         frequency: parsedBody.frequency,
-        notes: parsedBody.notes?.trim() ? parsedBody.notes.trim() : null,
+        notes: parsedBody.notes ?? null,
       },
     });
 
@@ -84,8 +96,20 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const { incomeId } = await context.params;
-    const userId = await getDemoUserId();
 
     const existingIncome = await prisma.income.findFirst({
       where: {
@@ -107,7 +131,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     await prisma.income.delete({
       where: {
-        id: incomeId,
+        id: existingIncome.id,
       },
     });
 

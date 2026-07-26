@@ -2,16 +2,27 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { incomeApiSchema } from "@/features/income/schemas/income-api.schema";
 import { serializeIncome } from "@/features/income/lib/income-serializer";
-import { getDemoUserId } from "@/lib/demo-user";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const userId = await getDemoUserId();
+    const userId = await getCurrentUserId();
 
-    const incomes = await prisma.income.findMany({
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const incomeItems = await prisma.income.findMany({
       where: {
         userId,
       },
@@ -21,14 +32,14 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      data: incomes.map(serializeIncome),
+      data: incomeItems.map(serializeIncome),
     });
   } catch (error) {
     console.error("GET /api/income error:", error);
 
     return NextResponse.json(
       {
-        message: "Failed to fetch income records.",
+        message: "Failed to load income records.",
       },
       {
         status: 500,
@@ -39,10 +50,21 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const body = await request.json();
     const parsedBody = incomeApiSchema.parse(body);
-
-    const userId = await getDemoUserId();
 
     const income = await prisma.income.create({
       data: {
@@ -52,7 +74,7 @@ export async function POST(request: Request) {
         amount: parsedBody.amount,
         receivedAt: new Date(parsedBody.receivedAt),
         frequency: parsedBody.frequency,
-        notes: parsedBody.notes?.trim() ? parsedBody.notes.trim() : null,
+        notes: parsedBody.notes ?? null,
       },
     });
 

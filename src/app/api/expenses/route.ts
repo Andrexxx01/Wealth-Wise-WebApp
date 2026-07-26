@@ -2,16 +2,27 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { expenseApiSchema } from "@/features/expenses/schemas/expense-api.schema";
 import { serializeExpense } from "@/features/expenses/lib/expense-serializer";
-import { getDemoUserId } from "@/lib/demo-user";
+import { getCurrentUserId } from "@/lib/current-user";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const userId = await getDemoUserId();
+    const userId = await getCurrentUserId();
 
-    const expenses = await prisma.expense.findMany({
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
+    const expenseItems = await prisma.expense.findMany({
       where: {
         userId,
       },
@@ -21,14 +32,14 @@ export async function GET() {
     });
 
     return NextResponse.json({
-      data: expenses.map(serializeExpense),
+      data: expenseItems.map(serializeExpense),
     });
   } catch (error) {
     console.error("GET /api/expenses error:", error);
 
     return NextResponse.json(
       {
-        message: "Failed to fetch expense records.",
+        message: "Failed to load expense records.",
       },
       {
         status: 500,
@@ -39,10 +50,21 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      return NextResponse.json(
+        {
+          message: "Unauthorized.",
+        },
+        {
+          status: 401,
+        },
+      );
+    }
+
     const body = await request.json();
     const parsedBody = expenseApiSchema.parse(body);
-
-    const userId = await getDemoUserId();
 
     const expense = await prisma.expense.create({
       data: {
@@ -52,7 +74,7 @@ export async function POST(request: Request) {
         type: parsedBody.type,
         amount: parsedBody.amount,
         spentAt: new Date(parsedBody.spentAt),
-        notes: parsedBody.notes?.trim() ? parsedBody.notes.trim() : null,
+        notes: parsedBody.notes ?? null,
       },
     });
 
