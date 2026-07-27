@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { expenseApiSchema } from "@/features/expenses/schemas/expense-api.schema";
 import { serializeExpense } from "@/features/expenses/lib/expense-serializer";
-import { getCurrentUserId } from "@/lib/current-user";
+import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -15,18 +15,13 @@ type RouteContext = {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const userId = await getCurrentUserId();
+    const authResult = await getAuthenticatedUserId();
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
-        {
-          status: 401,
-        },
-      );
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     const { expenseId } = await context.params;
 
@@ -96,18 +91,13 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
-    const userId = await getCurrentUserId();
+    const authResult = await getAuthenticatedUserId();
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
-        {
-          status: 401,
-        },
-      );
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     const { expenseId } = await context.params;
 
