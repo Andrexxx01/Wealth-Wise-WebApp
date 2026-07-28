@@ -2,25 +2,20 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { loanApiSchema } from "@/features/loans/schemas/loan-api.schema";
 import { serializeLoan } from "@/features/loans/lib/loan-serializer";
-import { getCurrentUserId } from "@/lib/current-user";
+import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const userId = await getCurrentUserId();
+    const authResult = await getAuthenticatedUserId();
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
-        {
-          status: 401,
-        },
-      );
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     const loanItems = await prisma.loan.findMany({
       where: {
@@ -50,18 +45,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const userId = await getCurrentUserId();
+    const authResult = await getAuthenticatedUserId();
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
-        {
-          status: 401,
-        },
-      );
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     const body = await request.json();
     const parsedBody = loanApiSchema.parse(body);

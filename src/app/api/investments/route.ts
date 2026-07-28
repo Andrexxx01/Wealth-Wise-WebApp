@@ -2,25 +2,20 @@ import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { investmentApiSchema } from "@/features/investments/schemas/investment-api.schema";
 import { serializeInvestment } from "@/features/investments/lib/investment-serializer";
-import { getCurrentUserId } from "@/lib/current-user";
+import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const userId = await getCurrentUserId();
+    const authResult = await getAuthenticatedUserId();
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
-        {
-          status: 401,
-        },
-      );
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     const investmentItems = await prisma.investment.findMany({
       where: {
@@ -50,18 +45,13 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const userId = await getCurrentUserId();
+    const authResult = await getAuthenticatedUserId();
 
-    if (!userId) {
-      return NextResponse.json(
-        {
-          message: "Unauthorized.",
-        },
-        {
-          status: 401,
-        },
-      );
+    if (!authResult.success) {
+      return authResult.response;
     }
+
+    const userId = authResult.userId;
 
     const body = await request.json();
     const parsedBody = investmentApiSchema.parse(body);
