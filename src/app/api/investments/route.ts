@@ -4,6 +4,7 @@ import { investmentApiSchema } from "@/features/investments/schemas/investment-a
 import { serializeInvestment } from "@/features/investments/lib/investment-serializer";
 import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
+import { enforceFinanceRecordLimit } from "@/lib/finance-plan-limit";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,12 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const parsedBody = investmentApiSchema.parse(body);
+
+    const limitResponse = await enforceFinanceRecordLimit(userId, "investment");
+
+    if (limitResponse) {
+      return limitResponse;
+    }
 
     const investment = await prisma.investment.create({
       data: {

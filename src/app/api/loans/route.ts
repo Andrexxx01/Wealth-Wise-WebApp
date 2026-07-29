@@ -4,6 +4,7 @@ import { loanApiSchema } from "@/features/loans/schemas/loan-api.schema";
 import { serializeLoan } from "@/features/loans/lib/loan-serializer";
 import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
+import { enforceFinanceRecordLimit } from "@/lib/finance-plan-limit";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,12 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const parsedBody = loanApiSchema.parse(body);
+
+    const limitResponse = await enforceFinanceRecordLimit(userId, "loan");
+
+    if (limitResponse) {
+      return limitResponse;
+    }
 
     const loan = await prisma.loan.create({
       data: {

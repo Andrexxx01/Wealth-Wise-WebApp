@@ -4,6 +4,7 @@ import { expenseApiSchema } from "@/features/expenses/schemas/expense-api.schema
 import { serializeExpense } from "@/features/expenses/lib/expense-serializer";
 import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
+import { enforceFinanceRecordLimit } from "@/lib/finance-plan-limit";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,12 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const parsedBody = expenseApiSchema.parse(body);
+
+    const limitResponse = await enforceFinanceRecordLimit(userId, "expense");
+
+    if (limitResponse) {
+      return limitResponse;
+    }
 
     const expense = await prisma.expense.create({
       data: {

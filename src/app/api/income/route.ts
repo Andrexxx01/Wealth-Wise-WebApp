@@ -4,6 +4,7 @@ import { incomeApiSchema } from "@/features/income/schemas/income-api.schema";
 import { serializeIncome } from "@/features/income/lib/income-serializer";
 import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
+import { enforceFinanceRecordLimit } from "@/lib/finance-plan-limit";
 
 export const runtime = "nodejs";
 
@@ -55,6 +56,12 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const parsedBody = incomeApiSchema.parse(body);
+
+    const limitResponse = await enforceFinanceRecordLimit(userId, "income");
+
+    if (limitResponse) {
+      return limitResponse;
+    }
 
     const income = await prisma.income.create({
       data: {
