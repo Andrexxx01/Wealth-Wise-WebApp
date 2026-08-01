@@ -3,24 +3,54 @@
 import Link from "next/link";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
-import ResetDemoDataButton from "@/components/dashboard/reset-demo-data-button";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { useCurrentUser } from "@/features/auth/components/current-user-provider";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import PlanBadge from "@/features/subscription/components/plan-badge";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
+import type { SubscriptionStatus } from "@/types/user-subscription";
+
+function formatSubscriptionStatus(status: SubscriptionStatus) {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+function getRecordLimitLabel(plan: "FREE" | "PRO") {
+  if (plan === "PRO") {
+    return "Unlimited records";
+  }
+
+  return "50 records per finance category";
+}
+
+function getSubscriptionDescription(
+  plan: "FREE" | "PRO",
+  status: SubscriptionStatus,
+) {
+  if (plan === "PRO" && status === "ACTIVE") {
+    return "Your Pro subscription is active.";
+  }
+
+  if (plan === "PRO") {
+    return `Pro plan with ${formatSubscriptionStatus(status)} status.`;
+  }
+
+  return "Your account currently uses the Free plan.";
+}
 
 export default function SettingsPageClient() {
-  const {
-    incomeItems,
-    expenseItems,
-    investmentItems,
-    loanItems,
-    resetFinanceData,
-  } = useFinance();
+  const { currentUser } = useCurrentUser();
+
+  const { incomeItems, expenseItems, investmentItems, loanItems } =
+    useFinance();
 
   const {
     netWorth,
@@ -37,11 +67,16 @@ export default function SettingsPageClient() {
     investmentItems.length +
     loanItems.length;
 
+  const subscriptionDescription = getSubscriptionDescription(
+    currentUser.plan,
+    currentUser.subscriptionStatus,
+  );
+
   const dataSummaryCards: SummaryCardProps[] = [
     {
       label: "Total Records",
       value: String(totalRecords),
-      helper: "All local finance records",
+      helper: "All records stored in Neon",
     },
     {
       label: "Net Worth",
@@ -52,7 +87,7 @@ export default function SettingsPageClient() {
     {
       label: "Savings Rate",
       value: formatPercentage(savingsRate),
-      helper: "Income vs expenses",
+      helper: "Income compared with expenses",
       tone: savingsRate >= 0 ? "positive" : "danger",
     },
     {
@@ -67,7 +102,7 @@ export default function SettingsPageClient() {
       <SectionHeader
         eyebrow="Settings"
         title="App settings"
-        description="Manage temporary app preferences, local browser storage, demo data, and project status while WealthWise is still in frontend demo mode."
+        description="Review your account, subscription plan, database configuration, and current WealthWise application status."
       />
 
       <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -82,34 +117,56 @@ export default function SettingsPageClient() {
         ))}
       </section>
 
-      <section className="grid grid-cols-1 gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+      <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
             <DashboardCardHeader
-              eyebrow="Storage"
-              title="Local browser persistence"
-              description="WealthWise currently stores demo data in your browser using localStorage."
+              eyebrow="Account"
+              title="Account and subscription"
+              description="Your account information is loaded from the authenticated user session."
             />
+
+            <div className="mb-5 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-sm font-bold text-slate-900">
+                    {currentUser.name}
+                  </p>
+
+                  <p className="mt-1 break-all text-sm font-medium text-slate-500">
+                    {currentUser.email || "No email available"}
+                  </p>
+                </div>
+
+                <PlanBadge plan={currentUser.plan} />
+              </div>
+
+              <p className="mt-4 text-sm leading-6 text-slate-500">
+                {subscriptionDescription}
+              </p>
+            </div>
 
             <div className="space-y-4">
               <DashboardListItem
-                title="Storage Engine"
-                value="localStorage"
-                meta="Temporary frontend persistence"
+                title="Account Plan"
+                value={`${currentUser.plan} Plan`}
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
-                title="Database"
-                value="Not connected yet"
-                meta="Prisma + PostgreSQL will be added later"
+                title="Subscription Status"
+                value={formatSubscriptionStatus(currentUser.subscriptionStatus)}
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
-                title="Data Scope"
-                value="This browser only"
-                meta="Data will not sync across devices yet"
+                title="Record Limit"
+                value={getRecordLimitLabel(currentUser.plan)}
+                meta={
+                  currentUser.plan === "FREE"
+                    ? "Applies separately to income, expenses, investments, and loans"
+                    : "Pro users are not limited by record count"
+                }
                 className="border-none bg-slate-50 p-5"
               />
             </div>
@@ -119,25 +176,42 @@ export default function SettingsPageClient() {
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
             <DashboardCardHeader
-              eyebrow="Reset Data"
-              title="Restore demo records"
-              description="Use this when you want to remove all local changes and return the app to the original mock data."
+              eyebrow="Data Storage"
+              title="Cloud database configuration"
+              description="Financial records are stored persistently and separated by authenticated user."
             />
 
-            <DashboardListItem
-              title="Reset Demo Data"
-              value="Restore original data"
-              meta="This removes added/deleted local records from your browser storage."
-              className="border-none bg-slate-50 p-5"
-            >
-              <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm leading-6 text-slate-500">
-                  This action cannot be undone in the current demo mode.
-                </p>
+            <div className="space-y-4">
+              <DashboardListItem
+                title="Database"
+                value="Neon PostgreSQL"
+                meta="Persistent managed PostgreSQL database"
+                tone="positive"
+                className="border-none bg-slate-50 p-5"
+              />
 
-                <ResetDemoDataButton onReset={resetFinanceData} />
-              </div>
-            </DashboardListItem>
+              <DashboardListItem
+                title="Database Access"
+                value="Prisma ORM"
+                meta="Server-side database queries through API routes"
+                tone="positive"
+                className="border-none bg-slate-50 p-5"
+              />
+
+              <DashboardListItem
+                title="Data Scope"
+                value="Current user only"
+                meta="Every finance record is linked to your authenticated user ID"
+                className="border-none bg-slate-50 p-5"
+              />
+
+              <DashboardListItem
+                title="Persistence"
+                value="Cloud synchronized"
+                meta="Records remain available after browser refresh or device changes"
+                className="border-none bg-slate-50 p-5"
+              />
+            </div>
           </CardContent>
         </Card>
       </section>
@@ -147,36 +221,39 @@ export default function SettingsPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="App Preferences"
-              title="Current demo preferences"
-              description="These settings are still static for now. Later, they can be connected to real user preferences."
+              title="Current display preferences"
+              description="These are the current application defaults. Editable preferences can be added in a later phase."
             />
 
             <div className="space-y-4">
               <DashboardListItem
                 title="Theme"
                 value="Light Mode"
-                meta="Dark mode can be added later"
+                meta="Dark mode is planned for a later phase"
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
                 title="Currency"
                 value="USD"
-                meta="Formatting currently uses currency helper"
-                className="border-none bg-slate-50 p-5"
-              />
-
-              <DashboardListItem
-                title="Chart Range"
-                value="January - June"
-                meta="Current demo chart window"
+                meta="Used by the current currency formatter"
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
                 title="Account Mode"
-                value="Demo Account"
-                meta="Authentication will be connected later"
+                value={
+                  currentUser.plan === "PRO" ? "Pro Account" : "Free Account"
+                }
+                meta={getRecordLimitLabel(currentUser.plan)}
+                className="border-none bg-slate-50 p-5"
+              />
+
+              <DashboardListItem
+                title="Authentication"
+                value="Auth.js Session"
+                meta="Account access is protected by authenticated sessions"
+                tone="positive"
                 className="border-none bg-slate-50 p-5"
               />
             </div>
@@ -186,9 +263,9 @@ export default function SettingsPageClient() {
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
           <CardContent className="p-6">
             <DashboardCardHeader
-              eyebrow="Project Status"
-              title="Frontend demo progress"
-              description="This section explains what already works and what still needs backend integration."
+              eyebrow="System Status"
+              title="Application integration status"
+              description="The core WealthWise frontend and backend services are now connected."
             />
 
             <div className="space-y-4">
@@ -200,25 +277,33 @@ export default function SettingsPageClient() {
               />
 
               <DashboardListItem
-                title="CRUD Demo"
-                value="Create & Delete"
-                meta="Using React state + localStorage"
+                title="Finance CRUD"
+                value="Connected"
+                meta="Create, read, update, and delete through API routes"
                 tone="positive"
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
                 title="Backend API"
-                value="Pending"
-                meta="Next phase: Prisma, PostgreSQL, auth, and API routes"
-                tone="warning"
+                value="Active"
+                meta="Next.js route handlers connected to Prisma"
+                tone="positive"
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
-                title="Production Auth"
-                value="Pending"
-                meta="Login/register modal will connect to real auth later"
+                title="Authentication"
+                value="Active"
+                meta="Registration, credentials login, sessions, and protected routes"
+                tone="positive"
+                className="border-none bg-slate-50 p-5"
+              />
+
+              <DashboardListItem
+                title="Subscription Billing"
+                value="Planned"
+                meta="Stripe Checkout and webhook integration will be added later"
                 tone="warning"
                 className="border-none bg-slate-50 p-5"
               />
@@ -232,7 +317,8 @@ export default function SettingsPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="Current Data Snapshot"
-              title="Financial data stored locally"
+              title="Financial records stored in Neon"
+              description="Record totals and financial values for the currently authenticated user."
             />
 
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">

@@ -18,7 +18,7 @@ import {
 } from "@/lib/finance-dashboard";
 import { buildDashboardSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
-import { mockUserProfile } from "@/lib/mock-data/user";
+import { useCurrentUser } from "@/features/auth/components/current-user-provider";
 
 function getFirstName(fullName: string) {
   return fullName.split(" ")[0] ?? fullName;
@@ -43,6 +43,8 @@ export default function DashboardPageClient() {
     recentActivity,
     financialHealthScore,
   } = useFinanceSummary();
+
+  const { currentUser } = useCurrentUser();
 
   const hasCashFlowData = incomeItems.length > 0 || expenseItems.length > 0;
   const hasAnyFinanceData =
@@ -74,7 +76,7 @@ export default function DashboardPageClient() {
     <div className="space-y-8">
       <SectionHeader
         eyebrow="Overview"
-        title={`Welcome back, ${getFirstName(mockUserProfile.fullName)}`}
+        title={`Welcome back, ${getFirstName(currentUser.name)}`}
         description="Here's a quick view of your financial health, monthly cash flow, investment performance, and current debt position."
       />
 

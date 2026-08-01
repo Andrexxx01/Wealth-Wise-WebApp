@@ -3,11 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import ResetDemoDataButton from "@/components/dashboard/reset-demo-data-button";
 import ProfileDropdown from "@/components/layout/profile-dropdown";
 import { Button } from "@/components/ui/button";
-import { useFinance } from "@/features/finance/components/finance-provider";
-import { mockUserProfile } from "@/lib/mock-data/user";
+import PlanBadge from "@/features/subscription/components/plan-badge";
+import type { SubscriptionStatus, UserPlan } from "@/types/user-subscription";
+import Logo from "@/components/common/logo";
+
+type DashboardNavbarProps = {
+  userName: string;
+  userEmail: string;
+  userImage: string | null;
+  userPlan: UserPlan;
+  subscriptionStatus: SubscriptionStatus;
+};
 
 const dashboardLinks = [
   { label: "Dashboard", href: "/dashboard" },
@@ -61,15 +69,40 @@ function getInitials(fullName: string) {
     .toUpperCase();
 }
 
-export default function DashboardNavbar() {
+function getAccountDescription(
+  userPlan: UserPlan,
+  subscriptionStatus: SubscriptionStatus,
+) {
+  if (userPlan === "PRO" && subscriptionStatus === "ACTIVE") {
+    return "Pro subscription active";
+  }
+
+  if (userPlan === "PRO") {
+    return "Pro account";
+  }
+
+  return "Free account";
+}
+
+export default function DashboardNavbar({
+  userName,
+  userEmail,
+  userImage,
+  userPlan,
+  subscriptionStatus,
+}: DashboardNavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { resetFinanceData } = useFinance();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const fullName = mockUserProfile.fullName;
-  const initials = getInitials(fullName);
+  const fullName = userName.trim() || "User";
+  const initials = getInitials(fullName) || "U";
+
+  const accountDescription = getAccountDescription(
+    userPlan,
+    subscriptionStatus,
+  );
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -81,6 +114,9 @@ export default function DashboardNavbar() {
 
   function handleLogout() {
     setIsMobileMenuOpen(false);
+
+    // Sementara hanya berpindah halaman.
+    // Logout Auth.js akan kita perbaiki pada tahap terakhir.
     router.push("/");
   }
 
@@ -89,14 +125,18 @@ export default function DashboardNavbar() {
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-lg font-black text-white">
-              W
-            </div>
+            <Logo
+              href="/dashboard"
+              showText={false}
+              iconClassName="h-11 w-11"
+              wrapperClassName="shrink-0"
+            />
 
             <div>
               <p className="text-base font-black tracking-tight text-slate-900">
                 WealthWise
               </p>
+
               <p className="text-xs font-medium text-slate-500">
                 Personal Finance Tracker
               </p>
@@ -104,12 +144,17 @@ export default function DashboardNavbar() {
           </Link>
 
           <div className="flex items-center gap-2 xl:hidden">
-            <ResetDemoDataButton onReset={resetFinanceData} size="compact" />
+            <PlanBadge plan={userPlan} />
 
             <Button
               type="button"
               variant="outline"
               aria-expanded={isMobileMenuOpen}
+              aria-label={
+                isMobileMenuOpen
+                  ? "Close navigation menu"
+                  : "Open navigation menu"
+              }
               onClick={handleToggleMobileMenu}
               className="h-10 rounded-xl border-slate-300 bg-white px-3 text-xs font-semibold text-slate-900 hover:bg-slate-100"
             >
@@ -153,15 +198,24 @@ export default function DashboardNavbar() {
             </nav>
 
             <div className="rounded-[24px] bg-white p-3">
-              <div className="mb-3 flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-black text-white">
-                  {initials}
+              <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3">
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-black text-white">
+                    {initials}
+                  </div>
+
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-slate-900">
+                      {fullName}
+                    </p>
+
+                    <p className="truncate text-xs font-medium text-slate-500">
+                      {accountDescription}
+                    </p>
+                  </div>
                 </div>
 
-                <div>
-                  <p className="text-sm font-bold text-slate-900">{fullName}</p>
-                  <p className="text-xs text-slate-500">Demo account</p>
-                </div>
+                <PlanBadge plan={userPlan} />
               </div>
 
               <div className="grid gap-2">
@@ -192,9 +246,25 @@ export default function DashboardNavbar() {
         ) : null}
 
         <div className="hidden items-center gap-3 xl:flex">
-          <ResetDemoDataButton onReset={resetFinanceData} />
+          <PlanBadge plan={userPlan} />
 
-          <ProfileDropdown />
+          <div className="text-right">
+            <p className="max-w-40 truncate text-sm font-bold text-slate-900">
+              {fullName}
+            </p>
+
+            <p className="mt-0.5 text-xs font-medium text-slate-500">
+              {accountDescription}
+            </p>
+          </div>
+
+          <ProfileDropdown
+            userName={userName}
+            userEmail={userEmail}
+            userImage={userImage}
+            userPlan={userPlan}
+            subscriptionStatus={subscriptionStatus}
+          />
         </div>
       </div>
     </header>
