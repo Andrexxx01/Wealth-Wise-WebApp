@@ -14,6 +14,7 @@ import PlanBadge from "@/features/subscription/components/plan-badge";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
 import type { SubscriptionStatus } from "@/types/user-subscription";
+import AccountUsageSection from "@/features/subscription/components/account-usage-section";
 
 function formatSubscriptionStatus(status: SubscriptionStatus) {
   return status
@@ -215,6 +216,8 @@ export default function SettingsPageClient() {
           </CardContent>
         </Card>
       </section>
+
+      <AccountUsageSection />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
