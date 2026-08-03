@@ -14,12 +14,19 @@ import StatsStrip from "@/components/marketing/stats-strip";
 
 type AuthModalType = "login" | "register" | null;
 
-export default function LandingPageClient() {
+type LandingPageClientProps = {
+  isAuthenticated: boolean;
+};
+
+export default function LandingPageClient({
+  isAuthenticated,
+}: LandingPageClientProps) {
   const [activeModal, setActiveModal] = useState<AuthModalType>(null);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900">
       <MarketingNavbar
+        isAuthenticated={isAuthenticated}
         onOpenLogin={() => setActiveModal("login")}
         onOpenRegister={() => setActiveModal("register")}
       />
