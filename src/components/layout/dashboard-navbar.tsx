@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/layout/profile-dropdown";
 import { Button } from "@/components/ui/button";
 import PlanBadge from "@/features/subscription/components/plan-badge";
 import type { SubscriptionStatus, UserPlan } from "@/types/user-subscription";
 import Logo from "@/components/common/logo";
+import LogoutButton from "@/features/auth/components/logout-button";
 
 type DashboardNavbarProps = {
   userName: string;
@@ -92,7 +93,6 @@ export default function DashboardNavbar({
   subscriptionStatus,
 }: DashboardNavbarProps) {
   const pathname = usePathname();
-  const router = useRouter();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -110,14 +110,6 @@ export default function DashboardNavbar({
 
   function handleToggleMobileMenu() {
     setIsMobileMenuOpen((currentValue) => !currentValue);
-  }
-
-  function handleLogout() {
-    setIsMobileMenuOpen(false);
-
-    // Sementara hanya berpindah halaman.
-    // Logout Auth.js akan kita perbaiki pada tahap terakhir.
-    router.push("/");
   }
 
   return (
@@ -233,13 +225,10 @@ export default function DashboardNavbar({
                   );
                 })}
 
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className="rounded-2xl px-4 py-3 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                >
-                  Logout
-                </button>
+                <div className="border-t border-slate-200 pt-4">
+                  <LogoutButton className="rounded-2xl px-4 py-3" />
+                </div>
+
               </div>
             </div>
           </div>

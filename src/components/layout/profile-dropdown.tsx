@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ProfileDropdownProps } from "@/types/profile-dropdown";
+import LogoutButton from "@/features/auth/components/logout-button";
 
 function getInitials(fullName: string) {
   const words = fullName.trim().split(" ").filter(Boolean);
@@ -176,6 +177,9 @@ export default function ProfileDropdown({
                   Upgrade to Pro
                 </Link>
               ) : null}
+            </div>
+            <div className="mt-2 border-t border-slate-100 pt-2">
+              <LogoutButton />
             </div>
           </div>
         </>
