@@ -238,8 +238,8 @@ export default function SettingsPageClient() {
 
               <DashboardListItem
                 title="Currency"
-                value="USD"
-                meta="Used by the current currency formatter"
+                value={currentUser.currency}
+                meta="Your account currency preference"
                 className="border-none bg-slate-50 p-5"
               />
 

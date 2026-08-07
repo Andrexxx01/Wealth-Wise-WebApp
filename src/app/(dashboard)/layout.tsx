@@ -24,6 +24,7 @@ export default async function DashboardLayout({
     image: session.user.image ?? null,
     plan: session.user.plan,
     subscriptionStatus: session.user.subscriptionStatus,
+    currency: session.user.currency,
   };
 
   return (

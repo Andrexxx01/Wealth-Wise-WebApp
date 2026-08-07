@@ -1,4 +1,8 @@
-import type { SubscriptionStatus, UserPlan } from "@/types/user-subscription";
+import type {
+  SubscriptionStatus,
+  UserCurrency,
+  UserPlan,
+} from "@/types/user-subscription";
 
 export type CurrentUser = {
   id: string;
@@ -6,5 +10,6 @@ export type CurrentUser = {
   email: string;
   image: string | null;
   plan: UserPlan;
+  currency: UserCurrency;
   subscriptionStatus: SubscriptionStatus;
 };
