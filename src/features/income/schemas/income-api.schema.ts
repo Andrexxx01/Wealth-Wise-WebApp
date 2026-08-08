@@ -7,4 +7,5 @@ export const incomeApiSchema = z.object({
   receivedAt: z.string().min(1, "Received date is required"),
   frequency: z.string().min(1, "Frequency is required"),
   notes: z.string().optional().nullable(),
+  currency: z.enum(["USD", "IDR"]),
 });

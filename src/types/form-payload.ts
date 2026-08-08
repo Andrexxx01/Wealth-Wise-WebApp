@@ -2,11 +2,13 @@ import type { IncomeCategory, IncomeFrequency } from "@/types/income";
 import type { ExpenseCategory, ExpenseType } from "@/types/expense";
 import type { InvestmentCategory } from "@/types/investment";
 import type { LoanCategory } from "@/types/loan";
+import type { UserCurrency } from "@/types/user-subscription";
 
 export type CreateIncomePayload = {
   title: string;
   category: IncomeCategory;
   amount: number;
+  currency: UserCurrency;
   receivedAt: string;
   frequency: IncomeFrequency;
   notes: string | null;

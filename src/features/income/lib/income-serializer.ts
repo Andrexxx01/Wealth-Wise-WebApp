@@ -8,6 +8,7 @@ type SerializableIncome = {
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
+  currency: "USD" | "IDR";
 };
 
 export function serializeIncome(income: SerializableIncome) {
@@ -21,5 +22,6 @@ export function serializeIncome(income: SerializableIncome) {
     notes: income.notes ?? "",
     createdAt: income.createdAt.toISOString(),
     updatedAt: income.updatedAt.toISOString(),
+    currency: income.currency,
   };
 }

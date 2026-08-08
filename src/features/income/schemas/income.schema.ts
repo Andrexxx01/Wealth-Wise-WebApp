@@ -18,6 +18,8 @@ export const createIncomeSchema = z.object({
     .refine((value) => Number(value) > 0, {
       message: "Amount must be greater than 0.",
     }),
+  
+  currency: z.enum(["USD", "IDR"]),
 
   receivedAt: z.string().min(1, "Received date is required."),
 

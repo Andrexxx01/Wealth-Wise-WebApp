@@ -7,6 +7,7 @@ export const DEFAULT_INCOME_FORM_VALUES: CreateIncomeFormValues = {
   title: "",
   category: "SALARY",
   amount: "",
+  currency: "USD",
   receivedAt: "",
   frequency: "MONTHLY",
   notes: "",

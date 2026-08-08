@@ -13,6 +13,7 @@ export function mapIncomeItemToFormValues(
     title: income.title,
     category: income.category,
     amount: String(income.amount),
+    currency: income.currency,
     receivedAt: income.receivedAt,
     frequency: income.frequency,
     notes: income.notes ?? "",

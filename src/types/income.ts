@@ -1,3 +1,5 @@
+import type { UserCurrency } from "@/types/user-subscription";
+
 export type IncomeCategory =
   | "SALARY"
   | "FREELANCE"
@@ -20,6 +22,7 @@ export interface IncomeItem {
   title: string;
   category: IncomeCategory;
   amount: number;
+  currency: UserCurrency;
   receivedAt: string;
   frequency: IncomeFrequency;
   notes: string | null;
@@ -38,6 +41,7 @@ export type CreateIncomeFormValues = {
   title: string;
   category: IncomeCategory;
   amount: string;
+  currency: UserCurrency;
   receivedAt: string;
   frequency: IncomeFrequency;
   notes?: string;

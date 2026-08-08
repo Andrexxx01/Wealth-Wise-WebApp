@@ -110,3 +110,14 @@ export const LOAN_CATEGORY_OPTIONS = [
   { value: "BUSINESS", label: "Business Loan" },
   { value: "OTHER", label: "Other Loan" },
 ] as const;
+
+export const CURRENCY_OPTIONS = [
+  {
+    value: "USD",
+    label: "USD — US Dollar",
+  },
+  {
+    value: "IDR",
+    label: "IDR — Indonesian Rupiah",
+  },
+] as const;

@@ -26,6 +26,7 @@ export function transformIncomeFormValues(
     title: values.title.trim(),
     category: values.category,
     amount: toNumber(values.amount),
+    currency: values.currency,
     receivedAt: values.receivedAt,
     frequency: values.frequency,
     notes: normalizeOptionalText(values.notes),
