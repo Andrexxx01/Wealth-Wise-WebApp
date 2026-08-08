@@ -99,6 +99,7 @@ model Income {
   title      String
   category   String
   amount     Decimal  @db.Decimal(12, 2)
+  currency   Currency @default(USD)
   receivedAt DateTime
   frequency  String
   notes      String?
@@ -120,6 +121,7 @@ model Expense {
   category  String
   type      String
   amount    Decimal  @db.Decimal(12, 2)
+  currency  Currency @default(USD)
   spentAt   DateTime
   notes     String?
 
@@ -138,6 +140,7 @@ model Investment {
 
   assetName      String
   category       String
+  currency       Currency @default(USD)
   investedAmount Decimal  @db.Decimal(12, 2)
   currentValue   Decimal  @db.Decimal(12, 2)
   investedAt     DateTime
@@ -159,6 +162,7 @@ model Loan {
   title            String
   lenderName       String
   category         String
+  currency         Currency  @default(USD)
   principalAmount  Decimal   @db.Decimal(12, 2)
   remainingBalance Decimal   @db.Decimal(12, 2)
   monthlyPayment   Decimal   @db.Decimal(12, 2)

@@ -1,23 +1,47 @@
-export function formatCurrency(
-  value: number,
-  currency = "USD",
-  locale = "en-US",
-) {
-  return new Intl.NumberFormat(locale, {
+import type { UserCurrency } from "@/types/user-subscription";
+
+type CurrencyConfig = {
+  locale: string;
+  minimumFractionDigits: number;
+  maximumFractionDigits: number;
+};
+
+const currencyConfigs: Record<UserCurrency, CurrencyConfig> = {
+  USD: {
+    locale: "en-US",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  },
+
+  IDR: {
+    locale: "id-ID",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  },
+};
+
+export function formatCurrency(value: number, currency: UserCurrency = "USD") {
+  const config = currencyConfigs[currency];
+
+  return new Intl.NumberFormat(config.locale, {
     style: "currency",
     currency,
-    minimumFractionDigits: 2,
+    currencyDisplay: "symbol",
+    minimumFractionDigits: config.minimumFractionDigits,
+    maximumFractionDigits: config.maximumFractionDigits,
   }).format(value);
 }
 
 export function formatCompactCurrency(
   value: number,
-  currency = "USD",
-  locale = "en-US",
+  currency: UserCurrency = "USD",
 ) {
-  return new Intl.NumberFormat(locale, {
+  const config = currencyConfigs[currency];
+
+  return new Intl.NumberFormat(config.locale, {
     style: "currency",
     currency,
+    currencyDisplay: "symbol",
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);

@@ -81,7 +81,7 @@ export default function SettingsPageClient() {
     },
     {
       label: "Net Worth",
-      value: formatCurrency(netWorth),
+      value: formatCurrency(netWorth, currentUser.currency),
       helper: "Assets minus liabilities",
       tone: netWorth >= 0 ? "positive" : "danger",
     },
@@ -93,7 +93,7 @@ export default function SettingsPageClient() {
     },
     {
       label: "Debt Balance",
-      value: formatCurrency(totalLoanBalance),
+      value: formatCurrency(totalLoanBalance, currentUser.currency),
       helper: "Outstanding loan balance",
     },
   ];
@@ -328,28 +328,28 @@ export default function SettingsPageClient() {
               <DashboardListItem
                 title="Income Records"
                 value={String(incomeItems.length)}
-                meta={formatCurrency(totalIncome)}
+                meta={formatCurrency(totalIncome, currentUser.currency )}
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
                 title="Expense Records"
                 value={String(expenseItems.length)}
-                meta={formatCurrency(totalExpenses)}
+                meta={formatCurrency(totalExpenses, currentUser.currency)}
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
                 title="Investment Records"
                 value={String(investmentItems.length)}
-                meta={formatCurrency(portfolioValue)}
+                meta={formatCurrency(portfolioValue, currentUser.currency)}
                 className="border-none bg-slate-50 p-5"
               />
 
               <DashboardListItem
                 title="Loan Records"
                 value={String(loanItems.length)}
-                meta={formatCurrency(totalLoanBalance)}
+                meta={formatCurrency(totalLoanBalance, currentUser.currency)}
                 className="border-none bg-slate-50 p-5"
               />
             </div>
