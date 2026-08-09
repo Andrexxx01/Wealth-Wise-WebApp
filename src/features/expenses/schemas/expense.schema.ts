@@ -21,6 +21,8 @@ export const createExpenseSchema = z.object({
       message: "Amount must be greater than 0.",
     }),
 
+  currency: z.enum(["USD", "IDR"]),
+
   spentAt: z.string().min(1, "Spent date is required."),
 
   notes: z

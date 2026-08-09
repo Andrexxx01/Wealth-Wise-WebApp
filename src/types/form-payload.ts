@@ -19,6 +19,7 @@ export type CreateExpensePayload = {
   category: ExpenseCategory;
   type: ExpenseType;
   amount: number;
+  currency: UserCurrency;
   spentAt: string;
   notes: string | null;
 };

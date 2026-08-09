@@ -5,6 +5,7 @@ export const expenseApiSchema = z.object({
   category: z.string().min(1, "Category is required"),
   type: z.string().min(1, "Type is required"),
   amount: z.coerce.number().positive("Amount must be greater than 0"),
+  currency: z.enum(["USD", "IDR"]),
   spentAt: z.string().min(1, "Spent date is required"),
   notes: z.string().optional().nullable(),
 });

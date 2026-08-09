@@ -70,6 +70,7 @@ export async function POST(request: Request) {
         category: parsedBody.category,
         type: parsedBody.type,
         amount: parsedBody.amount,
+        currency: parsedBody.currency,
         spentAt: new Date(parsedBody.spentAt),
         notes: parsedBody.notes ?? null,
       },

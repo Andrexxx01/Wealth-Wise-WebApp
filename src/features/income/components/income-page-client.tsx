@@ -50,6 +50,7 @@ export default function IncomePageClient() {
     id: item.id,
     name: item.title,
     amount: item.amount,
+    currency: item.currency,
     frequency: formatIncomeFrequency(item.frequency),
   }));
 
@@ -124,7 +125,7 @@ export default function IncomePageClient() {
                       key={item.id}
                       title={item.name}
                       subtitle={item.frequency}
-                      value={formatCurrency(item.amount)}
+                      value={formatCurrency(item.amount, item.currency)}
                       className="border-none bg-slate-50 p-4"
                     />
                   ))}
@@ -176,7 +177,7 @@ export default function IncomePageClient() {
                       key={item.id}
                       title={item.title}
                       subtitle={formatEnumLabel(item.category)}
-                      value={formatCurrency(item.amount)}
+                      value={formatCurrency(item.amount, item.currency)}
                       meta={formatDate(item.receivedAt)}
                       tone="positive"
                     />

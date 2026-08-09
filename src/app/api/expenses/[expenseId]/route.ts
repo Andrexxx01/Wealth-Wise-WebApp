@@ -55,6 +55,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         category: parsedBody.category,
         type: parsedBody.type,
         amount: parsedBody.amount,
+        currency: parsedBody.currency,
         spentAt: new Date(parsedBody.spentAt),
         notes: parsedBody.notes ?? null,
       },

@@ -175,7 +175,7 @@ export default function ExpensesHistoryPageClient() {
             },
           ]}
         />
-        
+
         {visibleExpenseItems.map((item) => (
           <DashboardListItem
             key={item.id}
@@ -183,7 +183,7 @@ export default function ExpensesHistoryPageClient() {
             subtitle={`${formatExpenseCategory(
               item.category,
             )} • ${formatExpenseType(item.type)}`}
-            value={formatCurrency(item.amount)}
+            value={formatCurrency(item.amount, item.currency)}
             meta={formatDate(item.spentAt)}
           >
             <RecordActionButtons

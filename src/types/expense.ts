@@ -1,3 +1,5 @@
+import type { UserCurrency } from "@/types/user-subscription";
+
 export type ExpenseCategory =
   | "HOUSING"
   | "FOOD"
@@ -20,6 +22,7 @@ export interface ExpenseItem {
   category: ExpenseCategory;
   type: ExpenseType;
   amount: number;
+  currency: UserCurrency;
   spentAt: string;
   notes: string | null;
   createdAt: string;
@@ -38,6 +41,7 @@ export type CreateExpenseFormValues = {
   category: ExpenseCategory;
   type: ExpenseType;
   amount: string;
+  currency: UserCurrency;
   spentAt: string;
   notes?: string;
 };

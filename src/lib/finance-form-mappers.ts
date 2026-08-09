@@ -28,6 +28,7 @@ export function mapExpenseItemToFormValues(
     category: expense.category,
     type: expense.type,
     amount: String(expense.amount),
+    currency: expense.currency,
     spentAt: expense.spentAt,
     notes: expense.notes ?? "",
   };

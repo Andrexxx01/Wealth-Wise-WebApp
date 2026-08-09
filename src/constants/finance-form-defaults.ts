@@ -18,6 +18,7 @@ export const DEFAULT_EXPENSE_FORM_VALUES: CreateExpenseFormValues = {
   category: "FOOD",
   type: "ESSENTIAL",
   amount: "",
+  currency: "USD",
   spentAt: "",
   notes: "",
 };

@@ -41,6 +41,7 @@ export function transformExpenseFormValues(
     category: values.category,
     type: values.type,
     amount: toNumber(values.amount),
+    currency: values.currency,
     spentAt: values.spentAt,
     notes: normalizeOptionalText(values.notes),
   };

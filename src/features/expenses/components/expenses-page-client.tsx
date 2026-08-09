@@ -184,7 +184,7 @@ export default function ExpensesPageClient() {
                       key={item.id}
                       title={item.title}
                       subtitle={formatExpenseCategory(item.category)}
-                      value={formatCurrency(item.amount)}
+                      value={formatCurrency(item.amount, item.currency)}
                       meta={formatDate(item.spentAt)}
                     />
                   ))}

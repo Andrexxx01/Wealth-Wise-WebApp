@@ -2,6 +2,7 @@ import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
 import {
+  CURRENCY_OPTIONS,
   EXPENSE_CATEGORY_OPTIONS,
   EXPENSE_TYPE_OPTIONS,
 } from "@/constants/finance-options";
@@ -28,6 +29,13 @@ export default function ExpenseFormFields({
         placeholder="120"
         error={errors.amount?.message}
         registration={register("amount")}
+      />
+
+      <FormSelect
+        label="Currency"
+        options={CURRENCY_OPTIONS}
+        error={errors.currency?.message}
+        registration={register("currency")}
       />
 
       <FormSelect

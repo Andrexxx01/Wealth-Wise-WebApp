@@ -178,7 +178,7 @@ export default function IncomeHistoryPageClient() {
             },
           ]}
         />
-        
+
         {visibleIncomeItems.map((item) => (
           <DashboardListItem
             key={item.id}
@@ -186,7 +186,7 @@ export default function IncomeHistoryPageClient() {
             subtitle={`${formatIncomeCategory(
               item.category,
             )} • ${formatIncomeFrequency(item.frequency)}`}
-            value={formatCurrency(item.amount)}
+            value={formatCurrency(item.amount, item.currency)}
             meta={formatDate(item.receivedAt)}
             tone="positive"
           >
