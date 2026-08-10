@@ -23,6 +23,8 @@ export const createInvestmentSchema = z.object({
       message: "Current value must be 0 or greater.",
     }),
 
+  currency: z.enum(["USD", "IDR"]),
+
   investedAt: z.string().min(1, "Investment date is required."),
 
   notes: z

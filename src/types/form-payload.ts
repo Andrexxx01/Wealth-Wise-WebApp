@@ -29,6 +29,7 @@ export type CreateInvestmentPayload = {
   category: InvestmentCategory;
   investedAmount: number;
   currentValue: number;
+  currency: UserCurrency;
   investedAt: string;
   notes: string | null;
 };

@@ -28,6 +28,7 @@ export const DEFAULT_INVESTMENT_FORM_VALUES: CreateInvestmentFormValues = {
   category: "STOCK",
   investedAmount: "",
   currentValue: "",
+  currency: "USD",
   investedAt: "",
   notes: "",
 };

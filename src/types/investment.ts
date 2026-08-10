@@ -1,3 +1,5 @@
+import type { UserCurrency } from "@/types/user-subscription";
+
 export type InvestmentCategory =
   | "STOCK"
   | "CRYPTO"
@@ -15,6 +17,7 @@ export interface InvestmentItem {
   category: InvestmentCategory;
   investedAmount: number;
   currentValue: number;
+  currency: UserCurrency;
   investedAt: string;
   notes: string | null;
   createdAt: string;
@@ -33,6 +36,7 @@ export type CreateInvestmentFormValues = {
   category: InvestmentCategory;
   investedAmount: string;
   currentValue: string;
+  currency: UserCurrency;
   investedAt: string;
   notes?: string;
 };

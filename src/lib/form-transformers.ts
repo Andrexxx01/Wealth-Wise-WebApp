@@ -55,6 +55,7 @@ export function transformInvestmentFormValues(
     category: values.category,
     investedAmount: toNumber(values.investedAmount),
     currentValue: toNumber(values.currentValue),
+    currency: values.currency,
     investedAt: values.investedAt,
     notes: normalizeOptionalText(values.notes),
   };

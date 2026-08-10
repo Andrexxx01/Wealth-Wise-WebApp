@@ -42,6 +42,7 @@ export function mapInvestmentItemToFormValues(
     category: investment.category,
     investedAmount: String(investment.investedAmount),
     currentValue: String(investment.currentValue),
+    currency: investment.currency,
     investedAt: investment.investedAt,
     notes: investment.notes ?? "",
   };

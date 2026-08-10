@@ -1,7 +1,10 @@
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
-import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
+import {
+  CURRENCY_OPTIONS,
+  INVESTMENT_CATEGORY_OPTIONS,
+} from "@/constants/finance-options";
 import type { InvestmentFormFieldsProps } from "@/types/finance-form-fields";
 
 export default function InvestmentFormFields({
@@ -42,6 +45,13 @@ export default function InvestmentFormFields({
         placeholder="1200"
         error={errors.currentValue?.message}
         registration={register("currentValue")}
+      />
+
+      <FormSelect
+        label="Currency"
+        options={CURRENCY_OPTIONS}
+        error={errors.currency?.message}
+        registration={register("currency")}
       />
 
       <FormInput
