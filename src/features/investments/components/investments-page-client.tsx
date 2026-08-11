@@ -184,7 +184,7 @@ export default function InvestmentsPageClient() {
                         key={item.id}
                         title={item.asset}
                         subtitle={formatInvestmentCategory(item.category)}
-                        value={formatCurrency(item.currentValue)}
+                        value={formatCurrency(item.currentValue, item.currency)}
                         meta={`${isPositive ? "+" : ""}${formatPercentage(
                           item.gainPercentage,
                         )}`}

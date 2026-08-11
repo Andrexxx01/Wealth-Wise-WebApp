@@ -254,6 +254,7 @@ export function buildInvestmentHoldings(investmentItems: InvestmentItem[]) {
       asset: item.assetName,
       category: item.category,
       currentValue: item.currentValue,
+      currency: item.currency,
       gainPercentage,
     };
   });

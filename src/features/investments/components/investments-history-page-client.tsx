@@ -179,9 +179,10 @@ export default function InvestmentsHistoryPageClient() {
               key={item.id}
               title={item.assetName}
               subtitle={formatInvestmentCategory(item.category)}
-              value={formatCurrency(item.currentValue)}
+              value={formatCurrency(item.currentValue, item.currency)}
               meta={`Invested ${formatCurrency(
                 item.investedAmount,
+                item.currency,
               )} • ${formatDate(item.investedAt)}`}
               tone={isPositive ? "positive" : "danger"}
             >
