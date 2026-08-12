@@ -138,8 +138,11 @@ export default function LoansPageClient() {
                       key={item.id}
                       title={item.title}
                       subtitle={formatLoanCategory(item.category)}
-                      value={formatCurrency(item.remainingBalance)}
-                      meta={`${formatCurrency(item.monthlyPayment)}/mo`}
+                      value={formatCurrency(
+                        item.remainingBalance,
+                        item.currency,
+                      )}
+                      meta={`${formatCurrency(item.monthlyPayment, item.currency)}/mo`}
                       className="border-none bg-slate-50 p-4"
                     >
                       <div>
@@ -214,7 +217,7 @@ export default function LoansPageClient() {
                       key={item.id}
                       title={item.title}
                       subtitle={item.lenderName}
-                      value={formatCurrency(item.monthlyPayment)}
+                      value={formatCurrency(item.monthlyPayment, item.currency)}
                       meta={
                         item.dueDate
                           ? `Due ${formatDate(item.dueDate)}`

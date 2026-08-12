@@ -41,6 +41,7 @@ export type CreateLoanPayload = {
   principalAmount: number;
   remainingBalance: number;
   monthlyPayment: number;
+  currency: UserCurrency;
   interestRate: number | null;
   dueDate: string | null;
 };

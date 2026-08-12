@@ -72,6 +72,7 @@ export async function POST(request: Request) {
         principalAmount: parsedBody.principalAmount,
         remainingBalance: parsedBody.remainingBalance,
         monthlyPayment: parsedBody.monthlyPayment,
+        currency: parsedBody.currency,
         interestRate: parsedBody.interestRate ?? null,
         dueDate: parsedBody.dueDate ? new Date(parsedBody.dueDate) : null,
         status: parsedBody.status,

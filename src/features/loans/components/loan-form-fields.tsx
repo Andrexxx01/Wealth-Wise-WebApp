@@ -1,6 +1,6 @@
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
-import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
+import { CURRENCY_OPTIONS, LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import type { LoanFormFieldsProps } from "@/types/finance-form-fields";
 
 export default function LoanFormFields({
@@ -58,6 +58,13 @@ export default function LoanFormFields({
         placeholder="500"
         error={errors.monthlyPayment?.message}
         registration={register("monthlyPayment")}
+      />
+
+      <FormSelect
+        label="Currency"
+        options={CURRENCY_OPTIONS}
+        error={errors.currency?.message}
+        registration={register("currency")}
       />
 
       <FormInput

@@ -71,6 +71,7 @@ export function transformLoanFormValues(
     principalAmount: toNumber(values.principalAmount),
     remainingBalance: toNumber(values.remainingBalance),
     monthlyPayment: toNumber(values.monthlyPayment),
+    currency: values.currency,
     interestRate: values.interestRate ? toNumber(values.interestRate) : null,
     dueDate: values.dueDate ? values.dueDate : null,
   };

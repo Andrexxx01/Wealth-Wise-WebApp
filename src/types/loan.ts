@@ -1,3 +1,5 @@
+import type { UserCurrency } from "@/types/user-subscription";
+
 export type LoanCategory =
   | "PERSONAL"
   | "CONSUMER"
@@ -18,6 +20,7 @@ export interface LoanItem {
   principalAmount: number;
   remainingBalance: number;
   monthlyPayment: number;
+  currency: UserCurrency;
   interestRate: number | null;
   dueDate: string | null;
   status: LoanStatus;
@@ -39,6 +42,7 @@ export type CreateLoanFormValues = {
   principalAmount: string;
   remainingBalance: string;
   monthlyPayment: string;
+  currency: UserCurrency;
   interestRate?: string;
   dueDate?: string;
 };

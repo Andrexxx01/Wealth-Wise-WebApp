@@ -13,6 +13,7 @@ export const loanApiSchema = z.object({
   monthlyPayment: z.coerce
     .number()
     .positive("Monthly payment must be greater than 0"),
+  currency: z.enum(["USD", "IDR"]),
   interestRate: z.coerce.number().min(0).optional().nullable(),
   dueDate: z.string().optional().nullable(),
   status: z.string().min(1, "Status is required").default("ACTIVE"),

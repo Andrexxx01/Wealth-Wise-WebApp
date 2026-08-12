@@ -177,7 +177,7 @@ export default function LoansHistoryPageClient() {
             },
           ]}
         />
-        
+
         {visibleLoanItems.map((item) => (
           <DashboardListItem
             key={item.id}
@@ -185,8 +185,8 @@ export default function LoansHistoryPageClient() {
             subtitle={`${item.lenderName} • ${formatLoanCategory(
               item.category,
             )}`}
-            value={formatCurrency(item.remainingBalance)}
-            meta={`Monthly ${formatCurrency(item.monthlyPayment)} • ${
+            value={formatCurrency(item.remainingBalance, item.currency)}
+            meta={`Monthly ${formatCurrency(item.monthlyPayment, item.currency)} • ${
               item.dueDate ? formatDate(item.dueDate) : "No due date"
             }`}
             tone={item.status === "PAID_OFF" ? "positive" : "default"}

@@ -36,6 +36,8 @@ export const createLoanSchema = z
         message: "Monthly payment must be 0 or greater.",
       }),
 
+    currency: z.enum(["USD", "IDR"]),
+
     interestRate: z
       .string()
       .optional()

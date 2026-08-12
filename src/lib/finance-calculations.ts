@@ -282,6 +282,7 @@ export function buildLoanAccounts(loanItems: LoanItem[]) {
     category: item.category,
     remainingBalance: item.remainingBalance,
     monthlyPayment: item.monthlyPayment,
+    currency: item.currency,
     progress: calculateLoanPayoffProgress(item),
     status: item.status,
   }));

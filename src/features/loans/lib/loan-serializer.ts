@@ -6,6 +6,7 @@ type SerializableLoan = {
   principalAmount: unknown;
   remainingBalance: unknown;
   monthlyPayment: unknown;
+  currency: "USD" | "IDR";
   interestRate: unknown | null;
   dueDate: Date | null;
   status: string;
@@ -22,6 +23,7 @@ export function serializeLoan(loan: SerializableLoan) {
     principalAmount: Number(loan.principalAmount),
     remainingBalance: Number(loan.remainingBalance),
     monthlyPayment: Number(loan.monthlyPayment),
+    currency: loan.currency,
     interestRate: loan.interestRate === null ? null : Number(loan.interestRate),
     dueDate: loan.dueDate ? loan.dueDate.toISOString().slice(0, 10) : null,
     status: loan.status,
