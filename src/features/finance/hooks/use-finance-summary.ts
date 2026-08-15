@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useFinance } from "@/features/finance/components/finance-provider";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import {
   buildRecentFinancialActivity,
   calculateDebtToIncomeRatio,
@@ -26,8 +26,17 @@ import {
 } from "@/lib/finance-calculations";
 
 export function useFinanceSummary() {
-  const { incomeItems, expenseItems, investmentItems, loanItems } =
-    useFinance();
+  const {
+    incomeItems,
+    expenseItems,
+    investmentItems,
+    loanItems,
+    displayCurrency,
+    usdToIdrRate,
+    isCurrencyConversionReady,
+    isExchangeRateLoading,
+    exchangeRateError,
+  } = useConvertedFinanceItems();
 
   return useMemo(() => {
     const totalIncome = calculateTotalIncome(incomeItems);
@@ -102,6 +111,21 @@ export function useFinanceSummary() {
       netWorth,
       recentActivity,
       financialHealthScore,
+      displayCurrency,
+      usdToIdrRate,
+      isCurrencyConversionReady,
+      isExchangeRateLoading,
+      exchangeRateError,
     };
-  }, [incomeItems, expenseItems, investmentItems, loanItems]);
+  }, [
+    incomeItems,
+    expenseItems,
+    investmentItems,
+    loanItems,
+    displayCurrency,
+    usdToIdrRate,
+    isCurrencyConversionReady,
+    isExchangeRateLoading,
+    exchangeRateError,
+  ]);
 }
