@@ -30,6 +30,7 @@ import {
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
 import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
 export default function ExpensesHistoryPageClient() {
   const {
@@ -40,6 +41,16 @@ export default function ExpensesHistoryPageClient() {
   } = useEditRecordDialog<ExpenseItem>();
 
   const { expenseItems, updateExpense, deleteExpense } = useFinance();
+
+  const {
+    expenseItems: convertedExpenseItems,
+    displayCurrency,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
+
+  const convertedExpenseById = new Map(
+    convertedExpenseItems.map((item) => [item.id, item]),
+  );
 
   const sortedExpenseItems = sortExpenseHistoryItems(expenseItems);
 
@@ -72,7 +83,10 @@ export default function ExpensesHistoryPageClient() {
   } = useHistorySort({
     items: filteredExpenseItems,
     getDateValue: (item) => item.spentAt,
-    getAmountValue: (item) => item.amount,
+    getAmountValue: (item) =>
+      isCurrencyConversionReady
+        ? (convertedExpenseById.get(item.id)?.amount ?? 0)
+        : 0,
   });
 
   const handleClearAll = useHistoryClearAll({
@@ -84,10 +98,11 @@ export default function ExpensesHistoryPageClient() {
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
 
-  const totalVisibleExpenses = visibleExpenseItems.reduce(
-    (total, item) => total + item.amount,
-    0,
-  );
+  const totalVisibleExpenses = visibleExpenseItems.reduce((total, item) => {
+    const convertedItem = convertedExpenseById.get(item.id);
+
+    return total + (convertedItem?.amount ?? 0);
+  }, 0);
 
   const averageVisibleExpense =
     visibleExpenseItems.length > 0
@@ -160,7 +175,9 @@ export default function ExpensesHistoryPageClient() {
           items={[
             {
               label: "Total Expenses",
-              value: formatCurrency(totalVisibleExpenses),
+              value: isCurrencyConversionReady
+                ? formatCurrency(totalVisibleExpenses, displayCurrency)
+                : "—",
               description: "Total amount from visible records.",
             },
             {
@@ -170,7 +187,9 @@ export default function ExpensesHistoryPageClient() {
             },
             {
               label: "Average Expense",
-              value: formatCurrency(averageVisibleExpense),
+              value: isCurrencyConversionReady
+                ? formatCurrency(averageVisibleExpense, displayCurrency)
+                : "—",
               description: "Average amount per visible record.",
             },
           ]}

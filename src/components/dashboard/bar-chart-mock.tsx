@@ -3,20 +3,20 @@ import type { BarChartMockProps, GroupedBarChartMockProps } from "@/types/ui";
 export function BarChartMock({ data }: BarChartMockProps) {
   return (
     <div className="rounded-[28px] bg-slate-50 p-6">
-      <div className="flex h-72 items-end gap-4">
+      <div className="flex h-72 gap-4">
         {data.map((item) => (
           <div
             key={item.label}
-            className="flex flex-1 flex-col items-center gap-3"
+            className="flex h-full flex-1 flex-col items-center gap-3"
           >
-            <div className="flex h-full w-full items-end">
+            <div className="flex min-h-0 w-full flex-1 items-end">
               <div
                 className="w-full rounded-t-2xl bg-emerald-500"
                 style={{ height: `${item.value}%` }}
               />
             </div>
 
-            <span className="text-sm font-medium text-slate-500">
+            <span className="shrink-0 text-sm font-medium text-slate-500">
               {item.label}
             </span>
           </div>
@@ -33,13 +33,13 @@ export function GroupedBarChartMock({
 }: GroupedBarChartMockProps) {
   return (
     <div className="rounded-[28px] bg-slate-50 p-6">
-      <div className="flex h-72 items-end gap-4">
+      <div className="flex h-72 gap-4">
         {data.map((item) => (
           <div
             key={item.label}
-            className="flex flex-1 flex-col items-center gap-3"
+            className="flex h-full flex-1 flex-col items-center gap-3"
           >
-            <div className="flex h-full w-full items-end justify-center gap-1">
+            <div className="flex min-h-0 w-full flex-1 items-end justify-center gap-1">
               <div
                 className="w-full rounded-t-2xl bg-emerald-500"
                 style={{ height: `${item.primaryValue}%` }}

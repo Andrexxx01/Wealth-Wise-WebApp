@@ -22,6 +22,7 @@ import { buildInvestmentPerformanceChartData } from "@/lib/finance-charts";
 import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import Link from "next/link";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
 function formatInvestmentCategory(category: string) {
   const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
@@ -36,6 +37,12 @@ export default function InvestmentsPageClient() {
 
   const { investmentItems, createInvestment } = useFinance();
 
+  const {
+    investmentItems: convertedInvestmentItems,
+    displayCurrency,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
+
   const { portfolioValue, totalInvested, netGain, investmentReturnRate } =
     useFinanceSummary();
 
@@ -49,11 +56,14 @@ export default function InvestmentsPageClient() {
   });
 
   const investmentPerformanceChartData = buildInvestmentPerformanceChartData({
-    investmentItems,
+    investmentItems: convertedInvestmentItems,
   });
 
+  const canShowInvestmentChart =
+    hasInvestmentItems && isCurrencyConversionReady;
+
   const portfolioAllocation = buildPortfolioAllocation({
-    investmentItems,
+    investmentItems: convertedInvestmentItems,
     portfolioValue,
     limit: 5,
   });
@@ -96,7 +106,7 @@ export default function InvestmentsPageClient() {
             title="Growth Over Time"
             badge="2026"
           >
-            {hasInvestmentItems ? (
+            {canShowInvestmentChart ? (
               <BarChartMock data={investmentPerformanceChartData} />
             ) : (
               <EmptyState
@@ -129,7 +139,11 @@ export default function InvestmentsPageClient() {
                       key={item.category}
                       title={item.name}
                       subtitle={`${item.percentage}% of portfolio`}
-                      value={formatCurrency(item.amount)}
+                      value={
+                        isCurrencyConversionReady
+                          ? formatCurrency(item.amount, displayCurrency)
+                          : "—"
+                      }
                       className="border-none bg-slate-50 p-4"
                     />
                   ))}

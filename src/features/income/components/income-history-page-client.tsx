@@ -33,6 +33,7 @@ import {
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
 import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
 export default function IncomeHistoryPageClient() {
   const {
@@ -43,6 +44,16 @@ export default function IncomeHistoryPageClient() {
   } = useEditRecordDialog<IncomeItem>();
 
   const { incomeItems, updateIncome, deleteIncome } = useFinance();
+
+  const {
+    incomeItems: convertedIncomeItems,
+    displayCurrency,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
+
+  const convertedIncomeById = new Map(
+    convertedIncomeItems.map((item) => [item.id, item]),
+  );
 
   const sortedIncomeItems = sortIncomeHistoryItems(incomeItems);
 
@@ -75,7 +86,10 @@ export default function IncomeHistoryPageClient() {
   } = useHistorySort({
     items: filteredIncomeItems,
     getDateValue: (item) => item.receivedAt,
-    getAmountValue: (item) => item.amount,
+    getAmountValue: (item) =>
+      isCurrencyConversionReady
+        ? (convertedIncomeById.get(item.id)?.amount ?? 0)
+        : 0,
   });
 
   const handleClearAll = useHistoryClearAll({
@@ -87,10 +101,11 @@ export default function IncomeHistoryPageClient() {
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
 
-  const totalVisibleIncome = visibleIncomeItems.reduce(
-    (total, item) => total + item.amount,
-    0,
-  );
+  const totalVisibleIncome = visibleIncomeItems.reduce((total, item) => {
+    const convertedItem = convertedIncomeById.get(item.id);
+
+    return total + (convertedItem?.amount ?? 0);
+  }, 0);
 
   const averageVisibleIncome =
     visibleIncomeItems.length > 0
@@ -163,7 +178,9 @@ export default function IncomeHistoryPageClient() {
           items={[
             {
               label: "Total Income",
-              value: formatCurrency(totalVisibleIncome),
+              value: isCurrencyConversionReady
+                ? formatCurrency(totalVisibleIncome, displayCurrency)
+                : "—",
               description: "Total amount from visible records.",
             },
             {
@@ -173,7 +190,9 @@ export default function IncomeHistoryPageClient() {
             },
             {
               label: "Average Income",
-              value: formatCurrency(averageVisibleIncome),
+              value: isCurrencyConversionReady
+                ? formatCurrency(averageVisibleIncome, displayCurrency)
+                : "—",
               description: "Average amount per visible record.",
             },
           ]}

@@ -6,101 +6,162 @@ import type {
   SingleBarChartItem,
 } from "@/types/finance-chart";
 
-const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const CHART_MONTH_COUNT = 6;
 
-function getMonthIndex(dateValue: string | null) {
-  if (!dateValue) return -1;
+type MonthBucket = {
+  key: string;
+  label: string;
+};
+
+function getMonthKey(dateValue: string | null) {
+  if (!dateValue) return null;
 
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return -1;
+    return null;
   }
 
-  return date.getMonth();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
+}
+
+function buildRecentMonthBuckets(referenceDate = new Date()): MonthBucket[] {
+  return Array.from({ length: CHART_MONTH_COUNT }, (_, index) => {
+    const monthsAgo = CHART_MONTH_COUNT - 1 - index;
+
+    const date = new Date(
+      referenceDate.getFullYear(),
+      referenceDate.getMonth() - monthsAgo,
+      1,
+    );
+
+    const year = date.getFullYear();
+    const monthIndex = date.getMonth();
+
+    const key = `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+
+    const monthLabel = date.toLocaleString("en-US", {
+      month: "short",
+    });
+
+    const shortYear = String(year).slice(-2);
+
+    return {
+      key,
+      label: `${monthLabel} '${shortYear}`,
+    };
+  });
 }
 
 function normalizeChartValue(value: number, maxValue: number) {
-  if (value <= 0 || maxValue <= 0) return 0;
+  if (value <= 0 || maxValue <= 0) {
+    return 0;
+  }
 
   return Math.max(Math.round((value / maxValue) * 100), 8);
 }
 
 function buildNormalizedMonthlyChartData(
   monthlyValues: number[],
+  monthBuckets: MonthBucket[],
 ): SingleBarChartItem[] {
   const maxValue = Math.max(...monthlyValues, 0);
 
-  return MONTH_LABELS.map((month, index) => ({
-    label: month,
+  return monthBuckets.map((bucket, index) => ({
+    label: bucket.label,
     value: normalizeChartValue(monthlyValues[index], maxValue),
   }));
+}
+
+function createMonthlyValues() {
+  return Array.from({ length: CHART_MONTH_COUNT }, () => 0);
+}
+
+function findMonthBucketIndex(
+  monthBuckets: MonthBucket[],
+  dateValue: string | null,
+) {
+  const monthKey = getMonthKey(dateValue);
+
+  if (!monthKey) {
+    return -1;
+  }
+
+  return monthBuckets.findIndex((bucket) => bucket.key === monthKey);
 }
 
 export function buildMonthlyIncomeChartData({
   incomeItems,
 }: BuildMonthlyIncomeChartDataParams): SingleBarChartItem[] {
-  const monthlyIncome = Array.from({ length: 6 }, () => 0);
+  const monthBuckets = buildRecentMonthBuckets();
+  const monthlyIncome = createMonthlyValues();
 
   incomeItems.forEach((item) => {
-    const monthIndex = getMonthIndex(item.receivedAt);
+    const monthIndex = findMonthBucketIndex(monthBuckets, item.receivedAt);
 
-    if (monthIndex >= 0 && monthIndex < 6) {
+    if (monthIndex >= 0) {
       monthlyIncome[monthIndex] += item.amount;
     }
   });
 
-  return buildNormalizedMonthlyChartData(monthlyIncome);
+  return buildNormalizedMonthlyChartData(monthlyIncome, monthBuckets);
 }
 
 export function buildMonthlyExpenseChartData({
   expenseItems,
 }: BuildMonthlyExpenseChartDataParams): SingleBarChartItem[] {
-  const monthlyExpenses = Array.from({ length: 6 }, () => 0);
+  const monthBuckets = buildRecentMonthBuckets();
+  const monthlyExpenses = createMonthlyValues();
 
   expenseItems.forEach((item) => {
-    const monthIndex = getMonthIndex(item.spentAt);
+    const monthIndex = findMonthBucketIndex(monthBuckets, item.spentAt);
 
-    if (monthIndex >= 0 && monthIndex < 6) {
+    if (monthIndex >= 0) {
       monthlyExpenses[monthIndex] += item.amount;
     }
   });
 
-  return buildNormalizedMonthlyChartData(monthlyExpenses);
+  return buildNormalizedMonthlyChartData(monthlyExpenses, monthBuckets);
 }
 
 export function buildInvestmentPerformanceChartData({
   investmentItems,
 }: BuildInvestmentPerformanceChartDataParams): SingleBarChartItem[] {
-  const monthlyPortfolioValue = Array.from({ length: 6 }, () => 0);
+  const monthBuckets = buildRecentMonthBuckets();
+  const monthlyPortfolioValue = createMonthlyValues();
 
   investmentItems.forEach((item) => {
-    const monthIndex = getMonthIndex(item.investedAt);
+    const monthIndex = findMonthBucketIndex(monthBuckets, item.investedAt);
 
-    if (monthIndex >= 0 && monthIndex < 6) {
+    if (monthIndex >= 0) {
       monthlyPortfolioValue[monthIndex] += item.currentValue;
     }
   });
 
-  return buildNormalizedMonthlyChartData(monthlyPortfolioValue);
+  return buildNormalizedMonthlyChartData(monthlyPortfolioValue, monthBuckets);
 }
 
 export function buildLoanPayoffChartData({
   loanItems,
 }: BuildLoanPayoffChartDataParams): SingleBarChartItem[] {
-  const monthlyPaidOffAmount = Array.from({ length: 6 }, () => 0);
+  const monthBuckets = buildRecentMonthBuckets();
+  const monthlyPaidOffAmount = createMonthlyValues();
 
   loanItems.forEach((item) => {
-    const monthIndex = getMonthIndex(item.createdAt);
+    const monthIndex = findMonthBucketIndex(monthBuckets, item.createdAt);
+
     const paidOffAmount = Math.max(
       item.principalAmount - item.remainingBalance,
       0,
     );
 
-    if (monthIndex >= 0 && monthIndex < 6) {
+    if (monthIndex >= 0) {
       monthlyPaidOffAmount[monthIndex] += paidOffAmount;
     }
   });
 
-  return buildNormalizedMonthlyChartData(monthlyPaidOffAmount);
+  return buildNormalizedMonthlyChartData(monthlyPaidOffAmount, monthBuckets);
 }

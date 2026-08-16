@@ -29,6 +29,7 @@ import {
 } from "@/lib/history-sort-options";
 import useHistoryClearAll from "@/hooks/use-history-clear-all";
 import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -39,6 +40,16 @@ export default function InvestmentsHistoryPageClient() {
   } = useEditRecordDialog<InvestmentItem>();
 
   const { investmentItems, updateInvestment, deleteInvestment } = useFinance();
+
+  const {
+    investmentItems: convertedInvestmentItems,
+    displayCurrency,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
+
+  const convertedInvestmentById = new Map(
+    convertedInvestmentItems.map((item) => [item.id, item]),
+  );
 
   const sortedInvestmentItems = sortInvestmentHistoryItems(investmentItems);
 
@@ -71,7 +82,10 @@ export default function InvestmentsHistoryPageClient() {
   } = useHistorySort({
     items: filteredInvestmentItems,
     getDateValue: (item) => item.investedAt,
-    getAmountValue: (item) => item.currentValue,
+    getAmountValue: (item) =>
+      isCurrencyConversionReady
+        ? (convertedInvestmentById.get(item.id)?.currentValue ?? 0)
+        : 0,
   });
 
   const handleClearAll = useHistoryClearAll({
@@ -84,7 +98,11 @@ export default function InvestmentsHistoryPageClient() {
   const hasActiveControls = isFiltering || hasActiveSort;
 
   const totalVisibleCurrentValue = visibleInvestmentItems.reduce(
-    (total, item) => total + item.currentValue,
+    (total, item) => {
+      const convertedItem = convertedInvestmentById.get(item.id);
+
+      return total + (convertedItem?.currentValue ?? 0);
+    },
     0,
   );
 
@@ -154,7 +172,9 @@ export default function InvestmentsHistoryPageClient() {
           items={[
             {
               label: "Total Current Value",
-              value: formatCurrency(totalVisibleCurrentValue),
+              value: isCurrencyConversionReady
+                ? formatCurrency(totalVisibleCurrentValue, displayCurrency)
+                : "—",
               description: "Total current value from visible records.",
             },
             {
@@ -164,12 +184,14 @@ export default function InvestmentsHistoryPageClient() {
             },
             {
               label: "Average Current Value",
-              value: formatCurrency(averageVisibleCurrentValue),
+              value: isCurrencyConversionReady
+                ? formatCurrency(averageVisibleCurrentValue, displayCurrency)
+                : "—",
               description: "Average current value per visible record.",
             },
           ]}
         />
-        
+
         {visibleInvestmentItems.map((item) => {
           const gainAmount = item.currentValue - item.investedAmount;
           const isPositive = gainAmount >= 0;

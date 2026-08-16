@@ -23,6 +23,7 @@ import {
 import { buildExpenseSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import Link from "next/link";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
 function formatExpenseCategory(category: string) {
   const categoryOption = EXPENSE_CATEGORY_OPTIONS.find(
@@ -36,6 +37,12 @@ export default function ExpensesPageClient() {
   const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
 
   const { expenseItems, createExpense } = useFinance();
+
+  const {
+    expenseItems: convertedExpenseItems,
+    displayCurrency,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
 
   const { totalExpenses, essentialSpending, lifestyleSpending } =
     useFinanceSummary();
@@ -52,11 +59,11 @@ export default function ExpensesPageClient() {
   });
 
   const monthlyExpenseChartData = buildMonthlyExpenseChartData({
-    expenseItems,
+    expenseItems: convertedExpenseItems,
   });
 
   const expenseCategoryBreakdown = buildExpenseCategoryBreakdown({
-    expenseItems,
+    expenseItems: convertedExpenseItems,
     totalExpenses,
     limit: 5,
   });
@@ -132,7 +139,11 @@ export default function ExpensesPageClient() {
                       key={item.category}
                       title={item.name}
                       subtitle={`${item.percentage}% of total expenses`}
-                      value={formatCurrency(item.amount)}
+                      value={
+                        isCurrencyConversionReady
+                          ? formatCurrency(item.amount, displayCurrency)
+                          : "—"
+                      }
                       className="border-none bg-slate-50 p-4"
                     />
                   ))}
