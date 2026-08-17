@@ -38,13 +38,24 @@ export default function InvestmentFormFields({
       />
 
       <FormInput
-        label="Current Value"
-        type="number"
-        min="0"
-        step="0.01"
-        placeholder="1200"
-        error={errors.currentValue?.message}
-        registration={register("currentValue")}
+        label="Symbol"
+        placeholder="BTC"
+        error={errors.symbol?.message}
+        registration={register("symbol")}
+      />
+
+      <FormInput
+        label="Quantity"
+        placeholder="0.00070436"
+        error={errors.quantity?.message}
+        registration={register("quantity")}
+      />
+
+      <FormInput
+        label="Fee"
+        placeholder="0.00"
+        error={errors.feeAmount?.message}
+        registration={register("feeAmount")}
       />
 
       <FormSelect

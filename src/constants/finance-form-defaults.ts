@@ -25,9 +25,11 @@ export const DEFAULT_EXPENSE_FORM_VALUES: CreateExpenseFormValues = {
 
 export const DEFAULT_INVESTMENT_FORM_VALUES: CreateInvestmentFormValues = {
   assetName: "",
+  symbol: "",
   category: "STOCK",
   investedAmount: "",
-  currentValue: "",
+  quantity: "",
+  feeAmount: "0",
   currency: "USD",
   investedAt: "",
   notes: "",

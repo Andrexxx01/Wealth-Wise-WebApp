@@ -16,13 +16,6 @@ export const createInvestmentSchema = z.object({
       message: "Invested amount must be greater than 0.",
     }),
 
-  currentValue: z
-    .string()
-    .min(1, "Current value is required.")
-    .refine((value) => Number(value) >= 0, {
-      message: "Current value must be 0 or greater.",
-    }),
-
   currency: z.enum(["USD", "IDR"]),
 
   investedAt: z.string().min(1, "Investment date is required."),
@@ -31,4 +24,24 @@ export const createInvestmentSchema = z.object({
     .string()
     .max(200, "Notes must be less than 200 characters.")
     .optional(),
+
+  symbol: z.string().trim().max(20, "Symbol must be 20 characters or fewer."),
+
+  quantity: z
+    .string()
+    .min(1, "Quantity is required")
+    .refine(
+      (value) => Number.isFinite(Number(value)) && Number(value) > 0,
+      "Quantity must be greater than 0",
+    ),
+
+  feeAmount: z
+    .string()
+    .refine(
+      (value) =>
+        value.trim() !== "" &&
+        Number.isFinite(Number(value)) &&
+        Number(value) >= 0,
+      "Fee cannot be negative",
+    ),
 });

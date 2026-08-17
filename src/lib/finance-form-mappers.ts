@@ -41,10 +41,14 @@ export function mapInvestmentItemToFormValues(
     assetName: investment.assetName,
     category: investment.category,
     investedAmount: String(investment.investedAmount),
-    currentValue: String(investment.currentValue),
     currency: investment.currency,
     investedAt: investment.investedAt,
     notes: investment.notes ?? "",
+    symbol: investment.symbol ?? "",
+
+    quantity: investment.quantity !== null ? String(investment.quantity) : "",
+
+    feeAmount: String(investment.feeAmount),
   };
 }
 

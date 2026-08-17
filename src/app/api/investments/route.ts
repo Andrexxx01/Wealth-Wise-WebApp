@@ -66,11 +66,20 @@ export async function POST(request: Request) {
     const investment = await prisma.investment.create({
       data: {
         userId,
+
         assetName: parsedBody.assetName,
+        symbol: parsedBody.symbol ?? null,
         category: parsedBody.category,
+
         investedAmount: parsedBody.investedAmount,
-        currentValue: parsedBody.currentValue,
+        quantity: parsedBody.quantity,
+        feeAmount: parsedBody.feeAmount,
         currency: parsedBody.currency,
+
+        // Temporary compatibility only.
+        // Akan dihapus bersama kolom currentValue.
+        currentValue: parsedBody.investedAmount,
+
         investedAt: new Date(parsedBody.investedAt),
         notes: parsedBody.notes ?? null,
       },

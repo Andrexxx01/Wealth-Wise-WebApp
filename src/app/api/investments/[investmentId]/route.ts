@@ -52,10 +52,17 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
       data: {
         assetName: parsedBody.assetName,
+        symbol: parsedBody.symbol ?? null,
         category: parsedBody.category,
+
         investedAmount: parsedBody.investedAmount,
-        currentValue: parsedBody.currentValue,
+        quantity: parsedBody.quantity,
+        feeAmount: parsedBody.feeAmount,
         currency: parsedBody.currency,
+
+        // Temporary legacy compatibility.
+        currentValue: parsedBody.investedAmount,
+
         investedAt: new Date(parsedBody.investedAt),
         notes: parsedBody.notes ?? null,
       },

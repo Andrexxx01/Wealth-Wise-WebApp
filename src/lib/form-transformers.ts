@@ -54,7 +54,13 @@ export function transformInvestmentFormValues(
     assetName: values.assetName.trim(),
     category: values.category,
     investedAmount: toNumber(values.investedAmount),
-    currentValue: toNumber(values.currentValue),
+
+    quantity: toNumber(values.quantity),
+
+    feeAmount: toNumber(values.feeAmount),
+
+    symbol: values.symbol.trim() ? values.symbol.trim().toUpperCase() : null,
+
     currency: values.currency,
     investedAt: values.investedAt,
     notes: normalizeOptionalText(values.notes),

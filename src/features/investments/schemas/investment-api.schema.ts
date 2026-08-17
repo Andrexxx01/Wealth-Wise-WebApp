@@ -6,8 +6,12 @@ export const investmentApiSchema = z.object({
   investedAmount: z.coerce
     .number()
     .positive("Invested amount must be greater than 0"),
-  currentValue: z.coerce.number().min(0, "Current value cannot be negative"),
   currency: z.enum(["USD", "IDR"]),
   investedAt: z.string().min(1, "Invested date is required"),
   notes: z.string().optional().nullable(),
+  symbol: z.string().trim().max(20).optional().nullable(),
+
+  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
+
+  feeAmount: z.coerce.number().min(0, "Fee cannot be negative"),
 });
