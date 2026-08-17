@@ -40,6 +40,13 @@ export function calculateMonthlySurplus(
   return totalIncome - totalExpenses;
 }
 
+export function calculateAvailableCash(
+  monthlySurplus: number,
+  totalInvested: number,
+) {
+  return monthlySurplus - totalInvested;
+}
+
 export function calculateSavingsRate(
   totalIncome: number,
   monthlySurplus: number,
@@ -93,15 +100,15 @@ export function calculateDebtToIncomeRatio(
 }
 
 export function calculateNetWorth({
-  monthlySurplus,
+  availableCash,
   portfolioValue,
   totalLoanBalance,
 }: {
-  monthlySurplus: number;
+  availableCash: number;
   portfolioValue: number;
   totalLoanBalance: number;
 }) {
-  return monthlySurplus + portfolioValue - totalLoanBalance;
+  return availableCash + portfolioValue - totalLoanBalance;
 }
 
 export function buildRecentFinancialActivity({

@@ -23,6 +23,7 @@ import {
   calculateTotalLoanBalance,
   calculateTotalPaidOff,
   calculateFinancialHealthScore,
+  calculateAvailableCash,
 } from "@/lib/finance-calculations";
 
 export function useFinanceSummary() {
@@ -54,6 +55,7 @@ export function useFinanceSummary() {
 
     const portfolioValue = calculatePortfolioValue(investmentItems);
     const totalInvested = calculateTotalInvested(investmentItems);
+    const availableCash = calculateAvailableCash(monthlySurplus, totalInvested);
     const netGain = calculateNetGain(portfolioValue, totalInvested);
 
     const investmentReturnRate = calculateInvestmentReturnRate(
@@ -71,7 +73,7 @@ export function useFinanceSummary() {
     );
 
     const netWorth = calculateNetWorth({
-      monthlySurplus,
+      availableCash,
       portfolioValue,
       totalLoanBalance,
     });
@@ -116,6 +118,7 @@ export function useFinanceSummary() {
       isCurrencyConversionReady,
       isExchangeRateLoading,
       exchangeRateError,
+      availableCash,
     };
   }, [
     incomeItems,

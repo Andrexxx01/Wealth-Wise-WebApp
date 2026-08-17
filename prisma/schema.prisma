@@ -135,21 +135,29 @@ model Expense {
 }
 
 model Investment {
-  id             String   @id @default(cuid())
-  userId         String
+  id     String @id @default(cuid())
+  userId String
 
-  assetName      String
-  category       String
+  assetName String
+  symbol    String?
+  category  String
+
   currency       Currency @default(USD)
   investedAmount Decimal  @db.Decimal(12, 2)
-  currentValue   Decimal  @db.Decimal(12, 2)
-  investedAt     DateTime
-  notes          String?
+  quantity       Decimal? @db.Decimal(30, 18)
+  feeAmount      Decimal  @default(0) @db.Decimal(12, 4)
 
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Temporary legacy field.
+  // Remove after the application no longer depends on it.
+  currentValue Decimal @db.Decimal(12, 2)
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  investedAt DateTime
+  notes      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([investedAt])
