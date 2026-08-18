@@ -15,12 +15,12 @@ import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
 import {
-  buildInvestmentHoldings,
-  buildPortfolioAllocation,
+  buildInvestmentAllocation,
+  buildInvestmentTransactions,
 } from "@/lib/finance-calculations";
-import { buildInvestmentPerformanceChartData } from "@/lib/finance-charts";
+import { buildInvestmentContributionChartData } from "@/lib/finance-charts";
 import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
-import { formatCurrency, formatPercentage } from "@/lib/formatters";
+import { formatCurrency, formatDate } from "@/lib/formatters";
 import Link from "next/link";
 import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
@@ -55,20 +55,20 @@ export default function InvestmentsPageClient() {
     investmentReturnRate,
   });
 
-  const investmentPerformanceChartData = buildInvestmentPerformanceChartData({
+  const investmentContributionChartData = buildInvestmentContributionChartData({
     investmentItems: convertedInvestmentItems,
   });
 
   const canShowInvestmentChart =
     hasInvestmentItems && isCurrencyConversionReady;
 
-  const portfolioAllocation = buildPortfolioAllocation({
+  const investmentAllocation = buildInvestmentAllocation({
     investmentItems: convertedInvestmentItems,
-    portfolioValue,
+    totalInvested,
     limit: 5,
   });
 
-  const holdings = buildInvestmentHoldings(investmentItems);
+  const investmentTransactions = buildInvestmentTransactions(investmentItems);
 
   return (
     <>
@@ -102,16 +102,16 @@ export default function InvestmentsPageClient() {
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <ChartCard
-            eyebrow="Portfolio Performance"
-            title="Growth Over Time"
-            badge="2026"
+            eyebrow="Investment Activity"
+            title="Investment Contributions"
+            badge="Last 6 Months"
           >
             {canShowInvestmentChart ? (
-              <BarChartMock data={investmentPerformanceChartData} />
+              <BarChartMock data={investmentContributionChartData} />
             ) : (
               <EmptyState
-                title="No investment chart yet"
-                description="Add your first investment record to start tracking portfolio performance over time."
+                title="No investment activity yet"
+                description="Add investment transactions to see how much you invest each month."
                 action={
                   <Button
                     type="button"
@@ -128,17 +128,17 @@ export default function InvestmentsPageClient() {
           <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
             <CardContent className="p-6">
               <DashboardCardHeader
-                eyebrow="Portfolio Allocation"
-                title="Asset Breakdown"
+                eyebrow="Investment Allocation"
+                title="Contribution Breakdown"
               />
 
-              {portfolioAllocation.length > 0 ? (
+              {investmentAllocation.length > 0 ? (
                 <div className="space-y-4">
-                  {portfolioAllocation.map((item) => (
+                  {investmentAllocation.map((item) => (
                     <DashboardListItem
                       key={item.category}
                       title={item.name}
-                      subtitle={`${item.percentage}% of portfolio`}
+                      subtitle={`${item.percentage}% of total invested`}
                       value={
                         isCurrencyConversionReady
                           ? formatCurrency(item.amount, displayCurrency)
@@ -150,8 +150,8 @@ export default function InvestmentsPageClient() {
                 </div>
               ) : (
                 <EmptyState
-                  title="No portfolio allocation yet"
-                  description="Add stocks, crypto, mutual funds, gold, property, or other assets to see your allocation."
+                  title="No investment allocation yet"
+                  description="Add investment transactions to see how your contributions are distributed across asset categories."
                   action={
                     <Button
                       type="button"
@@ -172,12 +172,12 @@ export default function InvestmentsPageClient() {
             <CardContent className="p-6">
               <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <DashboardCardHeader
-                  eyebrow="Current Holdings"
-                  title="Portfolio Positions"
+                  eyebrow="Investment Activity"
+                  title="Recent Transactions"
                   className="mb-0"
                 />
 
-                {holdings.length > 0 ? (
+                {investmentTransactions.length > 0 ? (
                   <Button
                     asChild
                     variant="outline"
@@ -188,29 +188,34 @@ export default function InvestmentsPageClient() {
                 ) : null}
               </div>
 
-              {holdings.length > 0 ? (
+              {investmentTransactions.length > 0 ? (
                 <div className="space-y-4">
-                  {holdings.map((item) => {
-                    const isPositive = item.gainPercentage >= 0;
+                  {investmentTransactions.map((item) => (
+                    <DashboardListItem
+                      key={item.id}
+                      title={
+                        item.symbol
+                          ? `${item.asset} (${item.symbol})`
+                          : item.asset
+                      }
+                      subtitle={formatInvestmentCategory(item.category)}
+                      value={formatCurrency(item.investedAmount, item.currency)}
+                      meta={[
+                        item.quantity !== null
+                          ? `${item.quantity} ${item.symbol ?? "units"}`
+                          : "Quantity unavailable",
 
-                    return (
-                      <DashboardListItem
-                        key={item.id}
-                        title={item.asset}
-                        subtitle={formatInvestmentCategory(item.category)}
-                        value={formatCurrency(item.currentValue, item.currency)}
-                        meta={`${isPositive ? "+" : ""}${formatPercentage(
-                          item.gainPercentage,
-                        )}`}
-                        tone={isPositive ? "positive" : "danger"}
-                      />
-                    );
-                  })}
+                        `Fee ${formatCurrency(item.feeAmount, item.currency)}`,
+
+                        formatDate(item.investedAt),
+                      ].join(" • ")}
+                    />
+                  ))}
                 </div>
               ) : (
                 <EmptyState
-                  title="No holdings yet"
-                  description="Your investment positions will appear here after you add portfolio assets."
+                  title="No investment transactions yet"
+                  description="Your recent investment transactions will appear here after you add your first investment."
                   action={
                     <Button
                       type="button"

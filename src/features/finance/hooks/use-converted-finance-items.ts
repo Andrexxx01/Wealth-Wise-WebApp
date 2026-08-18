@@ -72,8 +72,8 @@ export function useConvertedFinanceItems() {
         rate,
       ),
 
-      currentValue: convertCurrency(
-        item.currentValue,
+      feeAmount: convertCurrency(
+        item.feeAmount,
         item.currency,
         displayCurrency,
         rate,

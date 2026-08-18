@@ -127,21 +127,21 @@ export function buildMonthlyExpenseChartData({
   return buildNormalizedMonthlyChartData(monthlyExpenses, monthBuckets);
 }
 
-export function buildInvestmentPerformanceChartData({
+export function buildInvestmentContributionChartData({
   investmentItems,
 }: BuildInvestmentPerformanceChartDataParams): SingleBarChartItem[] {
   const monthBuckets = buildRecentMonthBuckets();
-  const monthlyPortfolioValue = createMonthlyValues();
+  const monthlyInvestment = createMonthlyValues();
 
   investmentItems.forEach((item) => {
     const monthIndex = findMonthBucketIndex(monthBuckets, item.investedAt);
 
     if (monthIndex >= 0) {
-      monthlyPortfolioValue[monthIndex] += item.currentValue;
+      monthlyInvestment[monthIndex] += item.investedAmount;
     }
   });
 
-  return buildNormalizedMonthlyChartData(monthlyPortfolioValue, monthBuckets);
+  return buildNormalizedMonthlyChartData(monthlyInvestment, monthBuckets);
 }
 
 export function buildLoanPayoffChartData({

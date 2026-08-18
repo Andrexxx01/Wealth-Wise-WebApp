@@ -67,19 +67,20 @@ export function doesInvestmentMatchSearch(
   item: InvestmentItem,
   searchQuery: string,
 ) {
-  const gainAmount = item.currentValue - item.investedAmount;
-
   return doesSearchableTextMatch(
     [
       item.assetName,
+      item.symbol ?? "",
       formatInvestmentCategory(item.category),
-      formatCurrency(item.investedAmount),
-      formatCurrency(item.currentValue),
-      formatCurrency(gainAmount),
+
+      formatCurrency(item.investedAmount, item.currency),
+
+      item.quantity ?? "",
+      item.feeAmount,
+
       formatDate(item.investedAt),
+
       item.investedAmount,
-      item.currentValue,
-      gainAmount,
     ],
     searchQuery,
   );

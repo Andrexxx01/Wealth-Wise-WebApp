@@ -67,6 +67,21 @@ export function calculateTotalInvested(investmentItems: InvestmentItem[]) {
   );
 }
 
+export function calculateTotalInvestmentFees(
+  investmentItems: InvestmentItem[],
+) {
+  return investmentItems.reduce((total, item) => total + item.feeAmount, 0);
+}
+
+export function calculateTotalInvestmentCashOutflow(
+  investmentItems: InvestmentItem[],
+) {
+  return investmentItems.reduce(
+    (total, item) => total + item.investedAmount + item.feeAmount,
+    0,
+  );
+}
+
 export function calculateNetGain(
   portfolioValue: number,
   totalInvested: number,
@@ -220,22 +235,22 @@ export function calculateInvestmentReturnRate(
   return (netGain / totalInvested) * 100;
 }
 
-export function buildPortfolioAllocation({
+export function buildInvestmentAllocation({
   investmentItems,
-  portfolioValue,
+  totalInvested,
   limit = 5,
 }: {
   investmentItems: InvestmentItem[];
-  portfolioValue: number;
+  totalInvested: number;
   limit?: number;
 }) {
   return INVESTMENT_CATEGORY_OPTIONS.map((option) => {
     const amount = investmentItems
       .filter((item) => item.category === option.value)
-      .reduce((total, item) => total + item.currentValue, 0);
+      .reduce((total, item) => total + item.investedAmount, 0);
 
     const percentage =
-      portfolioValue > 0 ? Math.round((amount / portfolioValue) * 100) : 0;
+      totalInvested > 0 ? Math.round((amount / totalInvested) * 100) : 0;
 
     return {
       name: option.label,
@@ -249,22 +264,20 @@ export function buildPortfolioAllocation({
     .slice(0, limit);
 }
 
-export function buildInvestmentHoldings(investmentItems: InvestmentItem[]) {
-  return investmentItems.map((item) => {
-    const gain = item.currentValue - item.investedAmount;
+export function buildInvestmentTransactions(investmentItems: InvestmentItem[]) {
+  return investmentItems.map((item) => ({
+    id: item.id,
+    asset: item.assetName,
+    symbol: item.symbol,
+    category: item.category,
 
-    const gainPercentage =
-      item.investedAmount > 0 ? (gain / item.investedAmount) * 100 : 0;
+    investedAmount: item.investedAmount,
+    quantity: item.quantity,
+    feeAmount: item.feeAmount,
 
-    return {
-      id: item.id,
-      asset: item.assetName,
-      category: item.category,
-      currentValue: item.currentValue,
-      currency: item.currency,
-      gainPercentage,
-    };
-  });
+    currency: item.currency,
+    investedAt: item.investedAt,
+  }));
 }
 
 function clampPercentage(value: number) {

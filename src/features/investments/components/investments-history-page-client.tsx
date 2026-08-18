@@ -4,32 +4,38 @@ import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
+import HistoryControls from "@/components/dashboard/history-controls";
+import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
+import HistorySortSelect from "@/components/dashboard/history-sort-select";
+import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
+
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import EditInvestmentDialog from "@/features/investments/components/edit-investment-dialog";
+
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 import useHistoryFilters from "@/hooks/use-history-filters";
 import useHistorySearch from "@/hooks/use-history-search";
+import useHistorySort from "@/hooks/use-history-sort";
+import useHistoryClearAll from "@/hooks/use-history-clear-all";
+
 import { doesInvestmentMatchSearch } from "@/lib/finance-history-search";
 import { sortInvestmentHistoryItems } from "@/lib/finance-history-sorters";
 import { formatInvestmentCategory } from "@/lib/finance-labels";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-import type { InvestmentItem } from "@/types/investment";
+
 import {
   doesInvestmentPassFilters,
   investmentCategoryFilterOptions,
   investmentInitialFilters,
 } from "@/lib/finance-history-filters";
-import HistoryControls from "@/components/dashboard/history-controls";
-import HistoryDateRangeFilter from "@/components/dashboard/history-date-range-filter";
-import HistorySortSelect from "@/components/dashboard/history-sort-select";
-import useHistorySort from "@/hooks/use-history-sort";
+
 import {
   historySortOptions,
   type HistorySortValue,
 } from "@/lib/history-sort-options";
-import useHistoryClearAll from "@/hooks/use-history-clear-all";
-import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
-import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
+
+import type { InvestmentItem } from "@/types/investment";
 
 export default function InvestmentsHistoryPageClient() {
   const {
@@ -82,9 +88,10 @@ export default function InvestmentsHistoryPageClient() {
   } = useHistorySort({
     items: filteredInvestmentItems,
     getDateValue: (item) => item.investedAt,
+
     getAmountValue: (item) =>
       isCurrencyConversionReady
-        ? (convertedInvestmentById.get(item.id)?.currentValue ?? 0)
+        ? (convertedInvestmentById.get(item.id)?.investedAmount ?? 0)
         : 0,
   });
 
@@ -97,38 +104,35 @@ export default function InvestmentsHistoryPageClient() {
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
 
-  const totalVisibleCurrentValue = visibleInvestmentItems.reduce(
-    (total, item) => {
-      const convertedItem = convertedInvestmentById.get(item.id);
+  const totalVisibleInvested = visibleInvestmentItems.reduce((total, item) => {
+    const convertedItem = convertedInvestmentById.get(item.id);
 
-      return total + (convertedItem?.currentValue ?? 0);
-    },
-    0,
-  );
+    return total + (convertedItem?.investedAmount ?? 0);
+  }, 0);
 
-  const averageVisibleCurrentValue =
+  const averageVisibleInvestment =
     visibleInvestmentItems.length > 0
-      ? totalVisibleCurrentValue / visibleInvestmentItems.length
+      ? totalVisibleInvested / visibleInvestmentItems.length
       : 0;
 
   return (
     <>
       <HistoryPageShell
         eyebrow="Investment History"
-        title="All investment records"
-        description="Review every investment position you have added to WealthWise."
+        title="All investment transactions"
+        description="Review every investment transaction you have recorded in WealthWise."
         backHref="/investments"
         backLabel="Back to Investments"
         isEmpty={filteredInvestmentItems.length === 0}
         emptyTitle={
           isFiltering
-            ? "No matching investment records"
-            : "No investment records yet"
+            ? "No matching investment transactions"
+            : "No investment transactions yet"
         }
         emptyDescription={
           isFiltering
             ? "Try changing your search keyword, category filter, or date range."
-            : "Your full investment history will appear here after you add portfolio assets."
+            : "Your investment transactions will appear here after you record your first investment."
         }
         emptyActionHref="/investments"
         emptyActionLabel="Add Investment"
@@ -136,10 +140,10 @@ export default function InvestmentsHistoryPageClient() {
           <HistoryControls
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
-            searchPlaceholder="Search investments by asset, category, amount, or date..."
+            searchPlaceholder="Search by asset, symbol, category, amount, or date..."
             resultCount={filteredInvestmentItems.length}
             totalCount={sortedInvestmentItems.length}
-            recordLabel="investment records"
+            recordLabel="investment transactions"
             hasActiveFilter={hasActiveFilter}
             showClearAllButton={hasActiveControls}
             onResetFilters={resetFilters}
@@ -171,48 +175,57 @@ export default function InvestmentsHistoryPageClient() {
         <HistorySummaryGrid
           items={[
             {
-              label: "Total Current Value",
+              label: "Total Invested",
               value: isCurrencyConversionReady
-                ? formatCurrency(totalVisibleCurrentValue, displayCurrency)
+                ? formatCurrency(totalVisibleInvested, displayCurrency)
                 : "—",
-              description: "Total current value from visible records.",
+              description: "Total amount invested from visible transactions.",
             },
             {
-              label: "Records",
+              label: "Transactions",
               value: String(visibleInvestmentItems.length),
-              description: "Investment records currently shown.",
+              description: "Investment transactions currently shown.",
             },
             {
-              label: "Average Current Value",
+              label: "Average Investment",
               value: isCurrencyConversionReady
-                ? formatCurrency(averageVisibleCurrentValue, displayCurrency)
+                ? formatCurrency(averageVisibleInvestment, displayCurrency)
                 : "—",
-              description: "Average current value per visible record.",
+              description: "Average invested amount per visible transaction.",
             },
           ]}
         />
 
         {visibleInvestmentItems.map((item) => {
-          const gainAmount = item.currentValue - item.investedAmount;
-          const isPositive = gainAmount >= 0;
+          const assetTitle = item.symbol
+            ? `${item.assetName} (${item.symbol})`
+            : item.assetName;
+
+          const quantityText =
+            item.quantity !== null
+              ? `${item.quantity} ${item.symbol ?? "units"}`
+              : "Quantity unavailable";
+
+          const feeText = `Fee ${formatCurrency(
+            item.feeAmount,
+            item.currency,
+          )}`;
 
           return (
             <DashboardListItem
               key={item.id}
-              title={item.assetName}
+              title={assetTitle}
               subtitle={formatInvestmentCategory(item.category)}
-              value={formatCurrency(item.currentValue, item.currency)}
-              meta={`Invested ${formatCurrency(
-                item.investedAmount,
-                item.currency,
-              )} • ${formatDate(item.investedAt)}`}
-              tone={isPositive ? "positive" : "danger"}
+              value={formatCurrency(item.investedAmount, item.currency)}
+              meta={[quantityText, feeText, formatDate(item.investedAt)].join(
+                " • ",
+              )}
             >
               <RecordActionButtons
                 className="mt-4"
                 onEdit={() => handleOpenEditInvestment(item)}
                 onDelete={() => deleteInvestment(item.id)}
-                deleteConfirmMessage="Are you sure you want to delete this investment record?"
+                deleteConfirmMessage="Are you sure you want to delete this investment transaction?"
               />
             </DashboardListItem>
           );
