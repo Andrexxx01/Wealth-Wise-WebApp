@@ -1,5 +1,6 @@
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
+import type { UserCurrency } from "@/types/user-subscription";
 
 type BuildIncomeSummaryCardsParams = {
   totalIncome: number;
@@ -16,10 +17,12 @@ type BuildExpenseSummaryCardsParams = {
 };
 
 type BuildInvestmentSummaryCardsParams = {
-  portfolioValue: number;
   totalInvested: number;
-  netGain: number;
-  investmentReturnRate: number;
+  totalFees: number;
+  totalCashOutflow: number;
+  transactionCount: number;
+  currency: UserCurrency;
+  isCurrencyConversionReady: boolean;
 };
 
 type BuildLoanSummaryCardsParams = {
@@ -97,33 +100,39 @@ export function buildExpenseSummaryCards({
 }
 
 export function buildInvestmentSummaryCards({
-  portfolioValue,
   totalInvested,
-  netGain,
-  investmentReturnRate,
+  totalFees,
+  totalCashOutflow,
+  transactionCount,
+  currency,
+  isCurrencyConversionReady,
 }: BuildInvestmentSummaryCardsParams): SummaryCardProps[] {
   return [
     {
-      label: "Portfolio Value",
-      value: formatCurrency(portfolioValue),
-      helper: "Current total value",
-    },
-    {
       label: "Total Invested",
-      value: formatCurrency(totalInvested),
-      helper: "Total capital deployed",
+      value: isCurrencyConversionReady
+        ? formatCurrency(totalInvested, currency)
+        : "—",
+      helper: "Capital used to purchase assets",
     },
     {
-      label: "Net Gain",
-      value: formatCurrency(netGain),
-      helper: "Overall return",
-      tone: netGain >= 0 ? "positive" : "danger",
+      label: "Total Fees",
+      value: isCurrencyConversionReady
+        ? formatCurrency(totalFees, currency)
+        : "—",
+      helper: "Investment transaction costs",
     },
     {
-      label: "Return Rate",
-      value: formatPercentage(investmentReturnRate),
-      helper: "Based on current value",
-      tone: investmentReturnRate >= 0 ? "positive" : "danger",
+      label: "Cash Outflow",
+      value: isCurrencyConversionReady
+        ? formatCurrency(totalCashOutflow, currency)
+        : "—",
+      helper: "Investments plus transaction fees",
+    },
+    {
+      label: "Transactions",
+      value: String(transactionCount),
+      helper: "Investment records",
     },
   ];
 }

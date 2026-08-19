@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
-import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
 import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
 import {
   buildInvestmentAllocation,
   buildInvestmentTransactions,
+  calculateTotalInvested,
+  calculateTotalInvestmentFees,
+  calculateTotalInvestmentCashOutflow,
 } from "@/lib/finance-calculations";
 import { buildInvestmentContributionChartData } from "@/lib/finance-charts";
 import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
@@ -43,16 +45,23 @@ export default function InvestmentsPageClient() {
     isCurrencyConversionReady,
   } = useConvertedFinanceItems();
 
-  const { portfolioValue, totalInvested, netGain, investmentReturnRate } =
-    useFinanceSummary();
-
   const hasInvestmentItems = investmentItems.length > 0;
 
+  const totalInvested = calculateTotalInvested(convertedInvestmentItems);
+
+  const totalFees = calculateTotalInvestmentFees(convertedInvestmentItems);
+
+  const totalCashOutflow = calculateTotalInvestmentCashOutflow(
+    convertedInvestmentItems,
+  );
+
   const investmentSummaryCards = buildInvestmentSummaryCards({
-    portfolioValue,
     totalInvested,
-    netGain,
-    investmentReturnRate,
+    totalFees,
+    totalCashOutflow,
+    transactionCount: investmentItems.length,
+    currency: displayCurrency,
+    isCurrencyConversionReady,
   });
 
   const investmentContributionChartData = buildInvestmentContributionChartData({
@@ -75,8 +84,8 @@ export default function InvestmentsPageClient() {
       <div className="space-y-8">
         <SectionHeader
           eyebrow="Investment Overview"
-          title="Grow and monitor your portfolio"
-          description="Track your asset allocation, portfolio value, and investment growth in one place so you can understand how your money is performing over time."
+          title="Track your investment activity"
+          description="Record your investment purchases, transaction fees, asset quantities, and contribution history in one place."
           action={
             <Button
               type="button"
