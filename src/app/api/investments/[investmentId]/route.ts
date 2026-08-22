@@ -60,9 +60,6 @@ export async function PATCH(request: Request, context: RouteContext) {
         feeAmount: parsedBody.feeAmount,
         currency: parsedBody.currency,
 
-        // Temporary legacy compatibility.
-        currentValue: parsedBody.investedAmount,
-
         investedAt: new Date(parsedBody.investedAt),
         notes: parsedBody.notes ?? null,
       },

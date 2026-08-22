@@ -23,13 +23,6 @@ export interface InvestmentItem {
   feeAmount: number;
   currency: UserCurrency;
 
-  /**
-   * Temporary legacy field.
-   * Akan dihapus setelah seluruh UI/calculation
-   * tidak lagi bergantung pada currentValue.
-   */
-  currentValue: number;
-
   investedAt: string;
   notes: string | null;
 

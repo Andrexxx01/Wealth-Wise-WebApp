@@ -42,9 +42,9 @@ export function calculateMonthlySurplus(
 
 export function calculateAvailableCash(
   monthlySurplus: number,
-  totalInvested: number,
+  totalInvestmentCashOutflow: number,
 ) {
-  return monthlySurplus - totalInvested;
+  return monthlySurplus - totalInvestmentCashOutflow;
 }
 
 export function calculateSavingsRate(
@@ -54,10 +54,6 @@ export function calculateSavingsRate(
   if (totalIncome <= 0) return 0;
 
   return (monthlySurplus / totalIncome) * 100;
-}
-
-export function calculatePortfolioValue(investmentItems: InvestmentItem[]) {
-  return investmentItems.reduce((total, item) => total + item.currentValue, 0);
 }
 
 export function calculateTotalInvested(investmentItems: InvestmentItem[]) {
@@ -84,9 +80,9 @@ export function calculateTotalInvestmentCashOutflow(
 
 export function calculateNetGain(
   portfolioValue: number,
-  totalInvested: number,
+  totalCostBasis: number,
 ) {
-  return portfolioValue - totalInvested;
+  return portfolioValue - totalCostBasis;
 }
 
 export function calculateTotalLoanBalance(loanItems: LoanItem[]) {
@@ -228,11 +224,13 @@ export function sortRecentExpenseItems(expenseItems: ExpenseItem[], limit = 5) {
 
 export function calculateInvestmentReturnRate(
   netGain: number,
-  totalInvested: number,
+  totalCostBasis: number,
 ) {
-  if (totalInvested <= 0) return 0;
+  if (totalCostBasis <= 0) {
+    return 0;
+  }
 
-  return (netGain / totalInvested) * 100;
+  return (netGain / totalCostBasis) * 100;
 }
 
 export function buildInvestmentAllocation({

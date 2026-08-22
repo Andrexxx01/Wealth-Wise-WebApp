@@ -147,10 +147,6 @@ model Investment {
   quantity       Decimal? @db.Decimal(30, 18)
   feeAmount      Decimal  @default(0) @db.Decimal(12, 4)
 
-  // Temporary legacy field.
-  // Remove after the application no longer depends on it.
-  currentValue Decimal @db.Decimal(12, 2)
-
   investedAt DateTime
   notes      String?
 

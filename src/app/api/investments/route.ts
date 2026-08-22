@@ -76,10 +76,6 @@ export async function POST(request: Request) {
         feeAmount: parsedBody.feeAmount,
         currency: parsedBody.currency,
 
-        // Temporary compatibility only.
-        // Akan dihapus bersama kolom currentValue.
-        currentValue: parsedBody.investedAmount,
-
         investedAt: new Date(parsedBody.investedAt),
         notes: parsedBody.notes ?? null,
       },
