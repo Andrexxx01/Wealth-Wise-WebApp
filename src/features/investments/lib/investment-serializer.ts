@@ -8,8 +8,8 @@ type SerializableInvestment = {
   notes: string | null;
   createdAt: Date;
   updatedAt: Date;
-  symbol: string | null;
-  quantity: unknown | null;
+  symbol: string;
+  quantity: unknown;
   feeAmount: unknown;
 };
 
@@ -26,7 +26,7 @@ export function serializeInvestment(investment: SerializableInvestment) {
     updatedAt: investment.updatedAt.toISOString(),
     symbol: investment.symbol,
 
-    quantity: investment.quantity === null ? null : Number(investment.quantity),
+    quantity: Number(investment.quantity),
 
     feeAmount: Number(investment.feeAmount),
   };

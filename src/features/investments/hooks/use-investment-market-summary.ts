@@ -43,11 +43,9 @@ export function useInvestmentMarketSummary() {
           .filter(
             (item) =>
               item.category === "CRYPTO" &&
-              item.symbol &&
-              item.quantity !== null &&
               item.quantity > 0,
           )
-          .map((item) => item.symbol!.trim().toUpperCase()),
+          .map((item) => item.symbol.trim().toUpperCase()),
       ),
     ],
     [investmentItems],
@@ -78,10 +76,9 @@ export function useInvestmentMarketSummary() {
       /*
        * Crypto membutuhkan symbol + quantity.
        */
-      if (!item.symbol || item.quantity === null || item.quantity <= 0) {
+      if (item.quantity <= 0) {
         isPortfolioValuationComplete = false;
         unpricedInvestmentCount += 1;
-
         continue;
       }
 

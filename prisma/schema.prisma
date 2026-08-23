@@ -139,12 +139,12 @@ model Investment {
   userId String
 
   assetName String
-  symbol    String?
+  symbol    String
   category  String
 
   currency       Currency @default(USD)
   investedAmount Decimal  @db.Decimal(12, 2)
-  quantity       Decimal? @db.Decimal(30, 18)
+  quantity       Decimal  @db.Decimal(30, 18)
   feeAmount      Decimal  @default(0) @db.Decimal(12, 4)
 
   investedAt DateTime

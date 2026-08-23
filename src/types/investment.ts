@@ -15,11 +15,11 @@ export interface InvestmentItem {
   userId: string;
 
   assetName: string;
-  symbol: string | null;
+  symbol: string;
   category: InvestmentCategory;
 
   investedAmount: number;
-  quantity: number | null;
+  quantity: number;
   feeAmount: number;
   currency: UserCurrency;
 
