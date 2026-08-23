@@ -25,8 +25,12 @@ export const createInvestmentSchema = z.object({
     .max(200, "Notes must be less than 200 characters.")
     .optional(),
 
-  symbol: z.string().trim().max(20, "Symbol must be 20 characters or fewer."),
-
+  symbol: z
+    .string()
+    .trim()
+    .min(1, "Symbol is required.")
+    .max(20, "Symbol must be 20 characters or fewer."),
+    
   quantity: z
     .string()
     .min(1, "Quantity is required")

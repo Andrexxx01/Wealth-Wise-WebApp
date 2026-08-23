@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         userId,
 
         assetName: parsedBody.assetName,
-        symbol: parsedBody.symbol ?? null,
+        symbol: parsedBody.symbol,
         category: parsedBody.category,
 
         investedAmount: parsedBody.investedAmount,

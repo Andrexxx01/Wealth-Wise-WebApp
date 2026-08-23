@@ -59,7 +59,7 @@ export function transformInvestmentFormValues(
 
     feeAmount: toNumber(values.feeAmount),
 
-    symbol: values.symbol.trim() ? values.symbol.trim().toUpperCase() : null,
+    symbol: values.symbol.trim().toUpperCase(),
 
     currency: values.currency,
     investedAt: values.investedAt,

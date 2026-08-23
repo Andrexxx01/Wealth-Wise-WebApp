@@ -52,7 +52,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
       data: {
         assetName: parsedBody.assetName,
-        symbol: parsedBody.symbol ?? null,
+        symbol: parsedBody.symbol,
         category: parsedBody.category,
 
         investedAmount: parsedBody.investedAmount,

@@ -26,7 +26,7 @@ export type CreateExpensePayload = {
 
 export type CreateInvestmentPayload = {
   assetName: string;
-  symbol: string | null;
+  symbol: string;
   category: InvestmentCategory;
 
   investedAmount: number;
