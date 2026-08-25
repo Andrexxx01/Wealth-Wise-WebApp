@@ -117,3 +117,66 @@ export interface InvestmentAssetWithTransactionsItem extends InvestmentAssetItem
   transactions: InvestmentTransactionItem[];
   events: InvestmentEventItem[];
 }
+
+export type InvestmentPositionKind = "QUANTITY" | "PRINCIPAL";
+
+export interface InvestmentHoldingItem {
+  assetId: string;
+  userId: string;
+
+  name: string;
+  symbol: string | null;
+
+  category: InvestmentAssetCategory;
+  instrumentType: InvestmentInstrumentType;
+  valuationType: InvestmentValuationType;
+
+  positionKind: InvestmentPositionKind;
+
+  transactionCurrencyCode: string | null;
+
+  quantity: number | null;
+  principalBalance: number | null;
+
+  remainingCostBasis: number;
+  averageCostPerUnit: number | null;
+
+  realizedGainLoss: number;
+
+  totalFees: number;
+
+  netTransactionCashFlow: number;
+
+  isClosed: boolean;
+}
+
+import type { UserCurrency } from "@/types/user-subscription";
+import type { MarketPriceItem } from "@/types/market-price";
+
+export type InvestmentValuationStatus =
+  | "VALUED"
+  | "PRICE_UNAVAILABLE"
+  | "UNSUPPORTED_VALUATION"
+  | "UNSUPPORTED_CURRENCY";
+
+export interface InvestmentValuationItem extends InvestmentHoldingItem {
+  displayCurrency: UserCurrency;
+
+  marketPrice: number | null;
+  marketPriceCurrencyCode: string | null;
+
+  marketValue: number | null;
+
+  costBasisInDisplayCurrency: number | null;
+
+  realizedGainLossInDisplayCurrency: number | null;
+  unrealizedGainLoss: number | null;
+  unrealizedReturnPercentage: number | null;
+
+  totalGainLoss: number | null;
+
+  marketSource: MarketPriceItem["source"] | null;
+  marketPriceAsOf: string | null;
+
+  valuationStatus: InvestmentValuationStatus;
+}
