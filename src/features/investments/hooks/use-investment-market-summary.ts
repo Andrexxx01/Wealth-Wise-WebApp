@@ -168,36 +168,6 @@ export function useInvestmentMarketSummary() {
     isRequiredFxReady &&
     result.isPortfolioValuationComplete;
 
-  console.log("INVESTMENT MARKET DEBUG", {
-    investmentItems: investmentItems.map((item) => ({
-      assetName: item.assetName,
-      category: item.category,
-      symbol: item.symbol,
-      quantity: item.quantity,
-      investedAmount: item.investedAmount,
-      feeAmount: item.feeAmount,
-    })),
-
-    marketSymbols,
-
-    prices,
-
-    displayCurrency,
-    usdToIdrRate,
-
-    portfolioValue: result.portfolioValue,
-    pricedInvestmentCount: result.pricedInvestmentCount,
-    unpricedInvestmentCount: result.unpricedInvestmentCount,
-    isPortfolioValuationComplete: result.isPortfolioValuationComplete,
-
-    isRequiredFxReady,
-
-    isMarketPriceLoading,
-    marketPriceError,
-
-    isPortfolioValuationReady,
-  });
-
   return {
     ...result,
 
