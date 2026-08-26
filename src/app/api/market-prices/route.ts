@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import type { MarketPriceData, MarketPriceItem } from "@/types/market-price";
+
+import { getCryptoSpotPrice } from "@/features/market-data/server/crypto-market-provider";
+
+import type { MarketPriceData } from "@/types/market-price";
 
 export const runtime = "nodejs";
-
-const MARKET_PRICE_REVALIDATE_SECONDS = 60 * 60 * 24;
 
 function normalizeSymbols(symbolsParam: string | null) {
   if (!symbolsParam) {
@@ -18,58 +19,6 @@ function normalizeSymbols(symbolsParam: string | null) {
         .filter(Boolean),
     ),
   ];
-}
-
-async function getCryptoSpotPrice(
-  symbol: string,
-): Promise<MarketPriceItem | null> {
-  try {
-    const response = await fetch(
-      `https://api.coinbase.com/v2/prices/${symbol}-USD/spot`,
-      {
-        next: {
-          revalidate: MARKET_PRICE_REVALIDATE_SECONDS,
-        },
-      },
-    );
-
-    if (!response.ok) {
-      console.error(`Coinbase returned ${response.status} for ${symbol}-USD`);
-
-      return null;
-    }
-
-    const result: unknown = await response.json();
-
-    if (
-      typeof result !== "object" ||
-      result === null ||
-      !("data" in result) ||
-      typeof result.data !== "object" ||
-      result.data === null ||
-      !("amount" in result.data) ||
-      typeof result.data.amount !== "string"
-    ) {
-      return null;
-    }
-
-    const price = Number(result.data.amount);
-
-    if (!Number.isFinite(price) || price <= 0) {
-      return null;
-    }
-
-    return {
-      symbol,
-      price,
-      currency: "USD",
-      source: "coinbase",
-    };
-  } catch (error) {
-    console.error(`Failed to load market price for ${symbol}:`, error);
-
-    return null;
-  }
 }
 
 export async function GET(request: NextRequest) {
@@ -107,7 +56,9 @@ export async function GET(request: NextRequest) {
 
   const data: MarketPriceData = {
     prices: Object.fromEntries(priceEntries),
+
     quoteCurrency: "USD",
+
     asOf: new Date().toISOString(),
   };
 

@@ -1,38 +1,15 @@
 import { NextResponse } from "next/server";
 
-export const runtime = "nodejs";
+import { getUsdToIdrRate } from "@/features/market-data/server/fx-rate-provider";
 
-const FRANKFURTER_USD_IDR_URL = "https://api.frankfurter.dev/v2/rate/USD/IDR";
+export const runtime = "nodejs";
 
 export async function GET() {
   try {
-    const response = await fetch(FRANKFURTER_USD_IDR_URL, {
-      next: {
-        revalidate: 60 * 60 * 24,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Frankfurter API returned status ${response.status}`);
-    }
-
-    const data: unknown = await response.json();
-
-    if (
-      typeof data !== "object" ||
-      data === null ||
-      !("rate" in data) ||
-      typeof data.rate !== "number"
-    ) {
-      throw new Error("Invalid exchange rate response.");
-    }
+    const exchangeRate = await getUsdToIdrRate();
 
     return NextResponse.json({
-      data: {
-        base: "USD",
-        quote: "IDR",
-        rate: data.rate,
-      },
+      data: exchangeRate,
     });
   } catch (error) {
     console.error("GET /api/exchange-rates error:", error);
