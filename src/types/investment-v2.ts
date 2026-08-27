@@ -180,3 +180,25 @@ export interface InvestmentValuationItem extends InvestmentHoldingItem {
 
   valuationStatus: InvestmentValuationStatus;
 }
+
+export interface InvestmentPortfolioSummaryItem {
+  displayCurrency: UserCurrency;
+
+  totalAssets: number;
+  valuedAssets: number;
+  unvaluedAssets: number;
+
+  totalMarketValue: number;
+  totalCostBasis: number;
+
+  totalRealizedGainLoss: number;
+  totalUnrealizedGainLoss: number;
+  totalGainLoss: number;
+
+  unrealizedReturnPercentage: number | null;
+
+  totalFeesInDisplayCurrency: number;
+
+  openAssets: number;
+  closedAssets: number;
+}
