@@ -202,3 +202,23 @@ export interface InvestmentPortfolioSummaryItem {
   openAssets: number;
   closedAssets: number;
 }
+
+export interface InvestmentValuationsMeta {
+  displayCurrency: UserCurrency;
+
+  exchangeRate: {
+    base: "USD";
+    quote: "IDR";
+    rate: number;
+  };
+
+  marketPriceAsOf: string;
+}
+
+export interface InvestmentValuationsResponse {
+  data: InvestmentValuationItem[];
+
+  summary: InvestmentPortfolioSummaryItem;
+
+  meta: InvestmentValuationsMeta;
+}

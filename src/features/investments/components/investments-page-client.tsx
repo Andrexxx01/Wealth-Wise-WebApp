@@ -17,11 +17,8 @@ import {
   buildInvestmentAllocation,
   buildInvestmentTransactions,
   calculateTotalInvested,
-  calculateTotalInvestmentFees,
-  calculateTotalInvestmentCashOutflow,
 } from "@/lib/finance-calculations";
 import { buildInvestmentContributionChartData } from "@/lib/finance-charts";
-import { buildInvestmentSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import Link from "next/link";
 import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
@@ -37,7 +34,13 @@ function formatInvestmentCategory(category: string) {
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
 
-  const { investmentItems, createInvestment } = useFinance();
+  const {
+    investmentItems,
+    investmentPortfolioV2,
+    isInvestmentPortfolioV2Loading,
+    investmentPortfolioV2Error,
+    createInvestment,
+  } = useFinance();
 
   const {
     investmentItems: convertedInvestmentItems,
@@ -49,20 +52,18 @@ export default function InvestmentsPageClient() {
 
   const totalInvested = calculateTotalInvested(convertedInvestmentItems);
 
-  const totalFees = calculateTotalInvestmentFees(convertedInvestmentItems);
+  const portfolioSummary = investmentPortfolioV2?.summary ?? null;
 
-  const totalCashOutflow = calculateTotalInvestmentCashOutflow(
-    convertedInvestmentItems,
-  );
+  const isPortfolioSummaryReady =
+    !isInvestmentPortfolioV2Loading &&
+    !investmentPortfolioV2Error &&
+    portfolioSummary !== null;
 
-  const investmentSummaryCards = buildInvestmentSummaryCards({
-    totalInvested,
-    totalFees,
-    totalCashOutflow,
-    transactionCount: investmentItems.length,
-    currency: displayCurrency,
-    isCurrencyConversionReady,
-  });
+  const portfolioDisplayCurrency =
+    portfolioSummary?.displayCurrency ?? displayCurrency;
+
+  const unrealizedReturnPercentage =
+    portfolioSummary?.unrealizedReturnPercentage ?? null;
 
   const investmentContributionChartData = buildInvestmentContributionChartData({
     investmentItems: convertedInvestmentItems,
@@ -98,15 +99,76 @@ export default function InvestmentsPageClient() {
         />
 
         <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {investmentSummaryCards.map((card) => (
-            <SummaryCard
-              key={card.label}
-              label={card.label}
-              value={card.value}
-              helper={card.helper}
-              tone={card.tone}
-            />
-          ))}
+          <SummaryCard
+            label="Portfolio Value"
+            value={
+              isPortfolioSummaryReady
+                ? formatCurrency(
+                    portfolioSummary.totalMarketValue,
+                    portfolioDisplayCurrency,
+                  )
+                : "—"
+            }
+            helper={
+              isInvestmentPortfolioV2Loading
+                ? "Loading portfolio valuation..."
+                : investmentPortfolioV2Error
+                  ? "Portfolio valuation unavailable"
+                  : portfolioSummary
+                    ? `${portfolioSummary.valuedAssets} of ${portfolioSummary.totalAssets} assets valued`
+                    : "No investment assets yet"
+            }
+          />
+
+          <SummaryCard
+            label="Cost Basis"
+            value={
+              isPortfolioSummaryReady
+                ? formatCurrency(
+                    portfolioSummary.totalCostBasis,
+                    portfolioDisplayCurrency,
+                  )
+                : "—"
+            }
+            helper="Remaining cost basis of valued holdings"
+          />
+
+          <SummaryCard
+            label="Unrealized Gain/Loss"
+            value={
+              isPortfolioSummaryReady
+                ? formatCurrency(
+                    portfolioSummary.totalUnrealizedGainLoss,
+                    portfolioDisplayCurrency,
+                  )
+                : "—"
+            }
+            helper="Market value minus remaining cost basis"
+            tone={
+              portfolioSummary
+                ? portfolioSummary.totalUnrealizedGainLoss >= 0
+                  ? "positive"
+                  : "danger"
+                : undefined
+            }
+          />
+
+          <SummaryCard
+            label="Unrealized Return"
+            value={
+              isPortfolioSummaryReady && unrealizedReturnPercentage !== null
+                ? `${unrealizedReturnPercentage.toFixed(2)}%`
+                : "—"
+            }
+            helper="Unrealized gain/loss relative to cost basis"
+            tone={
+              unrealizedReturnPercentage !== null
+                ? unrealizedReturnPercentage >= 0
+                  ? "positive"
+                  : "danger"
+                : undefined
+            }
+          />
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">

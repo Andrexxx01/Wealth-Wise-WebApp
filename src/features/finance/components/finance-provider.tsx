@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { clearFinanceStorageData } from "@/lib/finance-storage";
 import type { ExpenseItem } from "@/types/expense";
 import type {
@@ -40,6 +46,8 @@ import {
   getLoanItems,
   updateLoanItem,
 } from "@/features/loans/api/loan-api";
+import { getInvestmentValuationsV2 } from "@/features/investments/api/investment-v2-api";
+import type { InvestmentValuationsResponse } from "@/types/investment-v2";
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
@@ -56,9 +64,36 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   const [isInvestmentLoading, setIsInvestmentLoading] = useState(true);
   const [investmentError, setInvestmentError] = useState<string | null>(null);
 
+  const [investmentPortfolioV2, setInvestmentPortfolioV2] =
+    useState<InvestmentValuationsResponse | null>(null);
+
+  const [isInvestmentPortfolioV2Loading, setIsInvestmentPortfolioV2Loading] =
+    useState(true);
+
+  const [investmentPortfolioV2Error, setInvestmentPortfolioV2Error] = useState<
+    string | null
+  >(null);
+
   const [loanItems, setLoanItems] = useState<LoanItem[]>([]);
   const [isLoanLoading, setIsLoanLoading] = useState(true);
   const [loanError, setLoanError] = useState<string | null>(null);
+
+  const refreshInvestmentPortfolioV2 = useCallback(async () => {
+    try {
+      setIsInvestmentPortfolioV2Loading(true);
+      setInvestmentPortfolioV2Error(null);
+
+      const data = await getInvestmentValuationsV2();
+
+      setInvestmentPortfolioV2(data);
+    } catch (error) {
+      console.error("Failed to load investment portfolio V2:", error);
+
+      setInvestmentPortfolioV2Error("Failed to load investment portfolio.");
+    } finally {
+      setIsInvestmentPortfolioV2Loading(false);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -192,6 +227,10 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     };
   }, []);
 
+  useEffect(() => {
+    void refreshInvestmentPortfolioV2();
+  }, [refreshInvestmentPortfolioV2]);
+
   async function createIncome(payload: CreateIncomePayload) {
     const createdIncome = await createIncomeItem(payload);
 
@@ -300,12 +339,20 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     investmentItems,
     loanItems,
 
+    investmentPortfolioV2,
+
     isIncomeLoading,
     incomeError,
+
     isExpenseLoading,
     expenseError,
+
     isInvestmentLoading,
     investmentError,
+
+    isInvestmentPortfolioV2Loading,
+    investmentPortfolioV2Error,
+
     isLoanLoading,
     loanError,
 
@@ -323,6 +370,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     deleteExpense,
     deleteInvestment,
     deleteLoan,
+
+    refreshInvestmentPortfolioV2,
 
     resetFinanceData,
   };

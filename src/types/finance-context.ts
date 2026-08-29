@@ -8,6 +8,7 @@ import type {
 } from "@/types/form-payload";
 import type { IncomeItem } from "@/types/income";
 import type { InvestmentItem } from "@/types/investment";
+import type { InvestmentValuationsResponse } from "@/types/investment-v2";
 import type { LoanItem } from "@/types/loan";
 
 export type FinanceContextValue = {
@@ -15,6 +16,8 @@ export type FinanceContextValue = {
   expenseItems: ExpenseItem[];
   investmentItems: InvestmentItem[];
   loanItems: LoanItem[];
+
+  investmentPortfolioV2: InvestmentValuationsResponse | null;
 
   isIncomeLoading: boolean;
   incomeError: string | null;
@@ -24,6 +27,9 @@ export type FinanceContextValue = {
 
   isInvestmentLoading: boolean;
   investmentError: string | null;
+
+  isInvestmentPortfolioV2Loading: boolean;
+  investmentPortfolioV2Error: string | null;
 
   isLoanLoading: boolean;
   loanError: string | null;
@@ -37,20 +43,25 @@ export type FinanceContextValue = {
     incomeId: string,
     payload: CreateIncomePayload,
   ) => Promise<void>;
+
   updateExpense: (
     expenseId: string,
     payload: CreateExpensePayload,
   ) => Promise<void>;
+
   updateInvestment: (
     investmentId: string,
     payload: CreateInvestmentPayload,
   ) => Promise<void>;
+
   updateLoan: (loanId: string, payload: CreateLoanPayload) => Promise<void>;
 
   deleteIncome: (incomeId: string) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
   deleteInvestment: (investmentId: string) => Promise<void>;
   deleteLoan: (loanId: string) => Promise<void>;
+
+  refreshInvestmentPortfolioV2: () => Promise<void>;
 
   resetFinanceData: () => void;
 };
