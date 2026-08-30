@@ -13,15 +13,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
-import {
-  buildInvestmentAllocation,
-  buildInvestmentTransactions,
-  calculateTotalInvested,
-} from "@/lib/finance-calculations";
+import { buildInvestmentTransactions } from "@/lib/finance-calculations";
 import { buildInvestmentContributionChartData } from "@/lib/finance-charts";
 import { formatCurrency, formatDate } from "@/lib/formatters";
 import Link from "next/link";
 import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
+import { buildInvestmentV2Allocation } from "@/features/investments/lib/investment-v2-allocation";
 
 function formatInvestmentCategory(category: string) {
   const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
@@ -50,8 +47,6 @@ export default function InvestmentsPageClient() {
 
   const hasInvestmentItems = investmentItems.length > 0;
 
-  const totalInvested = calculateTotalInvested(convertedInvestmentItems);
-
   const portfolioSummary = investmentPortfolioV2?.summary ?? null;
 
   const isPortfolioSummaryReady =
@@ -72,11 +67,9 @@ export default function InvestmentsPageClient() {
   const canShowInvestmentChart =
     hasInvestmentItems && isCurrencyConversionReady;
 
-  const investmentAllocation = buildInvestmentAllocation({
-    investmentItems: convertedInvestmentItems,
-    totalInvested,
-    limit: 5,
-  });
+  const investmentAllocation = buildInvestmentV2Allocation(
+    investmentPortfolioV2?.data ?? [],
+  );
 
   const investmentTransactions = buildInvestmentTransactions(investmentItems);
 
@@ -200,7 +193,7 @@ export default function InvestmentsPageClient() {
             <CardContent className="p-6">
               <DashboardCardHeader
                 eyebrow="Investment Allocation"
-                title="Contribution Breakdown"
+                title="Portfolio Allocation"
               />
 
               {investmentAllocation.length > 0 ? (
@@ -209,20 +202,19 @@ export default function InvestmentsPageClient() {
                     <DashboardListItem
                       key={item.category}
                       title={item.name}
-                      subtitle={`${item.percentage}% of total invested`}
-                      value={
-                        isCurrencyConversionReady
-                          ? formatCurrency(item.amount, displayCurrency)
-                          : "—"
-                      }
+                      subtitle={`${item.percentage.toFixed(2)}% of current portfolio`}
+                      value={formatCurrency(
+                        item.marketValue,
+                        portfolioDisplayCurrency,
+                      )}
                       className="border-none bg-slate-50 p-4"
                     />
                   ))}
                 </div>
               ) : (
                 <EmptyState
-                  title="No investment allocation yet"
-                  description="Add investment transactions to see how your contributions are distributed across asset categories."
+                  title="No portfolio allocation yet"
+                  description="Portfolio allocation will appear after your investment assets have an available market valuation."
                   action={
                     <Button
                       type="button"

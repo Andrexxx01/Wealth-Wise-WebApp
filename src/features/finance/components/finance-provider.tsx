@@ -46,8 +46,16 @@ import {
   getLoanItems,
   updateLoanItem,
 } from "@/features/loans/api/loan-api";
-import { getInvestmentValuationsV2 } from "@/features/investments/api/investment-v2-api";
-import type { InvestmentValuationsResponse } from "@/types/investment-v2";
+import {
+  createInvestmentAssetV2 as createInvestmentAssetV2Api,
+  createInvestmentTransactionV2 as createInvestmentTransactionV2Api,
+  getInvestmentValuationsV2,
+} from "@/features/investments/api/investment-v2-api";
+import type {
+  CreateInvestmentAssetV2Payload,
+  CreateInvestmentTransactionV2Payload,
+  InvestmentValuationsResponse,
+} from "@/types/investment-v2";
 
 const FinanceContext = createContext<FinanceContextValue | null>(null);
 
@@ -286,6 +294,23 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     setInvestmentItems((currentItems) => [createdInvestment, ...currentItems]);
   }
 
+  async function createInvestmentAsset(
+    payload: CreateInvestmentAssetV2Payload,
+  ) {
+    await createInvestmentAssetV2Api(payload);
+
+    await refreshInvestmentPortfolioV2();
+  }
+
+  async function addInvestmentTransaction(
+    assetId: string,
+    payload: CreateInvestmentTransactionV2Payload,
+  ) {
+    await createInvestmentTransactionV2Api(assetId, payload);
+
+    await refreshInvestmentPortfolioV2();
+  }
+
   async function updateInvestment(
     investmentId: string,
     payload: CreateInvestmentPayload,
@@ -360,6 +385,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     createExpense,
     createInvestment,
     createLoan,
+    createInvestmentAsset,
+    addInvestmentTransaction,
 
     updateIncome,
     updateExpense,

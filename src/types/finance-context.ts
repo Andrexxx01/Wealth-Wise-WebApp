@@ -8,7 +8,11 @@ import type {
 } from "@/types/form-payload";
 import type { IncomeItem } from "@/types/income";
 import type { InvestmentItem } from "@/types/investment";
-import type { InvestmentValuationsResponse } from "@/types/investment-v2";
+import type {
+  CreateInvestmentAssetV2Payload,
+  CreateInvestmentTransactionV2Payload,
+  InvestmentValuationsResponse,
+} from "@/types/investment-v2";
 import type { LoanItem } from "@/types/loan";
 
 export type FinanceContextValue = {
@@ -38,6 +42,15 @@ export type FinanceContextValue = {
   createExpense: (payload: CreateExpensePayload) => Promise<void>;
   createInvestment: (payload: CreateInvestmentPayload) => Promise<void>;
   createLoan: (payload: CreateLoanPayload) => Promise<void>;
+
+  createInvestmentAsset: (
+    payload: CreateInvestmentAssetV2Payload,
+  ) => Promise<void>;
+
+  addInvestmentTransaction: (
+    assetId: string,
+    payload: CreateInvestmentTransactionV2Payload,
+  ) => Promise<void>;
 
   updateIncome: (
     incomeId: string,

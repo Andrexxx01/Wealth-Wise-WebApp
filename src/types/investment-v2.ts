@@ -222,3 +222,59 @@ export interface InvestmentValuationsResponse {
 
   meta: InvestmentValuationsMeta;
 }
+
+export type CreateInvestmentTransactionV2Payload = {
+  type: InvestmentTransactionType;
+
+  quantity: number | null;
+
+  grossAmount: number;
+  feeAmount: number;
+
+  currencyCode: string;
+
+  transactedAt: string;
+
+  notes: string | null;
+};
+
+export type CreateInvestmentAssetV2Payload = {
+  name: string;
+
+  category: InvestmentAssetCategory;
+  instrumentType: InvestmentInstrumentType;
+  valuationType: InvestmentValuationType;
+
+  symbol: string | null;
+  exchange: string | null;
+  isin: string | null;
+  issuer: string | null;
+  underlyingIndex: string | null;
+
+  unit: string | null;
+  pricingUnit: string | null;
+
+  marketCurrencyCode: string | null;
+
+  annualInterestRate: number | null;
+  couponRate: number | null;
+  faceValue: number | null;
+  maturityDate: string | null;
+
+  notes: string | null;
+
+  initialTransaction: {
+    type: "BUY" | "OPEN";
+
+    quantity: number | null;
+
+    grossAmount: number;
+    feeAmount: number;
+
+    currencyCode: string;
+
+    transactedAt: string;
+
+    notes: string | null;
+  };
+};
