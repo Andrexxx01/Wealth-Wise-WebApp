@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
-import AddInvestmentDialog from "@/features/investments/components/add-investment-dialog";
+import AddInvestmentV2Dialog from "@/features/investments/components/add-investment-v2-dialog";
 import { buildInvestmentTransactions } from "@/lib/finance-calculations";
 import { buildInvestmentContributionChartData } from "@/lib/finance-charts";
 import { formatCurrency, formatDate } from "@/lib/formatters";
@@ -36,7 +36,6 @@ export default function InvestmentsPageClient() {
     investmentPortfolioV2,
     isInvestmentPortfolioV2Loading,
     investmentPortfolioV2Error,
-    createInvestment,
   } = useFinance();
 
   const {
@@ -48,6 +47,12 @@ export default function InvestmentsPageClient() {
   const hasInvestmentItems = investmentItems.length > 0;
 
   const portfolioSummary = investmentPortfolioV2?.summary ?? null;
+
+  const hasPortfolioAssets = (portfolioSummary?.totalAssets ?? 0) > 0;
+
+  const hasValuedAssets = (portfolioSummary?.valuedAssets ?? 0) > 0;
+
+  const hasUnvaluedAssets = (portfolioSummary?.unvaluedAssets ?? 0) > 0;
 
   const isPortfolioSummaryReady =
     !isInvestmentPortfolioV2Loading &&
@@ -95,21 +100,27 @@ export default function InvestmentsPageClient() {
           <SummaryCard
             label="Portfolio Value"
             value={
-              isPortfolioSummaryReady
-                ? formatCurrency(
-                    portfolioSummary.totalMarketValue,
-                    portfolioDisplayCurrency,
-                  )
-                : "—"
+              !isPortfolioSummaryReady
+                ? "—"
+                : hasPortfolioAssets && !hasValuedAssets
+                  ? "—"
+                  : formatCurrency(
+                      portfolioSummary.totalMarketValue,
+                      portfolioDisplayCurrency,
+                    )
             }
             helper={
               isInvestmentPortfolioV2Loading
                 ? "Loading portfolio valuation..."
                 : investmentPortfolioV2Error
-                  ? "Portfolio valuation unavailable"
-                  : portfolioSummary
-                    ? `${portfolioSummary.valuedAssets} of ${portfolioSummary.totalAssets} assets valued`
-                    : "No investment assets yet"
+                  ? "Portfolio valuation is currently unavailable."
+                  : !portfolioSummary
+                    ? "Portfolio data is unavailable."
+                    : portfolioSummary.totalAssets === 0
+                      ? "No investment assets yet"
+                      : hasUnvaluedAssets
+                        ? `${portfolioSummary.valuedAssets} of ${portfolioSummary.totalAssets} assets valued — market value is partial`
+                        : `${portfolioSummary.valuedAssets} of ${portfolioSummary.totalAssets} assets valued`
             }
           />
 
@@ -123,43 +134,58 @@ export default function InvestmentsPageClient() {
                   )
                 : "—"
             }
-            helper="Remaining cost basis of valued holdings"
+            helper="Remaining cost basis from recorded investment transactions"
           />
 
           <SummaryCard
             label="Unrealized Gain/Loss"
             value={
-              isPortfolioSummaryReady
-                ? formatCurrency(
+              !isPortfolioSummaryReady ||
+              (hasPortfolioAssets && !hasValuedAssets)
+                ? "—"
+                : formatCurrency(
                     portfolioSummary.totalUnrealizedGainLoss,
                     portfolioDisplayCurrency,
                   )
-                : "—"
             }
-            helper="Market value minus remaining cost basis"
+            helper={
+              hasUnvaluedAssets
+                ? "Calculated from assets with available market valuation only"
+                : "Market value minus remaining cost basis"
+            }
             tone={
-              portfolioSummary
-                ? portfolioSummary.totalUnrealizedGainLoss >= 0
+              isPortfolioSummaryReady && hasValuedAssets
+                ? portfolioSummary.totalUnrealizedGainLoss > 0
                   ? "positive"
-                  : "danger"
-                : undefined
+                  : portfolioSummary.totalUnrealizedGainLoss < 0
+                    ? "danger"
+                    : "default"
+                : "default"
             }
           />
 
           <SummaryCard
             label="Unrealized Return"
             value={
-              isPortfolioSummaryReady && unrealizedReturnPercentage !== null
-                ? `${unrealizedReturnPercentage.toFixed(2)}%`
-                : "—"
+              !isPortfolioSummaryReady ||
+              portfolioSummary.unrealizedReturnPercentage === null
+                ? "—"
+                : `${portfolioSummary.unrealizedReturnPercentage.toFixed(2)}%`
             }
-            helper="Unrealized gain/loss relative to cost basis"
+            helper={
+              hasUnvaluedAssets
+                ? "Return based on assets with available market valuation only"
+                : "Unrealized gain/loss relative to cost basis"
+            }
             tone={
-              unrealizedReturnPercentage !== null
-                ? unrealizedReturnPercentage >= 0
+              isPortfolioSummaryReady &&
+              portfolioSummary.unrealizedReturnPercentage !== null
+                ? portfolioSummary.unrealizedReturnPercentage > 0
                   ? "positive"
-                  : "danger"
-                : undefined
+                  : portfolioSummary.unrealizedReturnPercentage < 0
+                    ? "danger"
+                    : "default"
+                : "default"
             }
           />
         </section>
@@ -295,10 +321,9 @@ export default function InvestmentsPageClient() {
         </section>
       </div>
 
-      <AddInvestmentDialog
+      <AddInvestmentV2Dialog
         open={isAddInvestmentOpen}
         onOpenChange={setIsAddInvestmentOpen}
-        onCreateInvestment={createInvestment}
       />
     </>
   );
