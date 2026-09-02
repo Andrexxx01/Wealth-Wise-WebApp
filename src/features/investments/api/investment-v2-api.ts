@@ -2,6 +2,7 @@ import type {
   CreateInvestmentAssetV2Payload,
   CreateInvestmentTransactionV2Payload,
   InvestmentAssetWithTransactionsItem,
+  InvestmentRecentTransactionsV2Response,
   InvestmentTransactionItem,
   InvestmentValuationsResponse,
 } from "@/types/investment-v2";
@@ -95,6 +96,29 @@ export async function getInvestmentValuationsV2(): Promise<InvestmentValuationsR
   const result = (await response.json()) as InvestmentValuationsResponse;
 
   return result;
+}
+
+export async function getInvestmentRecentTransactionsV2(): Promise<InvestmentRecentTransactionsV2Response> {
+  const response = await fetch("/api/investments/v2/transactions", {
+    method: "GET",
+
+    headers: {
+      Accept: "application/json",
+    },
+
+    credentials: "include",
+
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return throwInvestmentV2ApiError(
+      response,
+      "Failed to load investment transactions.",
+    );
+  }
+
+  return (await response.json()) as InvestmentRecentTransactionsV2Response;
 }
 
 export async function createInvestmentAssetV2(

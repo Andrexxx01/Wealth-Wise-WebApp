@@ -278,3 +278,32 @@ export type CreateInvestmentAssetV2Payload = {
     notes: string | null;
   };
 };
+
+export type InvestmentRecentTransactionV2Item = {
+  id: string;
+
+  assetId: string;
+
+  assetName: string;
+  assetSymbol: string | null;
+
+  category: InvestmentAssetCategory;
+  instrumentType: InvestmentInstrumentType;
+
+  type: InvestmentTransactionType;
+
+  quantity: number | null;
+
+  grossAmount: number;
+  feeAmount: number;
+
+  currencyCode: string;
+
+  transactedAt: string;
+
+  notes: string | null;
+};
+
+export type InvestmentRecentTransactionsV2Response = {
+  data: InvestmentRecentTransactionV2Item[];
+};

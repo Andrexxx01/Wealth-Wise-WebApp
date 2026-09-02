@@ -57,12 +57,14 @@ import {
 import {
   createInvestmentAssetV2 as createInvestmentAssetV2Api,
   createInvestmentTransactionV2 as createInvestmentTransactionV2Api,
+  getInvestmentRecentTransactionsV2,
   getInvestmentValuationsV2,
 } from "@/features/investments/api/investment-v2-api";
 
 import type {
   CreateInvestmentAssetV2Payload,
   CreateInvestmentTransactionV2Payload,
+  InvestmentRecentTransactionV2Item,
   InvestmentValuationsResponse,
 } from "@/types/investment-v2";
 
@@ -116,6 +118,18 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   const [investmentPortfolioV2Error, setInvestmentPortfolioV2Error] = useState<
     string | null
   >(null);
+
+  const [investmentTransactionsV2, setInvestmentTransactionsV2] = useState<
+    InvestmentRecentTransactionV2Item[]
+  >([]);
+
+  const [
+    isInvestmentTransactionsV2Loading,
+    setIsInvestmentTransactionsV2Loading,
+  ] = useState(true);
+
+  const [investmentTransactionsV2Error, setInvestmentTransactionsV2Error] =
+    useState<string | null>(null);
 
   // =====================================================
   // INVESTMENT V2 REF
@@ -200,6 +214,26 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
       setIsInvestmentPortfolioV2Loading(false);
 
       isInvestmentPortfolioV2RefreshRunningRef.current = false;
+    }
+  }, []);
+
+  const refreshInvestmentTransactionsV2 = useCallback(async () => {
+    try {
+      setIsInvestmentTransactionsV2Loading(true);
+
+      setInvestmentTransactionsV2Error(null);
+
+      const response = await getInvestmentRecentTransactionsV2();
+
+      setInvestmentTransactionsV2(response.data);
+    } catch (error) {
+      console.error("Failed to load investment transactions V2:", error);
+
+      setInvestmentTransactionsV2Error(
+        "Failed to load investment transactions.",
+      );
+    } finally {
+      setIsInvestmentTransactionsV2Loading(false);
     }
   }, []);
 
@@ -362,6 +396,10 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   useEffect(() => {
     void refreshInvestmentPortfolioV2();
   }, [refreshInvestmentPortfolioV2]);
+
+  useEffect(() => {
+    void refreshInvestmentTransactionsV2();
+  }, [refreshInvestmentTransactionsV2]);
 
   // =====================================================
   // RETRY PRICE_UNAVAILABLE ONCE
@@ -556,18 +594,16 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   async function createInvestmentAsset(
     payload: CreateInvestmentAssetV2Payload,
   ) {
-    /*
-     * Kalau masih ada scheduled retry,
-     * tidak diperlukan lagi karena write
-     * akan diikuti refresh terbaru.
-     */
     clearInvestmentPortfolioV2RetryTimeout();
 
     investmentPortfolioV2RetryCountRef.current = 0;
 
     await createInvestmentAssetV2Api(payload);
 
-    await refreshInvestmentPortfolioV2();
+    await Promise.all([
+      refreshInvestmentPortfolioV2(),
+      refreshInvestmentTransactionsV2(),
+    ]);
   }
 
   // =====================================================
@@ -584,7 +620,10 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     await createInvestmentTransactionV2Api(assetId, payload);
 
-    await refreshInvestmentPortfolioV2();
+    await Promise.all([
+      refreshInvestmentPortfolioV2(),
+      refreshInvestmentTransactionsV2(),
+    ]);
   }
 
   // =====================================================
@@ -669,7 +708,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     loanItems,
 
     investmentPortfolioV2,
-
+    investmentTransactionsV2,
     isIncomeLoading,
     incomeError,
 
@@ -681,7 +720,8 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     isInvestmentPortfolioV2Loading,
     investmentPortfolioV2Error,
-
+    isInvestmentTransactionsV2Loading,
+    investmentTransactionsV2Error,
     isLoanLoading,
     loanError,
 
@@ -704,7 +744,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     deleteLoan,
 
     refreshInvestmentPortfolioV2,
-
+    refreshInvestmentTransactionsV2,
     resetFinanceData,
   };
 
