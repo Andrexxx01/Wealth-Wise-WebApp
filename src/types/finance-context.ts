@@ -13,6 +13,7 @@ import type {
   CreateInvestmentTransactionV2Payload,
   InvestmentRecentTransactionV2Item,
   InvestmentValuationsResponse,
+  InvestmentContributionV2Item,
 } from "@/types/investment-v2";
 import type { LoanItem } from "@/types/loan";
 
@@ -25,6 +26,14 @@ export type FinanceContextValue = {
   investmentPortfolioV2: InvestmentValuationsResponse | null;
 
   investmentTransactionsV2: InvestmentRecentTransactionV2Item[];
+
+  investmentContributionsV2: InvestmentContributionV2Item[];
+
+  isInvestmentContributionsV2Loading: boolean;
+
+  investmentContributionsV2Error: string | null;
+
+  refreshInvestmentContributionsV2: () => Promise<void>;
 
   isInvestmentTransactionsV2Loading: boolean;
 

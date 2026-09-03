@@ -307,3 +307,20 @@ export type InvestmentRecentTransactionV2Item = {
 export type InvestmentRecentTransactionsV2Response = {
   data: InvestmentRecentTransactionV2Item[];
 };
+
+export type InvestmentContributionV2Item = {
+  id: string;
+
+  type: "BUY" | "OPEN";
+
+  grossAmount: number;
+  feeAmount: number;
+
+  currencyCode: string;
+
+  transactedAt: string;
+};
+
+export type InvestmentContributionsV2Response = {
+  data: InvestmentContributionV2Item[];
+};

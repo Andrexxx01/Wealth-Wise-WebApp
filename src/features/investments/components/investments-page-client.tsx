@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
@@ -8,43 +9,88 @@ import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import EmptyState from "@/components/dashboard/empty-state";
 import SectionHeader from "@/components/dashboard/section-header";
 import SummaryCard from "@/components/dashboard/summary-card";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
+
 import { useFinance } from "@/features/finance/components/finance-provider";
+
 import AddInvestmentV2Dialog from "@/features/investments/components/add-investment-v2-dialog";
-import { buildInvestmentTransactions } from "@/lib/finance-calculations";
-import { buildInvestmentContributionChartData } from "@/lib/finance-charts";
-import { formatCurrency, formatDate } from "@/lib/formatters";
-import Link from "next/link";
-import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
+
 import { buildInvestmentV2Allocation } from "@/features/investments/lib/investment-v2-allocation";
 
-function formatInvestmentCategory(category: string) {
-  const categoryOption = INVESTMENT_CATEGORY_OPTIONS.find(
-    (option) => option.value === category,
-  );
+import { buildInvestmentV2ContributionChartData } from "@/lib/finance-charts";
 
-  return categoryOption?.label ?? category;
+import { formatCurrency, formatDate } from "@/lib/formatters";
+
+function formatInvestmentTransactionType(
+  type: "BUY" | "SELL" | "OPEN" | "CLOSE",
+) {
+  switch (type) {
+    case "BUY":
+      return "Buy";
+
+    case "SELL":
+      return "Sell";
+
+    case "OPEN":
+      return "Open";
+
+    case "CLOSE":
+      return "Close";
+  }
+}
+
+function formatInvestmentTransactionAmount(
+  amount: number,
+  currencyCode: string,
+) {
+  if (currencyCode === "IDR") {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  }
+
+  if (currencyCode === "USD") {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  }
+
+  return `${currencyCode} ${amount.toLocaleString()}`;
+}
+
+function formatInvestmentTransactionQuantity(quantity: number) {
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 18,
+  }).format(quantity);
 }
 
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
 
   const {
-    investmentItems,
     investmentPortfolioV2,
     isInvestmentPortfolioV2Loading,
     investmentPortfolioV2Error,
+
+    investmentTransactionsV2,
+    isInvestmentTransactionsV2Loading,
+    investmentTransactionsV2Error,
+
+    investmentContributionsV2,
+    isInvestmentContributionsV2Loading,
+    investmentContributionsV2Error,
   } = useFinance();
 
-  const {
-    investmentItems: convertedInvestmentItems,
-    displayCurrency,
-    isCurrencyConversionReady,
-  } = useConvertedFinanceItems();
-
-  const hasInvestmentItems = investmentItems.length > 0;
+  // =====================================================
+  // PORTFOLIO SUMMARY
+  // =====================================================
 
   const portfolioSummary = investmentPortfolioV2?.summary ?? null;
 
@@ -59,28 +105,49 @@ export default function InvestmentsPageClient() {
     !investmentPortfolioV2Error &&
     portfolioSummary !== null;
 
-  const portfolioDisplayCurrency =
-    portfolioSummary?.displayCurrency ?? displayCurrency;
+  const portfolioDisplayCurrency = portfolioSummary?.displayCurrency ?? "USD";
 
-  const unrealizedReturnPercentage =
-    portfolioSummary?.unrealizedReturnPercentage ?? null;
-
-  const investmentContributionChartData = buildInvestmentContributionChartData({
-    investmentItems: convertedInvestmentItems,
-  });
-
-  const canShowInvestmentChart =
-    hasInvestmentItems && isCurrencyConversionReady;
+  // =====================================================
+  // PORTFOLIO ALLOCATION
+  // =====================================================
 
   const investmentAllocation = buildInvestmentV2Allocation(
     investmentPortfolioV2?.data ?? [],
   );
 
-  const investmentTransactions = buildInvestmentTransactions(investmentItems);
+  // =====================================================
+  // INVESTMENT CONTRIBUTION CHART
+  // =====================================================
+
+  const contributionExchangeRate =
+    investmentPortfolioV2?.meta.exchangeRate.rate ?? null;
+
+  const investmentContributionChartData =
+    contributionExchangeRate !== null
+      ? buildInvestmentV2ContributionChartData({
+          contributions: investmentContributionsV2,
+
+          displayCurrency: portfolioDisplayCurrency,
+
+          usdToIdrRate: contributionExchangeRate,
+        })
+      : [];
+
+  const hasInvestmentContributions = investmentContributionsV2.length > 0;
+
+  const canShowInvestmentChart =
+    !isInvestmentContributionsV2Loading &&
+    !investmentContributionsV2Error &&
+    contributionExchangeRate !== null &&
+    hasInvestmentContributions;
 
   return (
     <>
       <div className="space-y-8">
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
         <SectionHeader
           eyebrow="Investment Overview"
           title="Track your investment activity"
@@ -96,6 +163,10 @@ export default function InvestmentsPageClient() {
           }
         />
 
+        {/* =================================================
+            PORTFOLIO SUMMARY
+        ================================================= */}
+
         <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
           <SummaryCard
             label="Portfolio Value"
@@ -106,6 +177,7 @@ export default function InvestmentsPageClient() {
                   ? "—"
                   : formatCurrency(
                       portfolioSummary.totalMarketValue,
+
                       portfolioDisplayCurrency,
                     )
             }
@@ -130,6 +202,7 @@ export default function InvestmentsPageClient() {
               isPortfolioSummaryReady
                 ? formatCurrency(
                     portfolioSummary.totalCostBasis,
+
                     portfolioDisplayCurrency,
                   )
                 : "—"
@@ -145,6 +218,7 @@ export default function InvestmentsPageClient() {
                 ? "—"
                 : formatCurrency(
                     portfolioSummary.totalUnrealizedGainLoss,
+
                     portfolioDisplayCurrency,
                   )
             }
@@ -190,18 +264,34 @@ export default function InvestmentsPageClient() {
           />
         </section>
 
+        {/* =================================================
+            CONTRIBUTIONS + ALLOCATION
+        ================================================= */}
+
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <ChartCard
             eyebrow="Investment Activity"
             title="Investment Contributions"
             badge="Last 6 Months"
           >
-            {canShowInvestmentChart ? (
+            {isInvestmentContributionsV2Loading ? (
+              <div className="rounded-[28px] border border-slate-200 bg-slate-50 p-6">
+                <p className="text-sm text-slate-500">
+                  Loading investment contributions...
+                </p>
+              </div>
+            ) : investmentContributionsV2Error ? (
+              <div className="rounded-[28px] border border-red-200 bg-red-50 p-6">
+                <p className="text-sm text-red-700">
+                  {investmentContributionsV2Error}
+                </p>
+              </div>
+            ) : canShowInvestmentChart ? (
               <BarChartMock data={investmentContributionChartData} />
             ) : (
               <EmptyState
                 title="No investment activity yet"
-                description="Add investment transactions to see how much you invest each month."
+                description="Add investment purchases or deposits to see your contribution activity over the last six months."
                 action={
                   <Button
                     type="button"
@@ -228,7 +318,9 @@ export default function InvestmentsPageClient() {
                     <DashboardListItem
                       key={item.category}
                       title={item.name}
-                      subtitle={`${item.percentage.toFixed(2)}% of current portfolio`}
+                      subtitle={`${item.percentage.toFixed(
+                        2,
+                      )}% of current portfolio`}
                       value={formatCurrency(
                         item.marketValue,
                         portfolioDisplayCurrency,
@@ -256,70 +348,114 @@ export default function InvestmentsPageClient() {
           </Card>
         </section>
 
+        {/* =================================================
+            RECENT TRANSACTIONS
+        ================================================= */}
+
         <section>
-          <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
-            <CardContent className="p-6">
-              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-                <DashboardCardHeader
-                  eyebrow="Investment Activity"
-                  title="Recent Transactions"
-                  className="mb-0"
-                />
+          <Card>
+            <CardContent className="space-y-5 p-6">
+              <DashboardCardHeader
+                eyebrow="Investment Activity"
+                title="Recent Transactions"
+              />
 
-                {investmentTransactions.length > 0 ? (
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
-                  >
-                    <Link href="/investments/history">View All</Link>
-                  </Button>
-                ) : null}
-              </div>
-
-              {investmentTransactions.length > 0 ? (
-                <div className="space-y-4">
-                  {investmentTransactions.map((item) => (
-                    <DashboardListItem
-                      key={item.id}
-                      title={
-                        item.symbol
-                          ? `${item.asset} (${item.symbol})`
-                          : item.asset
-                      }
-                      subtitle={formatInvestmentCategory(item.category)}
-                      value={formatCurrency(item.investedAmount, item.currency)}
-                      meta={[
-                        item.quantity !== null
-                          ? `${item.quantity} ${item.symbol ?? "units"}`
-                          : "Quantity unavailable",
-
-                        `Fee ${formatCurrency(item.feeAmount, item.currency)}`,
-
-                        formatDate(item.investedAt),
-                      ].join(" • ")}
-                    />
-                  ))}
+              {isInvestmentTransactionsV2Loading ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-sm text-slate-500">
+                    Loading investment transactions...
+                  </p>
                 </div>
-              ) : (
+              ) : null}
+
+              {!isInvestmentTransactionsV2Loading &&
+              investmentTransactionsV2Error ? (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                  <p className="text-sm text-red-700">
+                    {investmentTransactionsV2Error}
+                  </p>
+                </div>
+              ) : null}
+
+              {!isInvestmentTransactionsV2Loading &&
+              !investmentTransactionsV2Error &&
+              investmentTransactionsV2.length === 0 ? (
                 <EmptyState
                   title="No investment transactions yet"
-                  description="Your recent investment transactions will appear here after you add your first investment."
+                  description="Your investment purchases, sales, deposits, and principal transactions will appear here."
                   action={
                     <Button
                       type="button"
+                      variant="outline"
                       onClick={() => setIsAddInvestmentOpen(true)}
-                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
                     >
                       Add Investment
                     </Button>
                   }
                 />
-              )}
+              ) : null}
+
+              {!isInvestmentTransactionsV2Loading &&
+              !investmentTransactionsV2Error &&
+              investmentTransactionsV2.length > 0 ? (
+                <div className="space-y-3">
+                  {investmentTransactionsV2.map((transaction) => {
+                    const transactionType = formatInvestmentTransactionType(
+                      transaction.type,
+                    );
+
+                    const assetTitle = transaction.assetSymbol
+                      ? `${transaction.assetName} (${transaction.assetSymbol})`
+                      : transaction.assetName;
+
+                    const quantityText =
+                      transaction.quantity !== null
+                        ? `${formatInvestmentTransactionQuantity(
+                            transaction.quantity,
+                          )} ${transaction.assetSymbol ?? "units"}`
+                        : null;
+
+                    const feeText =
+                      transaction.feeAmount > 0
+                        ? `Fee ${formatInvestmentTransactionAmount(
+                            transaction.feeAmount,
+                            transaction.currencyCode,
+                          )}`
+                        : null;
+
+                    const subtitleParts = [
+                      transactionType,
+
+                      quantityText,
+
+                      formatDate(transaction.transactedAt),
+
+                      feeText,
+                    ].filter((value): value is string => Boolean(value));
+
+                    return (
+                      <DashboardListItem
+                        key={transaction.id}
+                        title={assetTitle}
+                        subtitle={subtitleParts.join(" • ")}
+                        value={formatInvestmentTransactionAmount(
+                          transaction.grossAmount,
+                          transaction.currencyCode,
+                        )}
+                        className="border-none bg-slate-50 p-4"
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </section>
       </div>
+
+      {/* =================================================
+          ADD INVESTMENT V2 DIALOG
+      ================================================= */}
 
       <AddInvestmentV2Dialog
         open={isAddInvestmentOpen}

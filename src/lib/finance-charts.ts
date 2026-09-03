@@ -5,12 +5,25 @@ import type {
   BuildMonthlyIncomeChartDataParams,
   SingleBarChartItem,
 } from "@/types/finance-chart";
+import { convertCurrency } from "@/lib/currency-conversion";
+
+import type { InvestmentContributionV2Item } from "@/types/investment-v2";
+
+import type { UserCurrency } from "@/types/user-subscription";
 
 const CHART_MONTH_COUNT = 6;
 
 type MonthBucket = {
   key: string;
   label: string;
+};
+
+type BuildInvestmentV2ContributionChartDataParams = {
+  contributions: InvestmentContributionV2Item[];
+
+  displayCurrency: UserCurrency;
+
+  usdToIdrRate: number;
 };
 
 function getMonthKey(dateValue: string | null) {
@@ -91,6 +104,67 @@ function findMonthBucketIndex(
   }
 
   return monthBuckets.findIndex((bucket) => bucket.key === monthKey);
+}
+
+export function buildInvestmentV2ContributionChartData({
+  contributions,
+  displayCurrency,
+  usdToIdrRate,
+}: BuildInvestmentV2ContributionChartDataParams): SingleBarChartItem[] {
+  const monthBuckets = buildRecentMonthBuckets();
+
+  const monthlyInvestment = createMonthlyValues();
+
+  contributions.forEach((transaction) => {
+    const monthIndex = findMonthBucketIndex(
+      monthBuckets,
+      transaction.transactedAt,
+    );
+
+    if (monthIndex < 0) {
+      return;
+    }
+
+    /*
+     * Contribution = uang yang benar-benar
+     * digunakan untuk menambah investment.
+     *
+     * BUY:
+     * gross + fee
+     *
+     * OPEN:
+     * principal + fee
+     */
+    const contributionAmount = transaction.grossAmount + transaction.feeAmount;
+
+    let contributionInDisplayCurrency: number;
+
+    if (transaction.currencyCode === displayCurrency) {
+      contributionInDisplayCurrency = contributionAmount;
+    } else if (
+      (transaction.currencyCode === "USD" ||
+        transaction.currencyCode === "IDR") &&
+      (displayCurrency === "USD" || displayCurrency === "IDR")
+    ) {
+      contributionInDisplayCurrency = convertCurrency(
+        contributionAmount,
+        transaction.currencyCode,
+        displayCurrency,
+        usdToIdrRate,
+      );
+    } else {
+      /*
+       * Currency yang belum didukung
+       * tidak boleh diam-diam dijumlahkan
+       * bersama USD/IDR.
+       */
+      return;
+    }
+
+    monthlyInvestment[monthIndex] += contributionInDisplayCurrency;
+  });
+
+  return buildNormalizedMonthlyChartData(monthlyInvestment, monthBuckets);
 }
 
 export function buildMonthlyIncomeChartData({
