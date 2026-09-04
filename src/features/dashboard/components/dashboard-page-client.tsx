@@ -25,8 +25,13 @@ function getFirstName(fullName: string) {
 }
 
 export default function DashboardPageClient() {
-  const { incomeItems, expenseItems, investmentItems, loanItems } =
-    useFinance();
+  const {
+    incomeItems,
+    expenseItems,
+    loanItems,
+    investmentPortfolioV2,
+    investmentTransactionsV2,
+  } = useFinance();
 
   const {
     totalIncome,
@@ -47,10 +52,14 @@ export default function DashboardPageClient() {
   const { currentUser } = useCurrentUser();
 
   const hasCashFlowData = incomeItems.length > 0 || expenseItems.length > 0;
+  const hasInvestmentData =
+    (investmentPortfolioV2?.summary.totalAssets ?? 0) > 0 ||
+    investmentTransactionsV2.length > 0;
+
   const hasAnyFinanceData =
     incomeItems.length > 0 ||
     expenseItems.length > 0 ||
-    investmentItems.length > 0 ||
+    hasInvestmentData ||
     loanItems.length > 0;
 
   const summaryCards = buildDashboardSummaryCards({

@@ -7,26 +7,6 @@ import type { InvestmentContributionV2Item } from "@/types/investment-v2";
 
 export const runtime = "nodejs";
 
-function getContributionStartDate() {
-  const now = new Date();
-
-  /*
-   * Current month + previous 5 months.
-   *
-   * Contoh September 2026:
-   *
-   * Apr
-   * May
-   * Jun
-   * Jul
-   * Aug
-   * Sep
-   */
-  return new Date(
-    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - 5, 1, 0, 0, 0, 0),
-  );
-}
-
 export async function GET() {
   try {
     const authResult = await getAuthenticatedUserId();
@@ -37,18 +17,12 @@ export async function GET() {
 
     const userId = authResult.userId;
 
-    const startDate = getContributionStartDate();
-
     const transactions = await prisma.investmentTransaction.findMany({
       where: {
         userId,
 
         type: {
           in: ["BUY", "OPEN"],
-        },
-
-        transactedAt: {
-          gte: startDate,
         },
       },
 

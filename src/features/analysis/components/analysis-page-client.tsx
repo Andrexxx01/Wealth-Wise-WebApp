@@ -42,8 +42,13 @@ function getInsightListTone(tone: FinanceInsightTone): DashboardListItemTone {
 }
 
 export default function AnalysisPageClient() {
-  const { incomeItems, expenseItems, investmentItems, loanItems } =
-    useFinance();
+  const {
+    incomeItems,
+    expenseItems,
+    loanItems,
+    investmentPortfolioV2,
+    investmentTransactionsV2,
+  } = useFinance();
 
   const {
     totalIncome,
@@ -59,10 +64,14 @@ export default function AnalysisPageClient() {
     financialHealthScore,
   } = useFinanceSummary();
 
+  const hasInvestmentData =
+    (investmentPortfolioV2?.summary.totalAssets ?? 0) > 0 ||
+    investmentTransactionsV2.length > 0;
+
   const hasAnyFinanceData =
     incomeItems.length > 0 ||
     expenseItems.length > 0 ||
-    investmentItems.length > 0 ||
+    hasInvestmentData ||
     loanItems.length > 0;
 
   const healthMetrics = buildHealthMetrics({
