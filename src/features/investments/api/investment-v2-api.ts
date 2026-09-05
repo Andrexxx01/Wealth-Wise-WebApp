@@ -208,3 +208,63 @@ export async function getInvestmentContributionsV2(): Promise<InvestmentContribu
 
   return (await response.json()) as InvestmentContributionsV2Response;
 }
+
+export async function updateInvestmentTransactionV2(
+  assetId: string,
+  transactionId: string,
+  payload: CreateInvestmentTransactionV2Payload,
+): Promise<InvestmentTransactionItem> {
+  const response = await fetch(
+    `/api/investments/v2/${assetId}/transactions/${transactionId}`,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+
+      credentials: "include",
+
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (!response.ok) {
+    return throwInvestmentV2ApiError(
+      response,
+      "Failed to update investment transaction.",
+    );
+  }
+
+  const result = (await response.json()) as {
+    data: InvestmentTransactionItem;
+  };
+
+  return result.data;
+}
+
+export async function deleteInvestmentTransactionV2(
+  assetId: string,
+  transactionId: string,
+): Promise<void> {
+  const response = await fetch(
+    `/api/investments/v2/${assetId}/transactions/${transactionId}`,
+    {
+      method: "DELETE",
+
+      headers: {
+        Accept: "application/json",
+      },
+
+      credentials: "include",
+    },
+  );
+
+  if (!response.ok) {
+    return throwInvestmentV2ApiError(
+      response,
+      "Failed to delete investment transaction.",
+    );
+  }
+}

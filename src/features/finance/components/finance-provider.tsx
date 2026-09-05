@@ -61,9 +61,11 @@ import {
 import {
   createInvestmentAssetV2 as createInvestmentAssetV2Api,
   createInvestmentTransactionV2 as createInvestmentTransactionV2Api,
+  deleteInvestmentTransactionV2 as deleteInvestmentTransactionV2Api,
   getInvestmentContributionsV2,
   getInvestmentRecentTransactionsV2,
   getInvestmentValuationsV2,
+  updateInvestmentTransactionV2 as updateInvestmentTransactionV2Api,
 } from "@/features/investments/api/investment-v2-api";
 
 import {
@@ -160,28 +162,12 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   // INVESTMENT V2 REFS
   // =====================================================
 
-  /*
-   * Menyimpan timer retry market price.
-   *
-   * Hanya satu timer retry yang boleh aktif
-   * pada satu waktu.
-   */
   const investmentPortfolioV2RetryTimeoutRef = useRef<ReturnType<
     typeof setTimeout
   > | null>(null);
 
-  /*
-   * Menentukan jumlah retry otomatis
-   * PRICE_UNAVAILABLE.
-   *
-   * Ini mencegah polling tanpa batas.
-   */
   const investmentPortfolioV2RetryCountRef = useRef(0);
 
-  /*
-   * Mencegah dua request portfolio refresh
-   * berjalan bersamaan.
-   */
   const isInvestmentPortfolioV2RefreshRunningRef = useRef(false);
 
   // =====================================================
@@ -285,6 +271,22 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
       setIsInvestmentContributionsV2Loading(false);
     }
   }, []);
+
+  // =====================================================
+  // REFRESH ALL INVESTMENT V2 DATA
+  // =====================================================
+
+  const refreshAllInvestmentV2Data = useCallback(async () => {
+    await Promise.all([
+      refreshInvestmentPortfolioV2(),
+      refreshInvestmentTransactionsV2(),
+      refreshInvestmentContributionsV2(),
+    ]);
+  }, [
+    refreshInvestmentPortfolioV2,
+    refreshInvestmentTransactionsV2,
+    refreshInvestmentContributionsV2,
+  ]);
 
   // =====================================================
   // LOAD INCOME
@@ -439,28 +441,12 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   }, []);
 
   // =====================================================
-  // INITIAL LOAD INVESTMENT PORTFOLIO V2
+  // INITIAL LOAD INVESTMENT V2
   // =====================================================
 
   useEffect(() => {
-    void refreshInvestmentPortfolioV2();
-  }, [refreshInvestmentPortfolioV2]);
-
-  // =====================================================
-  // INITIAL LOAD INVESTMENT TRANSACTIONS V2
-  // =====================================================
-
-  useEffect(() => {
-    void refreshInvestmentTransactionsV2();
-  }, [refreshInvestmentTransactionsV2]);
-
-  // =====================================================
-  // INITIAL LOAD INVESTMENT CONTRIBUTIONS V2
-  // =====================================================
-
-  useEffect(() => {
-    void refreshInvestmentContributionsV2();
-  }, [refreshInvestmentContributionsV2]);
+    void refreshAllInvestmentV2Data();
+  }, [refreshAllInvestmentV2Data]);
 
   // =====================================================
   // RETRY PRICE_UNAVAILABLE ONCE
@@ -475,10 +461,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
       (valuation) => valuation.valuationStatus === "PRICE_UNAVAILABLE",
     );
 
-    /*
-     * Kalau market price semuanya sudah tersedia,
-     * reset counter.
-     */
     if (!hasTemporarilyUnavailablePrice) {
       investmentPortfolioV2RetryCountRef.current = 0;
 
@@ -487,9 +469,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
       return;
     }
 
-    /*
-     * Jangan retry lebih dari limit.
-     */
     if (
       investmentPortfolioV2RetryCountRef.current >=
       MAX_INVESTMENT_PORTFOLIO_PRICE_RETRIES
@@ -497,9 +476,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
       return;
     }
 
-    /*
-     * Jangan membuat timer kedua.
-     */
     if (investmentPortfolioV2RetryTimeoutRef.current) {
       return;
     }
@@ -531,27 +507,11 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
         return;
       }
 
-      /*
-       * Batalkan scheduled retry lama karena
-       * kita akan mengambil data terbaru sekarang.
-       */
       clearInvestmentPortfolioV2RetryTimeout();
 
-      /*
-       * Beri kesempatan retry PRICE_UNAVAILABLE
-       * kembali dari awal.
-       */
       investmentPortfolioV2RetryCountRef.current = 0;
 
-      /*
-       * Portfolio, transactions, dan contribution
-       * bisa saja berubah dari tab/session lain.
-       */
-      void Promise.all([
-        refreshInvestmentPortfolioV2(),
-        refreshInvestmentTransactionsV2(),
-        refreshInvestmentContributionsV2(),
-      ]);
+      void refreshAllInvestmentV2Data();
     }
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -559,12 +519,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [
-    refreshInvestmentPortfolioV2,
-    refreshInvestmentTransactionsV2,
-    refreshInvestmentContributionsV2,
-    clearInvestmentPortfolioV2RetryTimeout,
-  ]);
+  }, [refreshAllInvestmentV2Data, clearInvestmentPortfolioV2RetryTimeout]);
 
   // =====================================================
   // CLEAN UP RETRY TIMER ON UNMOUNT
@@ -672,18 +627,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     await createInvestmentAssetV2Api(payload);
 
-    /*
-     * Asset baru juga menghasilkan
-     * initial transaction.
-     *
-     * Maka seluruh V2 derived state
-     * harus di-refresh.
-     */
-    await Promise.all([
-      refreshInvestmentPortfolioV2(),
-      refreshInvestmentTransactionsV2(),
-      refreshInvestmentContributionsV2(),
-    ]);
+    await refreshAllInvestmentV2Data();
   }
 
   // =====================================================
@@ -700,18 +644,42 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     await createInvestmentTransactionV2Api(assetId, payload);
 
-    /*
-     * BUY/SELL/OPEN/CLOSE dapat mengubah holding.
-     *
-     * BUY/OPEN juga dapat mengubah contribution chart.
-     *
-     * Jadi refresh seluruh V2 state.
-     */
-    await Promise.all([
-      refreshInvestmentPortfolioV2(),
-      refreshInvestmentTransactionsV2(),
-      refreshInvestmentContributionsV2(),
-    ]);
+    await refreshAllInvestmentV2Data();
+  }
+
+  // =====================================================
+  // UPDATE INVESTMENT TRANSACTION V2
+  // =====================================================
+
+  async function updateInvestmentTransactionV2(
+    assetId: string,
+    transactionId: string,
+    payload: CreateInvestmentTransactionV2Payload,
+  ) {
+    clearInvestmentPortfolioV2RetryTimeout();
+
+    investmentPortfolioV2RetryCountRef.current = 0;
+
+    await updateInvestmentTransactionV2Api(assetId, transactionId, payload);
+
+    await refreshAllInvestmentV2Data();
+  }
+
+  // =====================================================
+  // DELETE INVESTMENT TRANSACTION V2
+  // =====================================================
+
+  async function deleteInvestmentTransactionV2(
+    assetId: string,
+    transactionId: string,
+  ) {
+    clearInvestmentPortfolioV2RetryTimeout();
+
+    investmentPortfolioV2RetryCountRef.current = 0;
+
+    await deleteInvestmentTransactionV2Api(assetId, transactionId);
+
+    await refreshAllInvestmentV2Data();
   }
 
   // =====================================================
@@ -827,6 +795,9 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     createInvestmentAsset,
     addInvestmentTransaction,
+
+    updateInvestmentTransactionV2,
+    deleteInvestmentTransactionV2,
 
     updateIncome,
     updateExpense,

@@ -95,6 +95,17 @@ export type FinanceContextValue = {
   refreshInvestmentPortfolioV2: () => Promise<void>;
 
   resetFinanceData: () => void;
+
+  updateInvestmentTransactionV2: (
+    assetId: string,
+    transactionId: string,
+    payload: CreateInvestmentTransactionV2Payload,
+  ) => Promise<void>;
+
+  deleteInvestmentTransactionV2: (
+    assetId: string,
+    transactionId: string,
+  ) => Promise<void>;
 };
 
 export type FinanceProviderProps = {
