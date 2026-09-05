@@ -10,6 +10,7 @@ import type { ExpenseCategory, ExpenseType } from "@/types/expense";
 import type { IncomeCategory, IncomeFrequency } from "@/types/income";
 import type { InvestmentCategory } from "@/types/investment";
 import type { LoanCategory, LoanItem } from "@/types/loan";
+import type { InvestmentAssetCategory } from "@/types/investment-v2";
 
 type LabelOption = {
   value: string;
@@ -58,4 +59,32 @@ export function formatLoanStatus(status: LoanItem["status"]) {
   };
 
   return statusLabels[status];
+}
+
+export function formatInvestmentV2Category(category: InvestmentAssetCategory) {
+  switch (category) {
+    case "CRYPTO":
+      return "Crypto";
+
+    case "STOCK":
+      return "Stock";
+
+    case "DEPOSIT":
+      return "Deposit";
+
+    case "INDEX":
+      return "Index";
+
+    case "BOND":
+      return "Bond";
+
+    case "MUTUAL_FUND":
+      return "Mutual Fund";
+
+    case "FOREX":
+      return "Forex";
+
+    case "COMMODITY":
+      return "Commodity";
+  }
 }

@@ -2,6 +2,7 @@ import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
 import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
+import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
 
 function sortByDateDescending<TItem>(
   items: TItem[],
@@ -29,4 +30,10 @@ export function sortInvestmentHistoryItems(items: InvestmentItem[]) {
 
 export function sortLoanHistoryItems(items: LoanItem[]) {
   return sortByDateDescending(items, (item) => item.dueDate ?? item.createdAt);
+}
+
+export function sortInvestmentTransactionV2HistoryItems(
+  items: InvestmentRecentTransactionV2Item[],
+) {
+  return sortByDateDescending(items, (item) => item.transactedAt);
 }

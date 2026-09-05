@@ -11,6 +11,7 @@ import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
 import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
+import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
 
 function isDateWithinRange(
   dateValue: string,
@@ -172,4 +173,76 @@ export function doesLoanPassFilters(
     : !filters.dateFrom && !filters.dateTo;
 
   return matchesCategory && matchesStatus && matchesDate;
+}
+
+export const investmentTransactionV2InitialFilters = {
+  category: ALL_FILTER_VALUE,
+
+  type: ALL_FILTER_VALUE,
+
+  dateFrom: "",
+
+  dateTo: "",
+};
+
+export const investmentTransactionV2CategoryFilterOptions = [
+  {
+    value: ALL_FILTER_VALUE,
+
+    label: "All Categories",
+  },
+
+  ...INVESTMENT_CATEGORY_OPTIONS,
+] as const;
+
+export const investmentTransactionV2TypeFilterOptions = [
+  {
+    value: ALL_FILTER_VALUE,
+
+    label: "All Transaction Types",
+  },
+
+  {
+    value: "BUY",
+
+    label: "Buy",
+  },
+
+  {
+    value: "SELL",
+
+    label: "Sell",
+  },
+
+  {
+    value: "OPEN",
+
+    label: "Open",
+  },
+
+  {
+    value: "CLOSE",
+
+    label: "Close",
+  },
+] as const;
+
+export function doesInvestmentTransactionV2PassFilters(
+  item: InvestmentRecentTransactionV2Item,
+
+  filters: typeof investmentTransactionV2InitialFilters,
+) {
+  const matchesCategory =
+    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
+
+  const matchesType =
+    filters.type === ALL_FILTER_VALUE || item.type === filters.type;
+
+  const matchesDate = isDateWithinRange(
+    item.transactedAt,
+    filters.dateFrom,
+    filters.dateTo,
+  );
+
+  return matchesCategory && matchesType && matchesDate;
 }

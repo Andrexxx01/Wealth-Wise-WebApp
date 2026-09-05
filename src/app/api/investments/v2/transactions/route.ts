@@ -41,8 +41,6 @@ export async function GET() {
           createdAt: "desc",
         },
       ],
-
-      take: 10,
     });
 
     const data: InvestmentRecentTransactionV2Item[] = transactions.map(

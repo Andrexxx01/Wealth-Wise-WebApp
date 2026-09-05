@@ -140,6 +140,8 @@ export default function InvestmentsPageClient() {
     !investmentContributionsV2Error &&
     contributionExchangeRate !== null &&
     hasInvestmentContributions;
+  
+  const recentInvestmentTransactions = investmentTransactionsV2.slice(0, 10);
 
   return (
     <>
@@ -379,7 +381,7 @@ export default function InvestmentsPageClient() {
 
               {!isInvestmentTransactionsV2Loading &&
               !investmentTransactionsV2Error &&
-              investmentTransactionsV2.length === 0 ? (
+              recentInvestmentTransactions.length === 0 ? (
                 <EmptyState
                   title="No investment transactions yet"
                   description="Your investment purchases, sales, deposits, and principal transactions will appear here."
@@ -397,9 +399,9 @@ export default function InvestmentsPageClient() {
 
               {!isInvestmentTransactionsV2Loading &&
               !investmentTransactionsV2Error &&
-              investmentTransactionsV2.length > 0 ? (
+              recentInvestmentTransactions.length > 0 ? (
                 <div className="space-y-3">
-                  {investmentTransactionsV2.map((transaction) => {
+                  {recentInvestmentTransactions.map((transaction) => {
                     const transactionType = formatInvestmentTransactionType(
                       transaction.type,
                     );
@@ -425,11 +427,8 @@ export default function InvestmentsPageClient() {
 
                     const subtitleParts = [
                       transactionType,
-
                       quantityText,
-
                       formatDate(transaction.transactedAt),
-
                       feeText,
                     ].filter((value): value is string => Boolean(value));
 
