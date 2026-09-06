@@ -18,6 +18,8 @@ import type { InvestmentValuationItem } from "@/types/investment-v2";
 
 import type { CreateInvestmentTransactionV2FormValues } from "@/types/investment-v2-form";
 
+type InvestmentTransactionFieldsMode = "CREATE" | "EDIT";
+
 type InvestmentV2ExistingTransactionFieldsProps = {
   valuations: InvestmentValuationItem[];
 
@@ -28,6 +30,8 @@ type InvestmentV2ExistingTransactionFieldsProps = {
   watch: UseFormWatch<CreateInvestmentTransactionV2FormValues>;
 
   setValue: UseFormSetValue<CreateInvestmentTransactionV2FormValues>;
+
+  mode?: InvestmentTransactionFieldsMode;
 };
 
 export default function InvestmentV2ExistingTransactionFields({
@@ -36,6 +40,7 @@ export default function InvestmentV2ExistingTransactionFields({
   errors,
   watch,
   setValue,
+  mode = "CREATE",
 }: InvestmentV2ExistingTransactionFieldsProps) {
   const assetId = watch("assetId");
 
@@ -52,6 +57,8 @@ export default function InvestmentV2ExistingTransactionFields({
       : valuation.name,
   }));
 
+  const isEditMode = mode === "EDIT";
+
   const isQuantityPosition = selectedAsset?.positionKind === "QUANTITY";
 
   const isPrincipalPosition = selectedAsset?.positionKind === "PRINCIPAL";
@@ -60,6 +67,19 @@ export default function InvestmentV2ExistingTransactionFields({
 
   const hasPrincipal = (selectedAsset?.principalBalance ?? 0) > 0;
 
+  /*
+   * CREATE:
+   * SELL hanya ditawarkan jika sekarang
+   * memang ada quantity.
+   *
+   * EDIT:
+   * BUY dan SELL harus selalu tersedia untuk
+   * quantity asset karena kita sedang mengedit
+   * historical transaction.
+   *
+   * Validitas seluruh histori nantinya
+   * diperiksa backend.
+   */
   const transactionTypeOptions = isQuantityPosition
     ? [
         {
@@ -67,7 +87,7 @@ export default function InvestmentV2ExistingTransactionFields({
           label: "Buy",
         },
 
-        ...(hasQuantity
+        ...(isEditMode || hasQuantity
           ? [
               {
                 value: "SELL",
@@ -83,10 +103,11 @@ export default function InvestmentV2ExistingTransactionFields({
             label: "Add / Open Principal",
           },
 
-          ...(hasPrincipal
+          ...(isEditMode || hasPrincipal
             ? [
                 {
                   value: "CLOSE",
+
                   label: "Close Principal",
                 },
               ]
@@ -113,26 +134,39 @@ export default function InvestmentV2ExistingTransactionFields({
       return;
     }
 
-    if (selectedAsset.positionKind === "QUANTITY") {
-      setValue("type", "BUY", {
-        shouldValidate: true,
-      });
+    /*
+     * Hanya CREATE yang memilih transaction
+     * type default secara otomatis.
+     *
+     * EDIT harus mempertahankan original
+     * BUY / SELL / OPEN / CLOSE.
+     */
+    if (!isEditMode) {
+      if (selectedAsset.positionKind === "QUANTITY") {
+        setValue("type", "BUY", {
+          shouldValidate: true,
+        });
+      }
+
+      if (selectedAsset.positionKind === "PRINCIPAL") {
+        setValue("type", "OPEN", {
+          shouldValidate: true,
+        });
+
+        setValue("quantity", "");
+      }
     }
 
-    if (selectedAsset.positionKind === "PRINCIPAL") {
-      setValue("type", "OPEN", {
-        shouldValidate: true,
-      });
-
-      setValue("quantity", "");
-    }
-
+    /*
+     * Asset V2 belum mendukung mixed
+     * transaction currencies.
+     */
     if (selectedAsset.transactionCurrencyCode) {
       setValue("currencyCode", selectedAsset.transactionCurrencyCode, {
         shouldValidate: true,
       });
     }
-  }, [selectedAsset, setValue]);
+  }, [selectedAsset, setValue, isEditMode]);
 
   // =====================================================
   // TRANSACTION TYPE CHANGE
@@ -155,23 +189,58 @@ export default function InvestmentV2ExistingTransactionFields({
           Investment Asset
         </p>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <FormSelect
-            label="Asset"
-            options={assetOptions}
-            error={errors.assetId?.message}
-            registration={register("assetId")}
-          />
+        {isEditMode ? (
+          <>
+            {/*
+             * Asset tidak boleh dipindah melalui Edit
+             * Transaction.
+             *
+             * assetId tetap diregister melalui hidden input
+             * agar tetap masuk ke React Hook Form + Zod.
+             */}
+            <input type="hidden" {...register("assetId")} />
 
-          {selectedAsset ? (
+            {selectedAsset ? (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Asset
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-slate-900">
+                    {selectedAsset.name}
+                    {selectedAsset.symbol ? ` (${selectedAsset.symbol})` : ""}
+                  </p>
+                </div>
+
+                <FormSelect
+                  label="Transaction Type"
+                  options={transactionTypeOptions}
+                  error={errors.type?.message}
+                  registration={register("type")}
+                />
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormSelect
-              label="Transaction Type"
-              options={transactionTypeOptions}
-              error={errors.type?.message}
-              registration={register("type")}
+              label="Asset"
+              options={assetOptions}
+              error={errors.assetId?.message}
+              registration={register("assetId")}
             />
-          ) : null}
-        </div>
+
+            {selectedAsset ? (
+              <FormSelect
+                label="Transaction Type"
+                options={transactionTypeOptions}
+                error={errors.type?.message}
+                registration={register("type")}
+              />
+            ) : null}
+          </div>
+        )}
 
         {selectedAsset ? (
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -213,7 +282,9 @@ export default function InvestmentV2ExistingTransactionFields({
             </p>
 
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              Record a new transaction for this investment asset.
+              {isEditMode
+                ? "Update this investment transaction. The resulting transaction history must remain financially valid."
+                : "Record a new transaction for this investment asset."}
             </p>
           </div>
 

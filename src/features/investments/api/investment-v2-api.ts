@@ -215,7 +215,9 @@ export async function updateInvestmentTransactionV2(
   payload: CreateInvestmentTransactionV2Payload,
 ): Promise<InvestmentTransactionItem> {
   const response = await fetch(
-    `/api/investments/v2/${assetId}/transactions/${transactionId}`,
+    `/api/investments/v2/${encodeURIComponent(
+      assetId,
+    )}/transactions/${encodeURIComponent(transactionId)}`,
     {
       method: "PATCH",
 
@@ -249,7 +251,9 @@ export async function deleteInvestmentTransactionV2(
   transactionId: string,
 ): Promise<void> {
   const response = await fetch(
-    `/api/investments/v2/${assetId}/transactions/${transactionId}`,
+    `/api/investments/v2/${encodeURIComponent(
+      assetId,
+    )}/transactions/${encodeURIComponent(transactionId)}`,
     {
       method: "DELETE",
 
