@@ -23,6 +23,16 @@ import { buildInvestmentV2ContributionChartData } from "@/lib/finance-charts";
 
 import { formatCurrency, formatDate } from "@/lib/formatters";
 
+import RecordActionButtons from "@/components/dashboard/record-action-buttons";
+
+import EditInvestmentTransactionV2Dialog from "@/features/investments/components/edit-investment-transaction-v2-dialog";
+
+import { InvestmentV2ApiError } from "@/features/investments/api/investment-v2-api";
+
+import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
+
+import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
+
 function formatInvestmentTransactionType(
   type: "BUY" | "SELL" | "OPEN" | "CLOSE",
 ) {
@@ -71,8 +81,47 @@ function formatInvestmentTransactionQuantity(quantity: number) {
   }).format(quantity);
 }
 
+function getDeleteInvestmentTransactionErrorMessage(error: unknown) {
+  if (error instanceof InvestmentV2ApiError) {
+    if (
+      error.data &&
+      typeof error.data === "object" &&
+      "reason" in error.data
+    ) {
+      const reason = (
+        error.data as {
+          reason?: unknown;
+        }
+      ).reason;
+
+      if (typeof reason === "string" && reason.trim()) {
+        return `${error.message} ${reason}`;
+      }
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Failed to delete investment transaction.";
+}
+
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
+
+  const {
+    selectedRecord: selectedTransaction,
+    isEditDialogOpen: isEditTransactionOpen,
+    openEditDialog: handleOpenEditTransaction,
+    handleEditDialogOpenChange: handleEditTransactionOpenChange,
+  } = useEditRecordDialog<InvestmentRecentTransactionV2Item>();
+
+  const [transactionActionError, setTransactionActionError] = useState<
+    string | null
+  >(null);
 
   const {
     investmentPortfolioV2,
@@ -86,6 +135,8 @@ export default function InvestmentsPageClient() {
     investmentContributionsV2,
     isInvestmentContributionsV2Loading,
     investmentContributionsV2Error,
+
+    deleteInvestmentTransactionV2,
   } = useFinance();
 
   // =====================================================
@@ -142,6 +193,22 @@ export default function InvestmentsPageClient() {
     hasInvestmentContributions;
   
   const recentInvestmentTransactions = investmentTransactionsV2.slice(0, 10);
+
+  async function handleDeleteTransaction(
+    transaction: InvestmentRecentTransactionV2Item,
+  ) {
+    try {
+      setTransactionActionError(null);
+
+      await deleteInvestmentTransactionV2(transaction.assetId, transaction.id);
+    } catch (error) {
+      console.error("Failed to delete investment transaction:", error);
+
+      setTransactionActionError(
+        getDeleteInvestmentTransactionErrorMessage(error),
+      );
+    }
+  }
 
   return (
     <>
@@ -362,6 +429,14 @@ export default function InvestmentsPageClient() {
                 title="Recent Transactions"
               />
 
+              {transactionActionError ? (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                  <p className="text-sm font-medium leading-6 text-red-700">
+                    {transactionActionError}
+                  </p>
+                </div>
+              ) : null}
+
               {isInvestmentTransactionsV2Loading ? (
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                   <p className="text-sm text-slate-500">
@@ -442,7 +517,20 @@ export default function InvestmentsPageClient() {
                           transaction.currencyCode,
                         )}
                         className="border-none bg-slate-50 p-4"
-                      />
+                      >
+                        <RecordActionButtons
+                          className="mt-4"
+                          onEdit={() => {
+                            setTransactionActionError(null);
+
+                            handleOpenEditTransaction(transaction);
+                          }}
+                          onDelete={() => {
+                            void handleDeleteTransaction(transaction);
+                          }}
+                          deleteConfirmMessage="Are you sure you want to delete this investment transaction? The transaction will only be deleted if the remaining investment history stays valid."
+                        />
+                      </DashboardListItem>
                     );
                   })}
                 </div>
@@ -459,6 +547,12 @@ export default function InvestmentsPageClient() {
       <AddInvestmentV2Dialog
         open={isAddInvestmentOpen}
         onOpenChange={setIsAddInvestmentOpen}
+      />
+
+      <EditInvestmentTransactionV2Dialog
+        open={isEditTransactionOpen}
+        onOpenChange={handleEditTransactionOpenChange}
+        transaction={selectedTransaction}
       />
     </>
   );

@@ -50,7 +50,7 @@ function getSubscriptionDescription(
 export default function SettingsPageClient() {
   const { currentUser } = useCurrentUser();
 
-  const { incomeItems, expenseItems, investmentItems, loanItems } =
+  const { incomeItems, expenseItems, investmentTransactionsV2, loanItems } =
     useFinance();
 
   const {
@@ -62,10 +62,12 @@ export default function SettingsPageClient() {
     savingsRate,
   } = useFinanceSummary();
 
+  const investmentRecordCount = investmentTransactionsV2.length;
+
   const totalRecords =
     incomeItems.length +
     expenseItems.length +
-    investmentItems.length +
+    investmentRecordCount +
     loanItems.length;
 
   const subscriptionDescription = getSubscriptionDescription(
@@ -165,7 +167,7 @@ export default function SettingsPageClient() {
                 value={getRecordLimitLabel(currentUser.plan)}
                 meta={
                   currentUser.plan === "FREE"
-                    ? "Applies separately to income, expenses, investments, and loans"
+                    ? "Applies separately to income, expenses, investment transactions, and loans"
                     : "Pro users are not limited by record count"
                 }
                 className="border-none bg-slate-50 p-5"
@@ -328,7 +330,7 @@ export default function SettingsPageClient() {
               <DashboardListItem
                 title="Income Records"
                 value={String(incomeItems.length)}
-                meta={formatCurrency(totalIncome, currentUser.currency )}
+                meta={formatCurrency(totalIncome, currentUser.currency)}
                 className="border-none bg-slate-50 p-5"
               />
 
@@ -340,8 +342,8 @@ export default function SettingsPageClient() {
               />
 
               <DashboardListItem
-                title="Investment Records"
-                value={String(investmentItems.length)}
+                title="Investment Transactions"
+                value={String(investmentRecordCount)}
                 meta={formatCurrency(portfolioValue, currentUser.currency)}
                 className="border-none bg-slate-50 p-5"
               />
