@@ -1,11 +1,9 @@
 import type { CreateExpenseFormValues } from "@/types/expense";
 import type { CreateIncomeFormValues } from "@/types/income";
-import type { CreateInvestmentFormValues } from "@/types/investment";
 import type { CreateLoanFormValues } from "@/types/loan";
 import type {
   CreateExpensePayload,
   CreateIncomePayload,
-  CreateInvestmentPayload,
   CreateLoanPayload,
 } from "@/types/form-payload";
 
@@ -43,26 +41,6 @@ export function transformExpenseFormValues(
     amount: toNumber(values.amount),
     currency: values.currency,
     spentAt: values.spentAt,
-    notes: normalizeOptionalText(values.notes),
-  };
-}
-
-export function transformInvestmentFormValues(
-  values: CreateInvestmentFormValues,
-): CreateInvestmentPayload {
-  return {
-    assetName: values.assetName.trim(),
-    category: values.category,
-    investedAmount: toNumber(values.investedAmount),
-
-    quantity: toNumber(values.quantity),
-
-    feeAmount: toNumber(values.feeAmount),
-
-    symbol: values.symbol.trim().toUpperCase(),
-
-    currency: values.currency,
-    investedAt: values.investedAt,
     notes: normalizeOptionalText(values.notes),
   };
 }

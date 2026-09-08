@@ -1,12 +1,10 @@
 import type {
   CreateExpensePayload,
   CreateIncomePayload,
-  CreateInvestmentPayload,
   CreateLoanPayload,
 } from "@/types/form-payload";
 import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 
 export type AddIncomeDialogProps = {
@@ -38,22 +36,6 @@ export type EditExpenseDialogProps = {
   onUpdateExpense: (
     expenseId: string,
     payload: CreateExpensePayload,
-  ) => Promise<void>;
-};
-
-export type AddInvestmentDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCreateInvestment: (payload: CreateInvestmentPayload) => Promise<void>;
-};
-
-export type EditInvestmentDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  investment: InvestmentItem | null;
-  onUpdateInvestment: (
-    investmentId: string,
-    payload: CreateInvestmentPayload,
   ) => Promise<void>;
 };
 

@@ -16,7 +16,6 @@ import type { ExpenseItem } from "@/types/expense";
 import type {
   CreateExpensePayload,
   CreateIncomePayload,
-  CreateInvestmentPayload,
   CreateLoanPayload,
 } from "@/types/form-payload";
 
@@ -26,7 +25,6 @@ import type {
 } from "@/types/finance-context";
 
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 
 import type {
@@ -50,13 +48,6 @@ import {
   getExpenseItems,
   updateExpenseItem,
 } from "@/features/expenses/api/expense-api";
-
-import {
-  createInvestmentItem,
-  deleteInvestmentItem,
-  getInvestmentItems,
-  updateInvestmentItem,
-} from "@/features/investments/api/investment-api";
 
 import {
   createInvestmentAssetV2 as createInvestmentAssetV2Api,
@@ -101,16 +92,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   const [isExpenseLoading, setIsExpenseLoading] = useState(true);
 
   const [expenseError, setExpenseError] = useState<string | null>(null);
-
-  // =====================================================
-  // LEGACY INVESTMENT STATE
-  // =====================================================
-
-  const [investmentItems, setInvestmentItems] = useState<InvestmentItem[]>([]);
-
-  const [isInvestmentLoading, setIsInvestmentLoading] = useState(true);
-
-  const [investmentError, setInvestmentError] = useState<string | null>(null);
 
   // =====================================================
   // INVESTMENT PORTFOLIO V2 STATE
@@ -365,44 +346,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   }, []);
 
   // =====================================================
-  // LOAD LEGACY INVESTMENT
-  // =====================================================
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadInvestmentItems() {
-      try {
-        setIsInvestmentLoading(true);
-
-        setInvestmentError(null);
-
-        const data = await getInvestmentItems();
-
-        if (isMounted) {
-          setInvestmentItems(data);
-        }
-      } catch (error) {
-        console.error("Failed to load investment items:", error);
-
-        if (isMounted) {
-          setInvestmentError("Failed to load investment records.");
-        }
-      } finally {
-        if (isMounted) {
-          setIsInvestmentLoading(false);
-        }
-      }
-    }
-
-    void loadInvestmentItems();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // =====================================================
   // LOAD LOANS
   // =====================================================
 
@@ -605,16 +548,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   }
 
   // =====================================================
-  // CREATE LEGACY INVESTMENT
-  // =====================================================
-
-  async function createInvestment(payload: CreateInvestmentPayload) {
-    const createdInvestment = await createInvestmentItem(payload);
-
-    setInvestmentItems((currentItems) => [createdInvestment, ...currentItems]);
-  }
-
-  // =====================================================
   // CREATE INVESTMENT ASSET V2
   // =====================================================
 
@@ -683,35 +616,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   }
 
   // =====================================================
-  // UPDATE LEGACY INVESTMENT
-  // =====================================================
-
-  async function updateInvestment(
-    investmentId: string,
-    payload: CreateInvestmentPayload,
-  ) {
-    const updatedInvestment = await updateInvestmentItem(investmentId, payload);
-
-    setInvestmentItems((currentItems) =>
-      currentItems.map((item) =>
-        item.id === investmentId ? updatedInvestment : item,
-      ),
-    );
-  }
-
-  // =====================================================
-  // DELETE LEGACY INVESTMENT
-  // =====================================================
-
-  async function deleteInvestment(investmentId: string) {
-    await deleteInvestmentItem(investmentId);
-
-    setInvestmentItems((currentItems) =>
-      currentItems.filter((item) => item.id !== investmentId),
-    );
-  }
-
-  // =====================================================
   // CREATE LOAN
   // =====================================================
 
@@ -760,7 +664,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
   const value: FinanceContextValue = {
     incomeItems,
     expenseItems,
-    investmentItems,
     loanItems,
 
     investmentPortfolioV2,
@@ -772,9 +675,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     isExpenseLoading,
     expenseError,
-
-    isInvestmentLoading,
-    investmentError,
 
     isInvestmentPortfolioV2Loading,
     investmentPortfolioV2Error,
@@ -790,7 +690,6 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     createIncome,
     createExpense,
-    createInvestment,
     createLoan,
 
     createInvestmentAsset,
@@ -801,12 +700,10 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     updateIncome,
     updateExpense,
-    updateInvestment,
     updateLoan,
 
     deleteIncome,
     deleteExpense,
-    deleteInvestment,
     deleteLoan,
 
     refreshInvestmentPortfolioV2,

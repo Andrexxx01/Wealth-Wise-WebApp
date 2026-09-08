@@ -1,5 +1,4 @@
 import type {
-  BuildInvestmentPerformanceChartDataParams,
   BuildLoanPayoffChartDataParams,
   BuildMonthlyExpenseChartDataParams,
   BuildMonthlyIncomeChartDataParams,
@@ -199,23 +198,6 @@ export function buildMonthlyExpenseChartData({
   });
 
   return buildNormalizedMonthlyChartData(monthlyExpenses, monthBuckets);
-}
-
-export function buildInvestmentContributionChartData({
-  investmentItems,
-}: BuildInvestmentPerformanceChartDataParams): SingleBarChartItem[] {
-  const monthBuckets = buildRecentMonthBuckets();
-  const monthlyInvestment = createMonthlyValues();
-
-  investmentItems.forEach((item) => {
-    const monthIndex = findMonthBucketIndex(monthBuckets, item.investedAt);
-
-    if (monthIndex >= 0) {
-      monthlyInvestment[monthIndex] += item.investedAmount;
-    }
-  });
-
-  return buildNormalizedMonthlyChartData(monthlyInvestment, monthBuckets);
 }
 
 export function buildLoanPayoffChartData({

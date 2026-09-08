@@ -12,7 +12,6 @@ function isFinanceStorageData(value: unknown): value is FinanceStorageData {
   return (
     Array.isArray(data.incomeItems) &&
     Array.isArray(data.expenseItems) &&
-    Array.isArray(data.investmentItems) &&
     Array.isArray(data.loanItems)
   );
 }

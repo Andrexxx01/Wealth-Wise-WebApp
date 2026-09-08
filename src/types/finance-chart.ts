@@ -1,6 +1,5 @@
 import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 
 export type SingleBarChartItem = {
@@ -14,10 +13,6 @@ export type BuildMonthlyIncomeChartDataParams = {
 
 export type BuildMonthlyExpenseChartDataParams = {
   expenseItems: ExpenseItem[];
-};
-
-export type BuildInvestmentPerformanceChartDataParams = {
-  investmentItems: InvestmentItem[];
 };
 
 export type BuildLoanPayoffChartDataParams = {

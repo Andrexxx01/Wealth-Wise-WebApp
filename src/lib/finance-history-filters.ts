@@ -9,7 +9,6 @@ import {
 import { ALL_FILTER_VALUE } from "@/constants/history-filters";
 import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
 
@@ -122,22 +121,6 @@ export const investmentCategoryFilterOptions = [
   { value: ALL_FILTER_VALUE, label: "All Categories" },
   ...INVESTMENT_CATEGORY_OPTIONS,
 ] as const;
-
-export function doesInvestmentPassFilters(
-  item: InvestmentItem,
-  filters: typeof investmentInitialFilters,
-) {
-  const matchesCategory =
-    filters.category === ALL_FILTER_VALUE || item.category === filters.category;
-
-  const matchesDate = isDateWithinRange(
-    item.investedAt,
-    filters.dateFrom,
-    filters.dateTo,
-  );
-
-  return matchesCategory && matchesDate;
-}
 
 export const loanInitialFilters = {
   category: ALL_FILTER_VALUE,

@@ -1,9 +1,5 @@
 import type { ExpenseItem, CreateExpenseFormValues } from "@/types/expense";
 import type { IncomeItem, CreateIncomeFormValues } from "@/types/income";
-import type {
-  CreateInvestmentFormValues,
-  InvestmentItem,
-} from "@/types/investment";
 import type { CreateLoanFormValues, LoanItem } from "@/types/loan";
 
 export function mapIncomeItemToFormValues(
@@ -31,24 +27,6 @@ export function mapExpenseItemToFormValues(
     currency: expense.currency,
     spentAt: expense.spentAt,
     notes: expense.notes ?? "",
-  };
-}
-
-export function mapInvestmentItemToFormValues(
-  investment: InvestmentItem,
-): CreateInvestmentFormValues {
-  return {
-    assetName: investment.assetName,
-    category: investment.category,
-    investedAmount: String(investment.investedAmount),
-    currency: investment.currency,
-    investedAt: investment.investedAt,
-    notes: investment.notes ?? "",
-    symbol: investment.symbol ?? "",
-
-    quantity: investment.quantity !== null ? String(investment.quantity) : "",
-
-    feeAmount: String(investment.feeAmount),
   };
 }
 

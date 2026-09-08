@@ -3,11 +3,9 @@ import type { ExpenseItem } from "@/types/expense";
 import type {
   CreateExpensePayload,
   CreateIncomePayload,
-  CreateInvestmentPayload,
   CreateLoanPayload,
 } from "@/types/form-payload";
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type {
   CreateInvestmentAssetV2Payload,
   CreateInvestmentTransactionV2Payload,
@@ -20,7 +18,6 @@ import type { LoanItem } from "@/types/loan";
 export type FinanceContextValue = {
   incomeItems: IncomeItem[];
   expenseItems: ExpenseItem[];
-  investmentItems: InvestmentItem[];
   loanItems: LoanItem[];
 
   investmentPortfolioV2: InvestmentValuationsResponse | null;
@@ -47,9 +44,6 @@ export type FinanceContextValue = {
   isExpenseLoading: boolean;
   expenseError: string | null;
 
-  isInvestmentLoading: boolean;
-  investmentError: string | null;
-
   isInvestmentPortfolioV2Loading: boolean;
   investmentPortfolioV2Error: string | null;
 
@@ -58,7 +52,6 @@ export type FinanceContextValue = {
 
   createIncome: (payload: CreateIncomePayload) => Promise<void>;
   createExpense: (payload: CreateExpensePayload) => Promise<void>;
-  createInvestment: (payload: CreateInvestmentPayload) => Promise<void>;
   createLoan: (payload: CreateLoanPayload) => Promise<void>;
 
   createInvestmentAsset: (
@@ -80,16 +73,10 @@ export type FinanceContextValue = {
     payload: CreateExpensePayload,
   ) => Promise<void>;
 
-  updateInvestment: (
-    investmentId: string,
-    payload: CreateInvestmentPayload,
-  ) => Promise<void>;
-
   updateLoan: (loanId: string, payload: CreateLoanPayload) => Promise<void>;
 
   deleteIncome: (incomeId: string) => Promise<void>;
   deleteExpense: (expenseId: string) => Promise<void>;
-  deleteInvestment: (investmentId: string) => Promise<void>;
   deleteLoan: (loanId: string) => Promise<void>;
 
   refreshInvestmentPortfolioV2: () => Promise<void>;

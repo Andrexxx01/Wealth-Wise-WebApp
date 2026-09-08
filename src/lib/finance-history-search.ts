@@ -1,6 +1,5 @@
 import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
 
@@ -115,33 +114,6 @@ export function doesExpenseMatchSearch(item: ExpenseItem, searchQuery: string) {
       formatDate(item.spentAt),
 
       item.amount,
-    ],
-
-    searchQuery,
-  );
-}
-
-export function doesInvestmentMatchSearch(
-  item: InvestmentItem,
-  searchQuery: string,
-) {
-  return doesSearchableTextMatch(
-    [
-      item.assetName,
-
-      item.symbol ?? "",
-
-      formatInvestmentCategory(item.category),
-
-      formatCurrency(item.investedAmount, item.currency),
-
-      item.quantity ?? "",
-
-      item.feeAmount,
-
-      formatDate(item.investedAt),
-
-      item.investedAmount,
     ],
 
     searchQuery,

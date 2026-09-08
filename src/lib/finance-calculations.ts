@@ -2,8 +2,6 @@ import type { IncomeItem } from "@/types/income";
 import type { LoanItem } from "@/types/loan";
 import { EXPENSE_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import type { ExpenseCategory, ExpenseItem } from "@/types/expense";
-import { INVESTMENT_CATEGORY_OPTIONS } from "@/constants/finance-options";
-import type { InvestmentCategory, InvestmentItem } from "@/types/investment";
 
 export type FinanceActivityItem = {
   id: string;
@@ -54,28 +52,6 @@ export function calculateSavingsRate(
   if (totalIncome <= 0) return 0;
 
   return (monthlySurplus / totalIncome) * 100;
-}
-
-export function calculateTotalInvested(investmentItems: InvestmentItem[]) {
-  return investmentItems.reduce(
-    (total, item) => total + item.investedAmount,
-    0,
-  );
-}
-
-export function calculateTotalInvestmentFees(
-  investmentItems: InvestmentItem[],
-) {
-  return investmentItems.reduce((total, item) => total + item.feeAmount, 0);
-}
-
-export function calculateTotalInvestmentCashOutflow(
-  investmentItems: InvestmentItem[],
-) {
-  return investmentItems.reduce(
-    (total, item) => total + item.investedAmount + item.feeAmount,
-    0,
-  );
 }
 
 export function calculateNetGain(
@@ -231,51 +207,6 @@ export function calculateInvestmentReturnRate(
   }
 
   return (netGain / totalCostBasis) * 100;
-}
-
-export function buildInvestmentAllocation({
-  investmentItems,
-  totalInvested,
-  limit = 5,
-}: {
-  investmentItems: InvestmentItem[];
-  totalInvested: number;
-  limit?: number;
-}) {
-  return INVESTMENT_CATEGORY_OPTIONS.map((option) => {
-    const amount = investmentItems
-      .filter((item) => item.category === option.value)
-      .reduce((total, item) => total + item.investedAmount, 0);
-
-    const percentage =
-      totalInvested > 0 ? Math.round((amount / totalInvested) * 100) : 0;
-
-    return {
-      name: option.label,
-      category: option.value as InvestmentCategory,
-      amount,
-      percentage,
-    };
-  })
-    .filter((item) => item.amount > 0)
-    .sort((a, b) => b.amount - a.amount)
-    .slice(0, limit);
-}
-
-export function buildInvestmentTransactions(investmentItems: InvestmentItem[]) {
-  return investmentItems.map((item) => ({
-    id: item.id,
-    asset: item.assetName,
-    symbol: item.symbol,
-    category: item.category,
-
-    investedAmount: item.investedAmount,
-    quantity: item.quantity,
-    feeAmount: item.feeAmount,
-
-    currency: item.currency,
-    investedAt: item.investedAt,
-  }));
 }
 
 function clampPercentage(value: number) {

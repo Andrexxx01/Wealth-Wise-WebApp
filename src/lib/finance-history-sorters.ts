@@ -1,6 +1,5 @@
 import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
-import type { InvestmentItem } from "@/types/investment";
 import type { LoanItem } from "@/types/loan";
 import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
 
@@ -22,10 +21,6 @@ export function sortIncomeHistoryItems(items: IncomeItem[]) {
 
 export function sortExpenseHistoryItems(items: ExpenseItem[]) {
   return sortByDateDescending(items, (item) => item.spentAt);
-}
-
-export function sortInvestmentHistoryItems(items: InvestmentItem[]) {
-  return sortByDateDescending(items, (item) => item.investedAt);
 }
 
 export function sortLoanHistoryItems(items: LoanItem[]) {

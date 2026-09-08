@@ -24,20 +24,6 @@ export type CreateExpensePayload = {
   notes: string | null;
 };
 
-export type CreateInvestmentPayload = {
-  assetName: string;
-  symbol: string;
-  category: InvestmentCategory;
-
-  investedAmount: number;
-  quantity: number;
-  feeAmount: number;
-
-  currency: UserCurrency;
-  investedAt: string;
-  notes: string | null;
-};
-
 export type CreateLoanPayload = {
   title: string;
   lenderName: string;

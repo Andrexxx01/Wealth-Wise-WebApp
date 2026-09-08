@@ -82,8 +82,8 @@ export function useFinanceSummary() {
    * Income, expense dan loan masih menggunakan
    * conversion hook existing.
    *
-   * Investment TIDAK lagi dihitung dari
-   * legacy investmentItems.
+   * Investment sudah sepenuhnya menggunakan
+   * Investment V2 pipeline.
    */
   const {
     incomeItems,
