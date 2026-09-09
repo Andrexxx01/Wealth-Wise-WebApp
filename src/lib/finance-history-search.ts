@@ -8,7 +8,6 @@ import {
   formatExpenseType,
   formatIncomeCategory,
   formatIncomeFrequency,
-  formatInvestmentCategory,
   formatInvestmentV2Category,
   formatLoanCategory,
   formatLoanStatus,

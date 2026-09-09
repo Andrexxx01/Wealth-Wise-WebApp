@@ -1,6 +1,5 @@
 import type { CreateExpenseFormValues } from "@/types/expense";
 import type { CreateIncomeFormValues } from "@/types/income";
-import type { CreateInvestmentFormValues } from "@/types/investment";
 import type { CreateLoanFormValues } from "@/types/loan";
 
 export const DEFAULT_INCOME_FORM_VALUES: CreateIncomeFormValues = {
@@ -20,18 +19,6 @@ export const DEFAULT_EXPENSE_FORM_VALUES: CreateExpenseFormValues = {
   amount: "",
   currency: "USD",
   spentAt: "",
-  notes: "",
-};
-
-export const DEFAULT_INVESTMENT_FORM_VALUES: CreateInvestmentFormValues = {
-  assetName: "",
-  symbol: "",
-  category: "STOCK",
-  investedAmount: "",
-  quantity: "",
-  feeAmount: "0",
-  currency: "USD",
-  investedAt: "",
   notes: "",
 };
 

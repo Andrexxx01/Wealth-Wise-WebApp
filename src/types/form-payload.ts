@@ -1,6 +1,5 @@
 import type { IncomeCategory, IncomeFrequency } from "@/types/income";
 import type { ExpenseCategory, ExpenseType } from "@/types/expense";
-import type { InvestmentCategory } from "@/types/investment";
 import type { LoanCategory } from "@/types/loan";
 import type { UserCurrency } from "@/types/user-subscription";
 

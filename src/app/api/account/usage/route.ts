@@ -73,7 +73,7 @@ export async function GET() {
           },
         }),
 
-        prisma.investment.count({
+        prisma.investmentTransaction.count({
           where: {
             userId,
           },
@@ -114,7 +114,7 @@ export async function GET() {
 
     const investmentUsage = createUsageItem({
       resource: "investment",
-      label: "Investments",
+      label: "Investment Transactions",
       currentCount: investmentCount,
       plan: user.plan,
     });

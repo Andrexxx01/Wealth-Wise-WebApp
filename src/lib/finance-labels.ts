@@ -3,12 +3,10 @@ import {
   EXPENSE_TYPE_OPTIONS,
   INCOME_CATEGORY_OPTIONS,
   INCOME_FREQUENCY_OPTIONS,
-  INVESTMENT_CATEGORY_OPTIONS,
   LOAN_CATEGORY_OPTIONS,
 } from "@/constants/finance-options";
 import type { ExpenseCategory, ExpenseType } from "@/types/expense";
 import type { IncomeCategory, IncomeFrequency } from "@/types/income";
-import type { InvestmentCategory } from "@/types/investment";
 import type { LoanCategory, LoanItem } from "@/types/loan";
 import type { InvestmentAssetCategory } from "@/types/investment-v2";
 
@@ -41,10 +39,6 @@ export function formatExpenseCategory(category: ExpenseCategory) {
 
 export function formatExpenseType(type: ExpenseType) {
   return getOptionLabel(EXPENSE_TYPE_OPTIONS, type);
-}
-
-export function formatInvestmentCategory(category: InvestmentCategory) {
-  return getOptionLabel(INVESTMENT_CATEGORY_OPTIONS, category);
 }
 
 export function formatLoanCategory(category: LoanCategory) {
