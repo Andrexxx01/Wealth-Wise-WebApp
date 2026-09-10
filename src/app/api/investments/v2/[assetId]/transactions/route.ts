@@ -184,10 +184,7 @@ export async function POST(request: Request, context: RouteContext) {
     // 8. FREE / PRO PLAN LIMIT
     // =====================================================
 
-    const limitResponse = await enforceFinanceRecordLimit(
-      userId,
-      "investmentV2",
-    );
+    const limitResponse = await enforceFinanceRecordLimit(userId, "investment");
 
     if (limitResponse) {
       return limitResponse;

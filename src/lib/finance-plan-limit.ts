@@ -7,14 +7,12 @@ export type FinanceRecordResource =
   | "income"
   | "expense"
   | "investment"
-  | "investmentV2"
   | "loan";
 
 const resourceLabels: Record<FinanceRecordResource, string> = {
   income: "income",
   expense: "expense",
   investment: "investment",
-  investmentV2: "investment",
   loan: "loan",
 };
 
@@ -37,13 +35,6 @@ async function getFinanceRecordCount(
         },
       });
 
-    case "investment":
-      return prisma.investment.count({
-        where: {
-          userId,
-        },
-      });
-
     case "loan":
       return prisma.loan.count({
         where: {
@@ -51,7 +42,7 @@ async function getFinanceRecordCount(
         },
       });
 
-    case "investmentV2":
+    case "investment":
       return prisma.investmentTransaction.count({
         where: {
           userId,
