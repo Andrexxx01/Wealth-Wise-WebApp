@@ -1,6 +1,7 @@
 type RequestJsonOptions = {
   method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
+  cache?: RequestCache;
 };
 
 export async function requestJson<TResponse>(
@@ -13,6 +14,7 @@ export async function requestJson<TResponse>(
       "Content-Type": "application/json",
     },
     body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: options.cache,
   });
 
   const responseBody = await response.json().catch(() => null);

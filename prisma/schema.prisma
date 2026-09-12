@@ -93,7 +93,6 @@ model User {
 
   incomes          Income[]
   expenses         Expense[]
-  investments      Investment[]
   investmentAssets InvestmentAsset[]
   loans            Loan[]
 
@@ -181,31 +180,6 @@ model Expense {
 
   @@index([userId])
   @@index([spentAt])
-}
-
-model Investment {
-  id     String @id @default(cuid())
-  userId String
-
-  assetName String
-  symbol    String
-  category  String
-
-  currency       Currency @default(USD)
-  investedAmount Decimal  @db.Decimal(12, 2)
-  quantity       Decimal  @db.Decimal(30, 18)
-  feeAmount      Decimal  @default(0) @db.Decimal(12, 4)
-
-  investedAt DateTime
-  notes      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([investedAt])
 }
 
 model InvestmentAsset {

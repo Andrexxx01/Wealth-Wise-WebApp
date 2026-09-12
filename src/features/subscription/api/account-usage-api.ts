@@ -3,8 +3,12 @@ import type { AccountUsageData } from "@/types/account-usage";
 import type { ApiDataResponse } from "@/types/api-response";
 
 export async function getAccountUsage() {
-  const response =
-    await requestJson<ApiDataResponse<AccountUsageData>>("/api/account/usage");
+  const response = await requestJson<ApiDataResponse<AccountUsageData>>(
+    "/api/account/usage",
+    {
+      cache: "no-store",
+    },
+  );
 
   return response.data;
 }
