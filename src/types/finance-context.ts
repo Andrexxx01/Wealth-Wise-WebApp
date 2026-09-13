@@ -93,6 +93,8 @@ export type FinanceContextValue = {
     assetId: string,
     transactionId: string,
   ) => Promise<void>;
+
+  deleteInvestmentAssetV2: (assetId: string) => Promise<void>;
 };
 
 export type FinanceProviderProps = {

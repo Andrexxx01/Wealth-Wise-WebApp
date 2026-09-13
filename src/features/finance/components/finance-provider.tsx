@@ -57,6 +57,7 @@ import {
   getInvestmentRecentTransactionsV2,
   getInvestmentValuationsV2,
   updateInvestmentTransactionV2 as updateInvestmentTransactionV2Api,
+  deleteInvestmentAssetV2Api,
 } from "@/features/investments/api/investment-v2-api";
 
 import {
@@ -615,6 +616,16 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     await refreshAllInvestmentV2Data();
   }
 
+  async function deleteInvestmentAssetV2(assetId: string) {
+    clearInvestmentPortfolioV2RetryTimeout();
+
+    investmentPortfolioV2RetryCountRef.current = 0;
+
+    await deleteInvestmentAssetV2Api(assetId);
+
+    await refreshAllInvestmentV2Data();
+  }
+
   // =====================================================
   // CREATE LOAN
   // =====================================================
@@ -697,6 +708,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     updateInvestmentTransactionV2,
     deleteInvestmentTransactionV2,
+    deleteInvestmentAssetV2,
 
     updateIncome,
     updateExpense,

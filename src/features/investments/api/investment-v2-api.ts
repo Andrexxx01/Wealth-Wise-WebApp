@@ -272,3 +272,27 @@ export async function deleteInvestmentTransactionV2(
     );
   }
 }
+
+export async function deleteInvestmentAssetV2Api(assetId: string) {
+  const response = await fetch(
+    `/api/investments/v2/${encodeURIComponent(assetId)}`,
+    {
+      method: "DELETE",
+    },
+  );
+
+  if (!response.ok) {
+    return throwInvestmentV2ApiError(
+      response,
+      "Failed to delete investment asset.",
+    );
+  }
+
+  const responseBody = (await response.json()) as {
+    data: {
+      id: string;
+    };
+  };
+
+  return responseBody.data;
+}
