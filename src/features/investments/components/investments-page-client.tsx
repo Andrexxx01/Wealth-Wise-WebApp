@@ -32,6 +32,7 @@ import { InvestmentV2ApiError } from "@/features/investments/api/investment-v2-a
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 
 import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
+import { formatInvestmentV2Category } from "@/lib/finance-labels";
 
 function formatInvestmentTransactionType(
   type: "BUY" | "SELL" | "OPEN" | "CLOSE",
@@ -144,6 +145,8 @@ export default function InvestmentsPageClient() {
   // =====================================================
 
   const portfolioSummary = investmentPortfolioV2?.summary ?? null;
+
+  const portfolioAssets = investmentPortfolioV2?.data ?? [];
 
   const hasPortfolioAssets = (portfolioSummary?.totalAssets ?? 0) > 0;
 
@@ -413,6 +416,211 @@ export default function InvestmentsPageClient() {
                   }
                 />
               )}
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* =================================================
+            INVESTMENT ASSETS
+        ================================================= */}
+
+        <section>
+          <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
+            <CardContent className="space-y-5 p-6">
+              <DashboardCardHeader
+                eyebrow="Portfolio"
+                title="Your Investments"
+                description="View your current holdings, cost basis, market value, and investment performance by asset."
+              />
+
+              {isInvestmentPortfolioV2Loading ? (
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
+                  <p className="text-sm text-slate-500">
+                    Loading investment assets...
+                  </p>
+                </div>
+              ) : null}
+
+              {!isInvestmentPortfolioV2Loading && investmentPortfolioV2Error ? (
+                <div className="rounded-[24px] border border-red-200 bg-red-50 p-5">
+                  <p className="text-sm text-red-700">
+                    {investmentPortfolioV2Error}
+                  </p>
+                </div>
+              ) : null}
+
+              {!isInvestmentPortfolioV2Loading &&
+              !investmentPortfolioV2Error &&
+              portfolioAssets.length === 0 ? (
+                <EmptyState
+                  title="No investment assets yet"
+                  description="Add your first investment asset to start tracking holdings, cost basis, and portfolio performance."
+                  action={
+                    <Button
+                      type="button"
+                      onClick={() => setIsAddInvestmentOpen(true)}
+                      className="h-11 rounded-2xl bg-emerald-600 px-5 font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Add Investment
+                    </Button>
+                  }
+                />
+              ) : null}
+
+              {!isInvestmentPortfolioV2Loading &&
+              !investmentPortfolioV2Error &&
+              portfolioAssets.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                  {portfolioAssets.map((asset) => {
+                    const assetTitle = asset.symbol
+                      ? `${asset.name} (${asset.symbol})`
+                      : asset.name;
+
+                    const categoryLabel = formatInvestmentV2Category(
+                      asset.category,
+                    );
+
+                    const positionValue =
+                      asset.positionKind === "QUANTITY"
+                        ? asset.quantity !== null
+                          ? `${formatInvestmentTransactionQuantity(
+                              asset.quantity,
+                            )} ${asset.symbol ?? "units"}`
+                          : "—"
+                        : asset.principalBalance !== null &&
+                            asset.transactionCurrencyCode
+                          ? formatInvestmentTransactionAmount(
+                              asset.principalBalance,
+                              asset.transactionCurrencyCode,
+                            )
+                          : "—";
+
+                    const marketValue =
+                      asset.marketValue !== null
+                        ? formatCurrency(
+                            asset.marketValue,
+                            asset.displayCurrency,
+                          )
+                        : "—";
+
+                    const costBasis =
+                      asset.costBasisInDisplayCurrency !== null
+                        ? formatCurrency(
+                            asset.costBasisInDisplayCurrency,
+                            asset.displayCurrency,
+                          )
+                        : "—";
+
+                    const unrealizedGainLoss =
+                      asset.unrealizedGainLoss !== null
+                        ? formatCurrency(
+                            asset.unrealizedGainLoss,
+                            asset.displayCurrency,
+                          )
+                        : "—";
+
+                    const unrealizedReturn =
+                      asset.unrealizedReturnPercentage !== null
+                        ? `${asset.unrealizedReturnPercentage.toFixed(2)}%`
+                        : null;
+
+                    const unrealizedTone =
+                      asset.unrealizedGainLoss === null
+                        ? "text-slate-900"
+                        : asset.unrealizedGainLoss > 0
+                          ? "text-emerald-600"
+                          : asset.unrealizedGainLoss < 0
+                            ? "text-red-600"
+                            : "text-slate-900";
+
+                    return (
+                      <div
+                        key={asset.assetId}
+                        className="rounded-[28px] border border-slate-200 bg-slate-50 p-5"
+                      >
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                          <div>
+                            <p className="text-base font-bold text-slate-900">
+                              {assetTitle}
+                            </p>
+
+                            <p className="mt-1 text-sm font-medium text-slate-500">
+                              {categoryLabel}
+                            </p>
+                          </div>
+
+                          <span
+                            className={
+                              asset.isClosed
+                                ? "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600"
+                                : "w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700"
+                            }
+                          >
+                            {asset.isClosed ? "Closed" : "Open"}
+                          </span>
+                        </div>
+
+                        <div className="mt-5 grid grid-cols-2 gap-3">
+                          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              {asset.positionKind === "QUANTITY"
+                                ? "Holding"
+                                : "Principal"}
+                            </p>
+
+                            <p className="mt-2 break-words text-sm font-bold text-slate-900">
+                              {positionValue}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Market Value
+                            </p>
+
+                            <p className="mt-2 text-sm font-bold text-slate-900">
+                              {marketValue}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Cost Basis
+                            </p>
+
+                            <p className="mt-2 text-sm font-bold text-slate-900">
+                              {costBasis}
+                            </p>
+                          </div>
+
+                          <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                              Unrealized P/L
+                            </p>
+
+                            <p
+                              className={`mt-2 text-sm font-bold ${unrealizedTone}`}
+                            >
+                              {unrealizedGainLoss}
+
+                              {unrealizedReturn ? ` (${unrealizedReturn})` : ""}
+                            </p>
+                          </div>
+                        </div>
+
+                        {asset.valuationStatus !== "VALUED" ? (
+                          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                            <p className="text-xs font-semibold text-amber-700">
+                              Current market valuation is unavailable for this
+                              asset.
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </section>
