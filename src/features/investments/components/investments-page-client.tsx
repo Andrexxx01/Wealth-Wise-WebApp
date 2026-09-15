@@ -110,6 +110,18 @@ function getDeleteInvestmentTransactionErrorMessage(error: unknown) {
   return "Failed to delete investment transaction.";
 }
 
+function getDeleteInvestmentAssetErrorMessage(error: unknown) {
+  if (error instanceof InvestmentV2ApiError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Failed to delete investment asset.";
+}
+
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
 
@@ -123,6 +135,8 @@ export default function InvestmentsPageClient() {
   const [transactionActionError, setTransactionActionError] = useState<
     string | null
   >(null);
+
+  const [assetActionError, setAssetActionError] = useState<string | null>(null);
 
   const {
     investmentPortfolioV2,
@@ -138,6 +152,7 @@ export default function InvestmentsPageClient() {
     investmentContributionsV2Error,
 
     deleteInvestmentTransactionV2,
+    deleteInvestmentAssetV2,
   } = useFinance();
 
   // =====================================================
@@ -210,6 +225,27 @@ export default function InvestmentsPageClient() {
       setTransactionActionError(
         getDeleteInvestmentTransactionErrorMessage(error),
       );
+    }
+  }
+
+  async function handleDeleteAsset(assetId: string, assetName: string) {
+    const confirmed = window.confirm(
+      `Delete ${assetName} permanently?\n\n` +
+        "This will delete the investment asset together with all of its transactions and events. This action cannot be undone.",
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setAssetActionError(null);
+
+      await deleteInvestmentAssetV2(assetId);
+    } catch (error) {
+      console.error("Failed to delete investment asset:", error);
+
+      setAssetActionError(getDeleteInvestmentAssetErrorMessage(error));
     }
   }
 
@@ -433,6 +469,14 @@ export default function InvestmentsPageClient() {
                 description="View your current holdings, cost basis, market value, and investment performance by asset."
               />
 
+              {assetActionError ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
+                  <p className="text-sm font-medium leading-6 text-red-700">
+                    {assetActionError}
+                  </p>
+                </div>
+              ) : null}
+
               {isInvestmentPortfolioV2Loading ? (
                 <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
                   <p className="text-sm text-slate-500">
@@ -568,7 +612,7 @@ export default function InvestmentsPageClient() {
                                 : "Principal"}
                             </p>
 
-                            <p className="mt-2 break-words text-sm font-bold text-slate-900">
+                            <p className="mt-2 wrap-break-words text-sm font-bold text-slate-900">
                               {positionValue}
                             </p>
                           </div>
@@ -616,6 +660,18 @@ export default function InvestmentsPageClient() {
                             </p>
                           </div>
                         ) : null}
+                        <div className="mt-5 flex justify-end border-t border-slate-200 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              void handleDeleteAsset(asset.assetId, assetTitle);
+                            }}
+                            className="h-10 rounded-xl border-red-200 bg-white px-4 font-semibold text-red-600 hover:bg-red-50 hover:text-red-700"
+                          >
+                            Delete Asset
+                          </Button>
+                        </div>
                       </div>
                     );
                   })}
