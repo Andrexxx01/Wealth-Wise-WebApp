@@ -174,6 +174,68 @@ export type CreateInvestmentAssetV2Input = z.infer<
   typeof createInvestmentAssetV2Schema
 >;
 
+const updateOptionalTextSchema = z
+  .string()
+  .trim()
+  .optional()
+  .nullable()
+  .transform((value) => {
+    if (value === undefined) {
+      return undefined;
+    }
+
+    if (!value) {
+      return null;
+    }
+
+    return value;
+  });
+
+export const updateInvestmentAssetV2Schema = z
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(2, "Asset name must be at least 2 characters.")
+      .max(100, "Asset name must be 100 characters or fewer.")
+      .optional(),
+
+    symbol: updateOptionalTextSchema,
+
+    exchange: updateOptionalTextSchema,
+
+    isin: updateOptionalTextSchema,
+
+    issuer: updateOptionalTextSchema,
+
+    underlyingIndex: updateOptionalTextSchema,
+
+    notes: z
+      .string()
+      .trim()
+      .max(500, "Notes must be 500 characters or fewer.")
+      .optional()
+      .nullable()
+      .transform((value) => {
+        if (value === undefined) {
+          return undefined;
+        }
+
+        if (!value) {
+          return null;
+        }
+
+        return value;
+      }),
+  })
+  .refine((data) => Object.values(data).some((value) => value !== undefined), {
+    message: "At least one investment asset field must be provided.",
+  });
+
+export type UpdateInvestmentAssetV2Input = z.infer<
+  typeof updateInvestmentAssetV2Schema
+>;
+
 export const createInvestmentTransactionV2Schema = z
   .object({
     type: z.enum(["BUY", "SELL", "OPEN", "CLOSE"]),
