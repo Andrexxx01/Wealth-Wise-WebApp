@@ -324,3 +324,15 @@ export type InvestmentContributionV2Item = {
 export type InvestmentContributionsV2Response = {
   data: InvestmentContributionV2Item[];
 };
+
+export type UpdateInvestmentAssetV2Payload = {
+  name?: string;
+
+  symbol?: string | null;
+  exchange?: string | null;
+  isin?: string | null;
+  issuer?: string | null;
+  underlyingIndex?: string | null;
+
+  notes?: string | null;
+};

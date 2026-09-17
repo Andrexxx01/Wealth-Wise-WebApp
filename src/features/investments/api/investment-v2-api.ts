@@ -6,6 +6,7 @@ import type {
   InvestmentTransactionItem,
   InvestmentValuationsResponse,
   InvestmentContributionsV2Response,
+  UpdateInvestmentAssetV2Payload,
 } from "@/types/investment-v2";
 
 type ApiErrorResponse = {
@@ -244,6 +245,37 @@ export async function updateInvestmentTransactionV2(
   };
 
   return result.data;
+}
+
+export async function updateInvestmentAssetV2Api(
+  assetId: string,
+  payload: UpdateInvestmentAssetV2Payload,
+) {
+  const response = await fetch(
+    `/api/investments/v2/${encodeURIComponent(assetId)}`,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (!response.ok) {
+    return throwInvestmentV2ApiError(
+      response,
+      "Failed to update investment asset.",
+    );
+  }
+
+  const responseBody = (await response.json()) as {
+    data: unknown;
+  };
+
+  return responseBody.data;
 }
 
 export async function deleteInvestmentTransactionV2(

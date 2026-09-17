@@ -33,6 +33,7 @@ import type {
   InvestmentContributionV2Item,
   InvestmentRecentTransactionV2Item,
   InvestmentValuationsResponse,
+  UpdateInvestmentAssetV2Payload,
 } from "@/types/investment-v2";
 
 import {
@@ -57,6 +58,7 @@ import {
   getInvestmentRecentTransactionsV2,
   getInvestmentValuationsV2,
   updateInvestmentTransactionV2 as updateInvestmentTransactionV2Api,
+  updateInvestmentAssetV2Api,
   deleteInvestmentAssetV2Api,
 } from "@/features/investments/api/investment-v2-api";
 
@@ -616,6 +618,19 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     await refreshAllInvestmentV2Data();
   }
 
+  async function updateInvestmentAssetV2(
+    assetId: string,
+    payload: UpdateInvestmentAssetV2Payload,
+  ) {
+    clearInvestmentPortfolioV2RetryTimeout();
+
+    investmentPortfolioV2RetryCountRef.current = 0;
+
+    await updateInvestmentAssetV2Api(assetId, payload);
+
+    await refreshAllInvestmentV2Data();
+  }
+
   async function deleteInvestmentAssetV2(assetId: string) {
     clearInvestmentPortfolioV2RetryTimeout();
 
@@ -708,6 +723,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     updateInvestmentTransactionV2,
     deleteInvestmentTransactionV2,
+    updateInvestmentAssetV2,
     deleteInvestmentAssetV2,
 
     updateIncome,

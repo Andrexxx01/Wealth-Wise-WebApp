@@ -14,6 +14,7 @@ import type {
   InvestmentContributionV2Item,
 } from "@/types/investment-v2";
 import type { LoanItem } from "@/types/loan";
+import type { UpdateInvestmentAssetV2Payload } from "@/types/investment-v2";
 
 export type FinanceContextValue = {
   incomeItems: IncomeItem[];
@@ -87,6 +88,11 @@ export type FinanceContextValue = {
     assetId: string,
     transactionId: string,
     payload: CreateInvestmentTransactionV2Payload,
+  ) => Promise<void>;
+
+  updateInvestmentAssetV2: (
+    assetId: string,
+    payload: UpdateInvestmentAssetV2Payload,
   ) => Promise<void>;
 
   deleteInvestmentTransactionV2: (
