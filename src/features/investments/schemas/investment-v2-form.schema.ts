@@ -519,3 +519,29 @@ export const createInvestmentTransactionV2FormSchema = z
       });
     }
   });
+
+export const editInvestmentAssetV2FormSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(2, "Asset name must be at least 2 characters.")
+    .max(100, "Asset name must be 100 characters or fewer."),
+
+  symbol: z.string().trim().max(30, "Symbol must be 30 characters or fewer."),
+
+  exchange: z
+    .string()
+    .trim()
+    .max(100, "Exchange must be 100 characters or fewer."),
+
+  isin: z.string().trim().max(50, "ISIN must be 50 characters or fewer."),
+
+  issuer: z.string().trim().max(100, "Issuer must be 100 characters or fewer."),
+
+  underlyingIndex: z
+    .string()
+    .trim()
+    .max(100, "Underlying index must be 100 characters or fewer."),
+
+  notes: z.string().trim().max(500, "Notes must be 500 characters or fewer."),
+});

@@ -62,3 +62,15 @@ export type CreateInvestmentTransactionV2FormValues = {
 
   notes: string;
 };
+
+export type EditInvestmentAssetV2FormValues = {
+  name: string;
+
+  symbol: string;
+  exchange: string;
+  isin: string;
+  issuer: string;
+  underlyingIndex: string;
+
+  notes: string;
+};

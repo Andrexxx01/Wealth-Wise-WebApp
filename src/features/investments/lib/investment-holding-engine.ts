@@ -205,6 +205,13 @@ function calculateQuantityHolding(
     name: asset.name,
     symbol: asset.symbol,
 
+    exchange: asset.exchange,
+    isin: asset.isin,
+    issuer: asset.issuer,
+    underlyingIndex: asset.underlyingIndex,
+
+    notes: asset.notes,
+
     category: asset.category,
     instrumentType: asset.instrumentType,
     valuationType: asset.valuationType,
@@ -289,6 +296,13 @@ function calculatePrincipalHolding(
 
     name: asset.name,
     symbol: asset.symbol,
+
+    exchange: asset.exchange,
+    isin: asset.isin,
+    issuer: asset.issuer,
+    underlyingIndex: asset.underlyingIndex,
+
+    notes: asset.notes,
 
     category: asset.category,
     instrumentType: asset.instrumentType,

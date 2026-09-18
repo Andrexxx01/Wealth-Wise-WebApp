@@ -1,11 +1,13 @@
 import type {
   CreateInvestmentAssetV2Payload,
   CreateInvestmentTransactionV2Payload,
+  UpdateInvestmentAssetV2Payload,
 } from "@/types/investment-v2";
 
 import type {
   CreateInvestmentAssetV2FormValues,
   CreateInvestmentTransactionV2FormValues,
+  EditInvestmentAssetV2FormValues,
 } from "@/types/investment-v2-form";
 
 function normalizeOptionalText(value: string) {
@@ -71,6 +73,32 @@ function optionalDateInputToIsoDateTime(value: string) {
   }
 
   return dateInputToIsoDateTime(value);
+}
+
+function emptyStringToNull(value: string) {
+  const trimmedValue = value.trim();
+
+  return trimmedValue ? trimmedValue : null;
+}
+
+export function transformEditInvestmentAssetV2FormValues(
+  values: EditInvestmentAssetV2FormValues,
+): UpdateInvestmentAssetV2Payload {
+  return {
+    name: values.name.trim(),
+
+    symbol: emptyStringToNull(values.symbol),
+
+    exchange: emptyStringToNull(values.exchange),
+
+    isin: emptyStringToNull(values.isin),
+
+    issuer: emptyStringToNull(values.issuer),
+
+    underlyingIndex: emptyStringToNull(values.underlyingIndex),
+
+    notes: emptyStringToNull(values.notes),
+  };
 }
 
 export function transformInvestmentAssetV2FormValues(
