@@ -31,8 +31,12 @@ import { InvestmentV2ApiError } from "@/features/investments/api/investment-v2-a
 
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 
-import type { InvestmentRecentTransactionV2Item } from "@/types/investment-v2";
+import type {
+  InvestmentRecentTransactionV2Item,
+  InvestmentValuationItem,
+} from "@/types/investment-v2";
 import { formatInvestmentV2Category } from "@/lib/finance-labels";
+import EditInvestmentAssetV2Dialog from "@/features/investments/components/edit-investment-asset-v2-dialog";
 
 function formatInvestmentTransactionType(
   type: "BUY" | "SELL" | "OPEN" | "CLOSE",
@@ -131,6 +135,13 @@ export default function InvestmentsPageClient() {
     openEditDialog: handleOpenEditTransaction,
     handleEditDialogOpenChange: handleEditTransactionOpenChange,
   } = useEditRecordDialog<InvestmentRecentTransactionV2Item>();
+
+  const {
+    selectedRecord: selectedAsset,
+    isEditDialogOpen: isEditAssetOpen,
+    openEditDialog: handleOpenEditAsset,
+    handleEditDialogOpenChange: handleEditAssetOpenChange,
+  } = useEditRecordDialog<InvestmentValuationItem>();
 
   const [transactionActionError, setTransactionActionError] = useState<
     string | null
@@ -660,7 +671,20 @@ export default function InvestmentsPageClient() {
                             </p>
                           </div>
                         ) : null}
-                        <div className="mt-5 flex justify-end border-t border-slate-200 pt-4">
+                        <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-4">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                              setAssetActionError(null);
+
+                              handleOpenEditAsset(asset);
+                            }}
+                            className="h-10 rounded-xl bg-white px-4 font-semibold"
+                          >
+                            Edit Asset
+                          </Button>
+
                           <Button
                             type="button"
                             variant="outline"
@@ -811,6 +835,12 @@ export default function InvestmentsPageClient() {
       <AddInvestmentV2Dialog
         open={isAddInvestmentOpen}
         onOpenChange={setIsAddInvestmentOpen}
+      />
+
+      <EditInvestmentAssetV2Dialog
+        open={isEditAssetOpen}
+        onOpenChange={handleEditAssetOpenChange}
+        asset={selectedAsset}
       />
 
       <EditInvestmentTransactionV2Dialog
