@@ -27,9 +27,7 @@ import type { EditInvestmentAssetV2FormValues } from "@/types/investment-v2-form
 
 type EditInvestmentAssetV2DialogProps = {
   open: boolean;
-
   onOpenChange: (open: boolean) => void;
-
   asset: InvestmentValuationItem | null;
 };
 
@@ -38,17 +36,10 @@ function assetToFormValues(
 ): EditInvestmentAssetV2FormValues {
   return {
     name: asset.name,
-
-    symbol: asset.symbol ?? "",
-
     exchange: asset.exchange ?? "",
-
     isin: asset.isin ?? "",
-
     issuer: asset.issuer ?? "",
-
     underlyingIndex: asset.underlyingIndex ?? "",
-
     notes: asset.notes ?? "",
   };
 }
@@ -79,7 +70,6 @@ export default function EditInvestmentAssetV2Dialog({
 
     defaultValues: {
       name: "",
-      symbol: "",
       exchange: "",
       isin: "",
       issuer: "",
@@ -153,7 +143,7 @@ export default function EditInvestmentAssetV2Dialog({
       open={open}
       onOpenChange={handleDialogOpenChange}
       title="Edit Investment Asset"
-      description="Update the identity and descriptive information for this investment asset."
+      description="Update the editable metadata and descriptive information for this investment asset."
       formProps={{
         onSubmit: form.handleSubmit(handleSubmit),
       }}
@@ -175,10 +165,14 @@ export default function EditInvestmentAssetV2Dialog({
         {asset ? (
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Investment Structure
+              Investment Identity
             </p>
 
             <p className="mt-1 text-sm font-semibold text-slate-900">
+              {asset.symbol ? `${asset.name} (${asset.symbol})` : asset.name}
+            </p>
+
+            <p className="mt-1 text-sm text-slate-600">
               {asset.category}
               {" • "}
               {asset.instrumentType}
@@ -187,8 +181,9 @@ export default function EditInvestmentAssetV2Dialog({
             </p>
 
             <p className="mt-2 text-xs leading-5 text-slate-500">
-              Structural investment settings are locked because changing them
-              could make the existing transaction history inconsistent.
+              Symbol and structural investment settings are locked because
+              changing them could change the identity of the asset or make its
+              existing transaction history inconsistent.
             </p>
           </div>
         ) : null}
@@ -215,27 +210,6 @@ export default function EditInvestmentAssetV2Dialog({
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <label
-              htmlFor="edit-investment-asset-symbol"
-              className="text-sm font-semibold text-slate-700"
-            >
-              Symbol
-            </label>
-
-            <Input
-              id="edit-investment-asset-symbol"
-              {...form.register("symbol")}
-              placeholder="BTC"
-            />
-
-            {errors.symbol ? (
-              <p className="text-xs font-medium text-red-600">
-                {errors.symbol.message}
-              </p>
-            ) : null}
-          </div>
-
           <div className="space-y-2">
             <label
               htmlFor="edit-investment-asset-exchange"

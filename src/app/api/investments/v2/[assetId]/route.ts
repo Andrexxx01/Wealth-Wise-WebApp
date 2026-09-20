@@ -75,40 +75,6 @@ export async function PATCH(
     }
 
     // =================================================
-    // 3. VALIDATE SYMBOL REQUIREMENT
-    // =================================================
-
-    const nextSymbol =
-      parsedBody.symbol !== undefined
-        ? parsedBody.symbol
-        : existingAsset.symbol;
-
-    const requiresSymbol =
-      existingAsset.instrumentType ===
-        "CRYPTO_ASSET" ||
-      existingAsset.instrumentType ===
-        "COMMON_STOCK" ||
-      existingAsset.instrumentType ===
-        "ETF";
-
-    if (
-      requiresSymbol &&
-      !nextSymbol
-    ) {
-      return NextResponse.json(
-        {
-          message:
-            "This investment instrument requires a symbol.",
-          code:
-            "INVESTMENT_SYMBOL_REQUIRED",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    // =================================================
     // 4. UPDATE ASSET
     // =================================================
 
@@ -122,12 +88,6 @@ export async function PATCH(
           ...(parsedBody.name !== undefined
             ? {
                 name: parsedBody.name,
-              }
-            : {}),
-
-          ...(parsedBody.symbol !== undefined
-            ? {
-                symbol: parsedBody.symbol,
               }
             : {}),
 

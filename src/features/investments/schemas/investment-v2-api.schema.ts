@@ -200,8 +200,6 @@ export const updateInvestmentAssetV2Schema = z
       .max(100, "Asset name must be 100 characters or fewer.")
       .optional(),
 
-    symbol: updateOptionalTextSchema,
-
     exchange: updateOptionalTextSchema,
 
     isin: updateOptionalTextSchema,

@@ -66,7 +66,6 @@ export type CreateInvestmentTransactionV2FormValues = {
 export type EditInvestmentAssetV2FormValues = {
   name: string;
 
-  symbol: string;
   exchange: string;
   isin: string;
   issuer: string;

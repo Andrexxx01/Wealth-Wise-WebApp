@@ -527,8 +527,6 @@ export const editInvestmentAssetV2FormSchema = z.object({
     .min(2, "Asset name must be at least 2 characters.")
     .max(100, "Asset name must be 100 characters or fewer."),
 
-  symbol: z.string().trim().max(30, "Symbol must be 30 characters or fewer."),
-
   exchange: z
     .string()
     .trim()

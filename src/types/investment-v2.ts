@@ -335,7 +335,6 @@ export type InvestmentContributionsV2Response = {
 export type UpdateInvestmentAssetV2Payload = {
   name?: string;
 
-  symbol?: string | null;
   exchange?: string | null;
   isin?: string | null;
   issuer?: string | null;

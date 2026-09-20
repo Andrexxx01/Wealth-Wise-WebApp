@@ -87,8 +87,6 @@ export function transformEditInvestmentAssetV2FormValues(
   return {
     name: values.name.trim(),
 
-    symbol: emptyStringToNull(values.symbol),
-
     exchange: emptyStringToNull(values.exchange),
 
     isin: emptyStringToNull(values.isin),
