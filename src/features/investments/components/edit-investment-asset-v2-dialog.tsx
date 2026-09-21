@@ -138,6 +138,32 @@ export default function EditInvestmentAssetV2Dialog({
 
   const errors = form.formState.errors;
 
+  const instrumentType = asset?.instrumentType ?? null;
+
+  const showExchange =
+    instrumentType === "CRYPTO_ASSET" ||
+    instrumentType === "COMMON_STOCK" ||
+    instrumentType === "ETF" ||
+    instrumentType === "BOND";
+
+  const showIsin =
+    instrumentType === "COMMON_STOCK" ||
+    instrumentType === "ETF" ||
+    instrumentType === "BOND" ||
+    instrumentType === "OPEN_END_FUND" ||
+    instrumentType === "INDEX_FUND";
+
+  const showIssuer =
+    instrumentType === "COMMON_STOCK" ||
+    instrumentType === "ETF" ||
+    instrumentType === "DEPOSIT" ||
+    instrumentType === "BOND" ||
+    instrumentType === "OPEN_END_FUND" ||
+    instrumentType === "INDEX_FUND";
+
+  const showUnderlyingIndex =
+    instrumentType === "ETF" || instrumentType === "INDEX_FUND";
+
   return (
     <FormDialogShell
       open={open}
@@ -209,91 +235,105 @@ export default function EditInvestmentAssetV2Dialog({
           ) : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {showExchange || showIsin || showIssuer ? (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {showExchange ? (
+              <div className="space-y-2">
+                <label
+                  htmlFor="edit-investment-asset-exchange"
+                  className="text-sm font-semibold text-slate-700"
+                >
+                  Exchange
+                </label>
+
+                <Input
+                  id="edit-investment-asset-exchange"
+                  {...form.register("exchange")}
+                  placeholder="NASDAQ, NYSE, Coinbase..."
+                />
+
+                {errors.exchange ? (
+                  <p className="text-xs font-medium text-red-600">
+                    {errors.exchange.message}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {showIsin ? (
+              <div className="space-y-2">
+                <label
+                  htmlFor="edit-investment-asset-isin"
+                  className="text-sm font-semibold text-slate-700"
+                >
+                  ISIN
+                </label>
+
+                <Input
+                  id="edit-investment-asset-isin"
+                  {...form.register("isin")}
+                  placeholder="Optional"
+                />
+
+                {errors.isin ? (
+                  <p className="text-xs font-medium text-red-600">
+                    {errors.isin.message}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            {showIssuer ? (
+              <div className="space-y-2">
+                <label
+                  htmlFor="edit-investment-asset-issuer"
+                  className="text-sm font-semibold text-slate-700"
+                >
+                  Issuer
+                </label>
+
+                <Input
+                  id="edit-investment-asset-issuer"
+                  {...form.register("issuer")}
+                  placeholder={
+                    instrumentType === "DEPOSIT"
+                      ? "Bank or financial institution"
+                      : "Optional"
+                  }
+                />
+
+                {errors.issuer ? (
+                  <p className="text-xs font-medium text-red-600">
+                    {errors.issuer.message}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showUnderlyingIndex ? (
           <div className="space-y-2">
             <label
-              htmlFor="edit-investment-asset-exchange"
+              htmlFor="edit-investment-asset-underlying-index"
               className="text-sm font-semibold text-slate-700"
             >
-              Exchange
+              Underlying Index
             </label>
 
             <Input
-              id="edit-investment-asset-exchange"
-              {...form.register("exchange")}
-              placeholder="NASDAQ, NYSE, Coinbase..."
+              id="edit-investment-asset-underlying-index"
+              {...form.register("underlyingIndex")}
+              placeholder="S&P 500, Nasdaq-100..."
             />
 
-            {errors.exchange ? (
+            {errors.underlyingIndex ? (
               <p className="text-xs font-medium text-red-600">
-                {errors.exchange.message}
+                {errors.underlyingIndex.message}
               </p>
             ) : null}
           </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="edit-investment-asset-isin"
-              className="text-sm font-semibold text-slate-700"
-            >
-              ISIN
-            </label>
-
-            <Input
-              id="edit-investment-asset-isin"
-              {...form.register("isin")}
-              placeholder="Optional"
-            />
-
-            {errors.isin ? (
-              <p className="text-xs font-medium text-red-600">
-                {errors.isin.message}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="edit-investment-asset-issuer"
-              className="text-sm font-semibold text-slate-700"
-            >
-              Issuer
-            </label>
-
-            <Input
-              id="edit-investment-asset-issuer"
-              {...form.register("issuer")}
-              placeholder="Optional"
-            />
-
-            {errors.issuer ? (
-              <p className="text-xs font-medium text-red-600">
-                {errors.issuer.message}
-              </p>
-            ) : null}
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <label
-            htmlFor="edit-investment-asset-underlying-index"
-            className="text-sm font-semibold text-slate-700"
-          >
-            Underlying Index
-          </label>
-
-          <Input
-            id="edit-investment-asset-underlying-index"
-            {...form.register("underlyingIndex")}
-            placeholder="S&P 500, Nasdaq-100..."
-          />
-
-          {errors.underlyingIndex ? (
-            <p className="text-xs font-medium text-red-600">
-              {errors.underlyingIndex.message}
-            </p>
-          ) : null}
-        </div>
+        ) : null}
 
         <div className="space-y-2">
           <label
