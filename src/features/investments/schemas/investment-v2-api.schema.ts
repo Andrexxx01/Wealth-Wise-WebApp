@@ -283,3 +283,79 @@ export const createInvestmentTransactionV2Schema = z
 export type CreateInvestmentTransactionV2Input = z.infer<
   typeof createInvestmentTransactionV2Schema
 >;
+
+export const createInvestmentEventV2Schema = z
+  .object({
+    type: z.enum([
+      "DIVIDEND",
+      "INTEREST",
+      "COUPON",
+      "DISTRIBUTION",
+      "MATURITY",
+      "PRINCIPAL_RETURN",
+    ]),
+
+    grossAmount: z.coerce.number().finite().positive().optional().nullable(),
+
+    feeAmount: z.coerce.number().finite().nonnegative().default(0),
+
+    taxAmount: z.coerce.number().finite().nonnegative().default(0),
+
+    currencyCode: currencyCodeSchema.optional().nullable(),
+
+    occurredAt: z.string().datetime(),
+
+    notes: z.string().trim().max(500).optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    const isCashEvent = data.type === "INTEREST" || data.type === "COUPON";
+
+    if (
+      isCashEvent &&
+      (data.grossAmount === null || data.grossAmount === undefined)
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["grossAmount"],
+        message: "Gross amount is required for cash income events.",
+      });
+    }
+
+    if (isCashEvent && !data.currencyCode) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["currencyCode"],
+        message: "Currency code is required for cash income events.",
+      });
+    }
+
+    if (
+      data.type === "MATURITY" &&
+      data.grossAmount !== null &&
+      data.grossAmount !== undefined
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["grossAmount"],
+        message:
+          "Maturity is a lifecycle marker and must not contain a gross amount.",
+      });
+    }
+
+    if (
+      data.type === "MATURITY" &&
+      data.currencyCode !== null &&
+      data.currencyCode !== undefined
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["currencyCode"],
+        message:
+          "Maturity is a lifecycle marker and must not contain a currency.",
+      });
+    }
+  });
+
+export type CreateInvestmentEventV2Input = z.infer<
+  typeof createInvestmentEventV2Schema
+>;
