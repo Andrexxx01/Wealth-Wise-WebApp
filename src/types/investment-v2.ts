@@ -180,6 +180,18 @@ export interface InvestmentValuationItem extends InvestmentHoldingItem {
   unrealizedGainLoss: number | null;
   unrealizedReturnPercentage: number | null;
 
+  eventIncomeCurrencyCode: string | null;
+
+  grossRealizedIncome: number;
+  eventFees: number;
+  eventTax: number;
+  netRealizedIncome: number;
+
+  cashIncomeEventCount: number;
+
+  maturityRecorded: boolean;
+  maturityOccurredAt: string | null;
+
   totalGainLoss: number | null;
 
   marketSource: MarketPriceItem["source"] | null;
@@ -201,6 +213,15 @@ export interface InvestmentPortfolioSummaryItem {
   totalRealizedGainLoss: number;
   totalUnrealizedGainLoss: number;
   totalGainLoss: number;
+
+  totalGrossRealizedIncome: number;
+
+  totalEventFeesInDisplayCurrency: number;
+  totalEventTaxInDisplayCurrency: number;
+
+  totalNetRealizedIncome: number;
+
+  totalInvestmentReturn: number;
 
   unrealizedReturnPercentage: number | null;
 

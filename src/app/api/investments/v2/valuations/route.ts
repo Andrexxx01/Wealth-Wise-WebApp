@@ -13,6 +13,7 @@ import { prisma } from "@/lib/prisma";
 import type { MarketPriceItem } from "@/types/market-price";
 import type { UserCurrency } from "@/types/user-subscription";
 import { calculateInvestmentPortfolioSummary } from "@/features/investments/lib/investment-portfolio-summary";
+import { calculateInvestmentEventSummary } from "@/features/investments/lib/investment-event-engine";
 
 export const runtime = "nodejs";
 
@@ -90,6 +91,10 @@ export async function GET() {
 
     const holdings = serializedAssets.map(calculateInvestmentHolding);
 
+    const eventSummaries = serializedAssets.map((asset) =>
+      calculateInvestmentEventSummary(asset.events),
+    );
+
     // =====================================================
     // 4. CARI CRYPTO SYMBOL YANG MEMBUTUHKAN MARKET PRICE
     // =====================================================
@@ -138,7 +143,7 @@ export async function GET() {
     // 6. VALUATION
     // =====================================================
 
-    const valuations = holdings.map((holding) => {
+    const valuations = holdings.map((holding, index) => {
       const symbol = holding.symbol?.trim().toUpperCase() ?? null;
 
       const marketPrice =
@@ -148,7 +153,7 @@ export async function GET() {
 
       return calculateInvestmentValuation({
         holding,
-
+        eventSummary: eventSummaries[index],
         marketPrice,
 
         displayCurrency,

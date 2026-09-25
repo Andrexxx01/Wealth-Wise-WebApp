@@ -8,10 +8,11 @@ import type {
 import type { MarketPriceItem } from "@/types/market-price";
 
 import type { UserCurrency } from "@/types/user-subscription";
+import type { InvestmentEventSummary } from "@/features/investments/lib/investment-event-engine";
 
 type CalculateInvestmentValuationInput = {
   holding: InvestmentHoldingItem;
-
+  eventSummary: InvestmentEventSummary;
   marketPrice: MarketPriceItem | null;
 
   displayCurrency: UserCurrency;
@@ -25,8 +26,31 @@ function isUserCurrency(currencyCode: string): currencyCode is UserCurrency {
   return currencyCode === "USD" || currencyCode === "IDR";
 }
 
+function getInvestmentEventValuationFields(
+  eventSummary: InvestmentEventSummary,
+) {
+  return {
+    eventIncomeCurrencyCode: eventSummary.incomeCurrencyCode,
+
+    grossRealizedIncome: eventSummary.totalGrossIncome,
+
+    eventFees: eventSummary.totalFees,
+
+    eventTax: eventSummary.totalTax,
+
+    netRealizedIncome: eventSummary.netRealizedIncome,
+
+    cashIncomeEventCount: eventSummary.cashIncomeEventCount,
+
+    maturityRecorded: eventSummary.maturityRecorded,
+
+    maturityOccurredAt: eventSummary.maturityOccurredAt,
+  };
+}
+
 function createUnavailableValuation(
   holding: InvestmentHoldingItem,
+  eventSummary: InvestmentEventSummary,
   displayCurrency: UserCurrency,
   status:
     | "PRICE_UNAVAILABLE"
@@ -35,7 +59,7 @@ function createUnavailableValuation(
 ): InvestmentValuationItem {
   return {
     ...holding,
-
+    ...getInvestmentEventValuationFields(eventSummary),
     displayCurrency,
 
     marketPrice: null,
@@ -60,6 +84,7 @@ function createUnavailableValuation(
 
 export function calculateInvestmentValuation({
   holding,
+  eventSummary,
   marketPrice,
   displayCurrency,
   usdToIdrRate,
@@ -71,6 +96,7 @@ export function calculateInvestmentValuation({
   ) {
     return createUnavailableValuation(
       holding,
+      eventSummary,
       displayCurrency,
       "UNSUPPORTED_VALUATION",
     );
@@ -84,16 +110,18 @@ export function calculateInvestmentValuation({
   ) {
     return createUnavailableValuation(
       holding,
+      eventSummary,
       displayCurrency,
-      "UNSUPPORTED_CURRENCY",
+      "UNSUPPORTED_VALUATION",
     );
   }
 
   if (marketPrice === null) {
     return createUnavailableValuation(
       holding,
+      eventSummary,
       displayCurrency,
-      "PRICE_UNAVAILABLE",
+      "UNSUPPORTED_VALUATION",
     );
   }
 
@@ -137,7 +165,7 @@ export function calculateInvestmentValuation({
 
   return {
     ...holding,
-
+    ...getInvestmentEventValuationFields(eventSummary),
     displayCurrency,
 
     marketPrice: marketPrice.price,

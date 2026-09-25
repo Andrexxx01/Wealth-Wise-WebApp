@@ -76,7 +76,13 @@ export function calculateInvestmentPortfolioSummary({
   let totalRealizedGainLoss = 0;
 
   let totalUnrealizedGainLoss = 0;
+  let totalGrossRealizedIncome = 0;
 
+  let totalEventFeesInDisplayCurrency = 0;
+
+  let totalEventTaxInDisplayCurrency = 0;
+
+  let totalNetRealizedIncome = 0;
   let totalFeesInDisplayCurrency = 0;
 
   let openAssets = 0;
@@ -138,6 +144,74 @@ export function calculateInvestmentPortfolioSummary({
 
     if (convertedRealizedGainLoss !== null) {
       totalRealizedGainLoss += convertedRealizedGainLoss;
+    }
+
+    // ===================================================
+    // REALIZED INVESTMENT INCOME
+    // ===================================================
+    //
+    // INTEREST / COUPON / DIVIDEND / DISTRIBUTION
+    // merupakan investment income, bukan capital gain.
+    //
+    // Nilai ini tidak bergantung pada current market price.
+    // ===================================================
+
+    if (valuation.cashIncomeEventCount > 0) {
+      const convertedGrossIncome = convertHoldingAmount({
+        amount: valuation.grossRealizedIncome,
+
+        transactionCurrencyCode: valuation.eventIncomeCurrencyCode,
+
+        displayCurrency,
+
+        usdToIdrRate,
+      });
+
+      const convertedEventFees = convertHoldingAmount({
+        amount: valuation.eventFees,
+
+        transactionCurrencyCode: valuation.eventIncomeCurrencyCode,
+
+        displayCurrency,
+
+        usdToIdrRate,
+      });
+
+      const convertedEventTax = convertHoldingAmount({
+        amount: valuation.eventTax,
+
+        transactionCurrencyCode: valuation.eventIncomeCurrencyCode,
+
+        displayCurrency,
+
+        usdToIdrRate,
+      });
+
+      const convertedNetIncome = convertHoldingAmount({
+        amount: valuation.netRealizedIncome,
+
+        transactionCurrencyCode: valuation.eventIncomeCurrencyCode,
+
+        displayCurrency,
+
+        usdToIdrRate,
+      });
+
+      if (convertedGrossIncome !== null) {
+        totalGrossRealizedIncome += convertedGrossIncome;
+      }
+
+      if (convertedEventFees !== null) {
+        totalEventFeesInDisplayCurrency += convertedEventFees;
+      }
+
+      if (convertedEventTax !== null) {
+        totalEventTaxInDisplayCurrency += convertedEventTax;
+      }
+
+      if (convertedNetIncome !== null) {
+        totalNetRealizedIncome += convertedNetIncome;
+      }
     }
 
     // ===================================================
@@ -210,6 +284,8 @@ export function calculateInvestmentPortfolioSummary({
    */
   const totalGainLoss = totalRealizedGainLoss + totalUnrealizedGainLoss;
 
+  const totalInvestmentReturn = totalGainLoss + totalNetRealizedIncome;
+
   return {
     displayCurrency,
 
@@ -228,6 +304,16 @@ export function calculateInvestmentPortfolioSummary({
     totalUnrealizedGainLoss,
 
     totalGainLoss,
+
+    totalGrossRealizedIncome,
+
+    totalEventFeesInDisplayCurrency,
+
+    totalEventTaxInDisplayCurrency,
+
+    totalNetRealizedIncome,
+
+    totalInvestmentReturn,
 
     unrealizedReturnPercentage,
 
