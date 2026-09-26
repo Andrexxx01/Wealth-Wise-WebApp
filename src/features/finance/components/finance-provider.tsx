@@ -30,6 +30,7 @@ import type { LoanItem } from "@/types/loan";
 import type {
   CreateInvestmentAssetV2Payload,
   CreateInvestmentTransactionV2Payload,
+  CreateInvestmentEventV2Payload,
   InvestmentContributionV2Item,
   InvestmentRecentTransactionV2Item,
   InvestmentValuationsResponse,
@@ -53,6 +54,7 @@ import {
 import {
   createInvestmentAssetV2 as createInvestmentAssetV2Api,
   createInvestmentTransactionV2 as createInvestmentTransactionV2Api,
+  createInvestmentEventV2Api,
   deleteInvestmentTransactionV2 as deleteInvestmentTransactionV2Api,
   getInvestmentContributionsV2,
   getInvestmentRecentTransactionsV2,
@@ -583,6 +585,19 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
     await refreshAllInvestmentV2Data();
   }
 
+  async function addInvestmentEventV2(
+    assetId: string,
+    payload: CreateInvestmentEventV2Payload,
+  ) {
+    clearInvestmentPortfolioV2RetryTimeout();
+
+    investmentPortfolioV2RetryCountRef.current = 0;
+
+    await createInvestmentEventV2Api(assetId, payload);
+
+    await refreshAllInvestmentV2Data();
+  }
+
   // =====================================================
   // UPDATE INVESTMENT TRANSACTION V2
   // =====================================================
@@ -720,6 +735,7 @@ export default function FinanceProvider({ children }: FinanceProviderProps) {
 
     createInvestmentAsset,
     addInvestmentTransaction,
+    addInvestmentEventV2,
 
     updateInvestmentTransactionV2,
     deleteInvestmentTransactionV2,

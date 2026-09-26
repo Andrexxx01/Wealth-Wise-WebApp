@@ -363,3 +363,18 @@ export type UpdateInvestmentAssetV2Payload = {
 
   notes?: string | null;
 };
+
+export type CreateInvestmentEventV2Payload = {
+  type: InvestmentEventType;
+
+  grossAmount: number | null;
+
+  feeAmount: number;
+  taxAmount: number;
+
+  currencyCode: string | null;
+
+  occurredAt: string;
+
+  notes: string | null;
+};

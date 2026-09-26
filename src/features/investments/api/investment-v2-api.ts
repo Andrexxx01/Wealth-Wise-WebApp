@@ -7,6 +7,8 @@ import type {
   InvestmentValuationsResponse,
   InvestmentContributionsV2Response,
   UpdateInvestmentAssetV2Payload,
+  CreateInvestmentEventV2Payload,
+  InvestmentEventItem,
 } from "@/types/investment-v2";
 
 type ApiErrorResponse = {
@@ -185,6 +187,37 @@ export async function createInvestmentTransactionV2(
   };
 
   return result.data;
+}
+
+export async function createInvestmentEventV2Api(
+  assetId: string,
+  payload: CreateInvestmentEventV2Payload,
+): Promise<InvestmentEventItem> {
+  const response = await fetch(
+    `/api/investments/v2/${encodeURIComponent(assetId)}/events`,
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify(payload),
+    },
+  );
+
+  if (!response.ok) {
+    return throwInvestmentV2ApiError(
+      response,
+      "Failed to create investment event.",
+    );
+  }
+
+  const responseBody = (await response.json()) as {
+    data: InvestmentEventItem;
+  };
+
+  return responseBody.data;
 }
 
 export async function getInvestmentContributionsV2(): Promise<InvestmentContributionsV2Response> {
