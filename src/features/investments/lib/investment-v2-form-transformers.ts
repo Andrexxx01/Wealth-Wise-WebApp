@@ -2,12 +2,14 @@ import type {
   CreateInvestmentAssetV2Payload,
   CreateInvestmentTransactionV2Payload,
   UpdateInvestmentAssetV2Payload,
+  CreateInvestmentEventV2Payload,
 } from "@/types/investment-v2";
 
 import type {
   CreateInvestmentAssetV2FormValues,
   CreateInvestmentTransactionV2FormValues,
   EditInvestmentAssetV2FormValues,
+  CreateInvestmentEventV2FormValues,
 } from "@/types/investment-v2-form";
 
 function normalizeOptionalText(value: string) {
@@ -339,6 +341,30 @@ export function transformInvestmentTransactionV2FormValues(
     currencyCode: normalizeRequiredUppercaseText(values.currencyCode),
 
     transactedAt: dateInputToIsoDateTime(values.transactedAt),
+
+    notes: normalizeOptionalText(values.notes),
+  };
+}
+
+export function transformInvestmentEventV2FormValues(
+  values: CreateInvestmentEventV2FormValues,
+): CreateInvestmentEventV2Payload {
+  const isCashEvent = values.type === "INTEREST" || values.type === "COUPON";
+
+  return {
+    type: values.type,
+
+    grossAmount: isCashEvent ? toNumber(values.grossAmount) : null,
+
+    feeAmount: isCashEvent ? toFeeNumber(values.feeAmount) : 0,
+
+    taxAmount: isCashEvent ? toFeeNumber(values.taxAmount) : 0,
+
+    currencyCode: isCashEvent
+      ? normalizeRequiredUppercaseText(values.currencyCode)
+      : null,
+
+    occurredAt: dateInputToIsoDateTime(values.occurredAt),
 
     notes: normalizeOptionalText(values.notes),
   };

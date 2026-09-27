@@ -73,3 +73,19 @@ export type EditInvestmentAssetV2FormValues = {
 
   notes: string;
 };
+
+export type InvestmentEventV2FormType = "INTEREST" | "COUPON" | "MATURITY";
+
+export type CreateInvestmentEventV2FormValues = {
+  type: InvestmentEventV2FormType;
+
+  grossAmount: string;
+  feeAmount: string;
+  taxAmount: string;
+
+  currencyCode: string;
+
+  occurredAt: string;
+
+  notes: string;
+};

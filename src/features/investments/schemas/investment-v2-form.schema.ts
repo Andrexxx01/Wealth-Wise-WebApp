@@ -543,3 +543,89 @@ export const editInvestmentAssetV2FormSchema = z.object({
 
   notes: z.string().trim().max(500, "Notes must be 500 characters or fewer."),
 });
+
+export const createInvestmentEventV2FormSchema = z
+  .object({
+    type: z.enum(["INTEREST", "COUPON", "MATURITY"]),
+
+    grossAmount: z.string(),
+
+    feeAmount: z.string(),
+
+    taxAmount: z.string(),
+
+    currencyCode: z.string(),
+
+    occurredAt: z.string().min(1, "Event date is required."),
+
+    notes: z.string().trim().max(500, "Notes must be 500 characters or fewer."),
+  })
+  .superRefine((data, ctx) => {
+    const isCashEvent = data.type === "INTEREST" || data.type === "COUPON";
+
+    if (!isCashEvent) {
+      return;
+    }
+
+    // ===============================================
+    // GROSS AMOUNT
+    // ===============================================
+
+    const grossAmount = Number(data.grossAmount);
+
+    if (
+      data.grossAmount.trim() === "" ||
+      !Number.isFinite(grossAmount) ||
+      grossAmount <= 0
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["grossAmount"],
+        message: "Gross amount must be greater than 0.",
+      });
+    }
+
+    // ===============================================
+    // FEE
+    // ===============================================
+
+    if (data.feeAmount.trim() !== "") {
+      const feeAmount = Number(data.feeAmount);
+
+      if (!Number.isFinite(feeAmount) || feeAmount < 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["feeAmount"],
+          message: "Fee amount cannot be negative.",
+        });
+      }
+    }
+
+    // ===============================================
+    // TAX
+    // ===============================================
+
+    if (data.taxAmount.trim() !== "") {
+      const taxAmount = Number(data.taxAmount);
+
+      if (!Number.isFinite(taxAmount) || taxAmount < 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["taxAmount"],
+          message: "Tax amount cannot be negative.",
+        });
+      }
+    }
+
+    // ===============================================
+    // CURRENCY
+    // ===============================================
+
+    if (data.currencyCode.trim().length !== 3) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["currencyCode"],
+        message: "Currency code must contain exactly 3 characters.",
+      });
+    }
+  });
