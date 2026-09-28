@@ -37,6 +37,7 @@ import type {
 } from "@/types/investment-v2";
 import { formatInvestmentV2Category } from "@/lib/finance-labels";
 import EditInvestmentAssetV2Dialog from "@/features/investments/components/edit-investment-asset-v2-dialog";
+import AddInvestmentEventV2Dialog from "@/features/investments/components/add-investment-event-v2-dialog";
 
 function formatInvestmentTransactionType(
   type: "BUY" | "SELL" | "OPEN" | "CLOSE",
@@ -128,6 +129,12 @@ function getDeleteInvestmentAssetErrorMessage(error: unknown) {
 
 export default function InvestmentsPageClient() {
   const [isAddInvestmentOpen, setIsAddInvestmentOpen] = useState(false);
+
+  const [selectedEventAsset, setSelectedEventAsset] =
+    useState<InvestmentValuationItem | null>(null);
+
+  const [isAddInvestmentEventOpen, setIsAddInvestmentEventOpen] =
+    useState(false);
 
   const {
     selectedRecord: selectedTransaction,
@@ -257,6 +264,22 @@ export default function InvestmentsPageClient() {
       console.error("Failed to delete investment asset:", error);
 
       setAssetActionError(getDeleteInvestmentAssetErrorMessage(error));
+    }
+  }
+
+  function handleOpenInvestmentEvent(asset: InvestmentValuationItem) {
+    setAssetActionError(null);
+
+    setSelectedEventAsset(asset);
+
+    setIsAddInvestmentEventOpen(true);
+  }
+
+  function handleInvestmentEventOpenChange(open: boolean) {
+    setIsAddInvestmentEventOpen(open);
+
+    if (!open) {
+      setSelectedEventAsset(null);
     }
   }
 
@@ -531,6 +554,10 @@ export default function InvestmentsPageClient() {
                       ? `${asset.name} (${asset.symbol})`
                       : asset.name;
 
+                    const supportsInvestmentEvents =
+                      asset.instrumentType === "DEPOSIT" ||
+                      asset.instrumentType === "BOND";
+
                     const categoryLabel = formatInvestmentV2Category(
                       asset.category,
                     );
@@ -672,6 +699,19 @@ export default function InvestmentsPageClient() {
                           </div>
                         ) : null}
                         <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-4">
+                          {supportsInvestmentEvents ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                handleOpenInvestmentEvent(asset);
+                              }}
+                              className="h-10 rounded-xl bg-white px-4 font-semibold"
+                            >
+                              Record Event
+                            </Button>
+                          ) : null}
+
                           <Button
                             type="button"
                             variant="outline"
@@ -835,6 +875,12 @@ export default function InvestmentsPageClient() {
       <AddInvestmentV2Dialog
         open={isAddInvestmentOpen}
         onOpenChange={setIsAddInvestmentOpen}
+      />
+
+      <AddInvestmentEventV2Dialog
+        open={isAddInvestmentEventOpen}
+        onOpenChange={handleInvestmentEventOpenChange}
+        asset={selectedEventAsset}
       />
 
       <EditInvestmentAssetV2Dialog
