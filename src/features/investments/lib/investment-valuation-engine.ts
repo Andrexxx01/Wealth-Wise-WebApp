@@ -8,11 +8,14 @@ import type {
 import type { MarketPriceItem } from "@/types/market-price";
 
 import type { UserCurrency } from "@/types/user-subscription";
+
 import type { InvestmentEventSummary } from "@/features/investments/lib/investment-event-engine";
 
 type CalculateInvestmentValuationInput = {
   holding: InvestmentHoldingItem;
+
   eventSummary: InvestmentEventSummary;
+
   marketPrice: MarketPriceItem | null;
 
   displayCurrency: UserCurrency;
@@ -48,18 +51,34 @@ function getInvestmentEventValuationFields(
   };
 }
 
-function createUnavailableValuation(
-  holding: InvestmentHoldingItem,
-  eventSummary: InvestmentEventSummary,
-  displayCurrency: UserCurrency,
+function createUnavailableValuation({
+  holding,
+  eventSummary,
+  displayCurrency,
+  status,
+  costBasisInDisplayCurrency,
+  realizedGainLossInDisplayCurrency,
+}: {
+  holding: InvestmentHoldingItem;
+
+  eventSummary: InvestmentEventSummary;
+
+  displayCurrency: UserCurrency;
+
   status:
     | "PRICE_UNAVAILABLE"
     | "UNSUPPORTED_VALUATION"
-    | "UNSUPPORTED_CURRENCY",
-): InvestmentValuationItem {
+    | "UNSUPPORTED_CURRENCY";
+
+  costBasisInDisplayCurrency: number | null;
+
+  realizedGainLossInDisplayCurrency: number | null;
+}): InvestmentValuationItem {
   return {
     ...holding,
+
     ...getInvestmentEventValuationFields(eventSummary),
+
     displayCurrency,
 
     marketPrice: null,
@@ -67,12 +86,27 @@ function createUnavailableValuation(
 
     marketValue: null,
 
-    costBasisInDisplayCurrency: null,
+    /*
+     * Historical metrics tetap dapat diketahui
+     * meskipun current market valuation belum
+     * tersedia.
+     */
+    costBasisInDisplayCurrency,
 
-    realizedGainLossInDisplayCurrency: null,
+    realizedGainLossInDisplayCurrency,
+
+    /*
+     * Unrealized metrics membutuhkan current
+     * valuation, sehingga tetap null.
+     */
     unrealizedGainLoss: null,
     unrealizedReturnPercentage: null,
 
+    /*
+     * Total gain/loss tidak boleh dibuat hanya
+     * dari realized gain/loss karena unrealized
+     * component belum diketahui.
+     */
     totalGainLoss: null,
 
     marketSource: null,
@@ -90,17 +124,17 @@ export function calculateInvestmentValuation({
   usdToIdrRate,
   marketPriceAsOf,
 }: CalculateInvestmentValuationInput): InvestmentValuationItem {
-  if (
-    holding.positionKind !== "QUANTITY" ||
-    holding.valuationType !== "MARKET_PRICE"
-  ) {
-    return createUnavailableValuation(
-      holding,
-      eventSummary,
-      displayCurrency,
-      "UNSUPPORTED_VALUATION",
-    );
+  // =====================================================
+  // FX VALIDATION
+  // =====================================================
+
+  if (!Number.isFinite(usdToIdrRate) || usdToIdrRate <= 0) {
+    throw new Error("USD to IDR exchange rate must be greater than 0.");
   }
+
+  // =====================================================
+  // TRANSACTION CURRENCY
+  // =====================================================
 
   const transactionCurrencyCode = holding.transactionCurrencyCode;
 
@@ -108,37 +142,30 @@ export function calculateInvestmentValuation({
     transactionCurrencyCode === null ||
     !isUserCurrency(transactionCurrencyCode)
   ) {
-    return createUnavailableValuation(
+    return createUnavailableValuation({
       holding,
+
       eventSummary,
+
       displayCurrency,
-      "UNSUPPORTED_VALUATION",
-    );
+
+      status: "UNSUPPORTED_CURRENCY",
+
+      costBasisInDisplayCurrency: null,
+
+      realizedGainLossInDisplayCurrency: null,
+    });
   }
 
-  if (marketPrice === null) {
-    return createUnavailableValuation(
-      holding,
-      eventSummary,
-      displayCurrency,
-      "UNSUPPORTED_VALUATION",
-    );
-  }
-
-  if (usdToIdrRate <= 0) {
-    throw new Error("USD to IDR exchange rate must be greater than 0.");
-  }
-
-  const quantity = holding.quantity ?? 0;
-
-  const marketValueInMarketCurrency = quantity * marketPrice.price;
-
-  const marketValue = convertCurrency(
-    marketValueInMarketCurrency,
-    marketPrice.currency,
-    displayCurrency,
-    usdToIdrRate,
-  );
+  // =====================================================
+  // HISTORICAL METRICS
+  // =====================================================
+  //
+  // Cost basis dan realized gain/loss berasal dari
+  // transaction history.
+  //
+  // Mereka TIDAK bergantung pada current market price.
+  // =====================================================
 
   const costBasisInDisplayCurrency = convertCurrency(
     holding.remainingCostBasis,
@@ -154,6 +181,68 @@ export function calculateInvestmentValuation({
     usdToIdrRate,
   );
 
+  // =====================================================
+  // VALUATION METHOD SUPPORT
+  // =====================================================
+
+  if (
+    holding.positionKind !== "QUANTITY" ||
+    holding.valuationType !== "MARKET_PRICE"
+  ) {
+    return createUnavailableValuation({
+      holding,
+
+      eventSummary,
+
+      displayCurrency,
+
+      status: "UNSUPPORTED_VALUATION",
+
+      costBasisInDisplayCurrency,
+
+      realizedGainLossInDisplayCurrency,
+    });
+  }
+
+  // =====================================================
+  // MARKET PRICE AVAILABILITY
+  // =====================================================
+
+  if (marketPrice === null) {
+    return createUnavailableValuation({
+      holding,
+
+      eventSummary,
+
+      displayCurrency,
+
+      status: "PRICE_UNAVAILABLE",
+
+      costBasisInDisplayCurrency,
+
+      realizedGainLossInDisplayCurrency,
+    });
+  }
+
+  // =====================================================
+  // MARKET VALUE
+  // =====================================================
+
+  const quantity = holding.quantity ?? 0;
+
+  const marketValueInMarketCurrency = quantity * marketPrice.price;
+
+  const marketValue = convertCurrency(
+    marketValueInMarketCurrency,
+    marketPrice.currency,
+    displayCurrency,
+    usdToIdrRate,
+  );
+
+  // =====================================================
+  // UNREALIZED GAIN / LOSS
+  // =====================================================
+
   const unrealizedGainLoss = marketValue - costBasisInDisplayCurrency;
 
   const unrealizedReturnPercentage =
@@ -161,14 +250,21 @@ export function calculateInvestmentValuation({
       ? (unrealizedGainLoss / costBasisInDisplayCurrency) * 100
       : null;
 
+  // =====================================================
+  // TOTAL CAPITAL GAIN / LOSS
+  // =====================================================
+
   const totalGainLoss = realizedGainLossInDisplayCurrency + unrealizedGainLoss;
 
   return {
     ...holding,
+
     ...getInvestmentEventValuationFields(eventSummary),
+
     displayCurrency,
 
     marketPrice: marketPrice.price,
+
     marketPriceCurrencyCode: marketPrice.currency,
 
     marketValue,
@@ -176,12 +272,15 @@ export function calculateInvestmentValuation({
     costBasisInDisplayCurrency,
 
     realizedGainLossInDisplayCurrency,
+
     unrealizedGainLoss,
+
     unrealizedReturnPercentage,
 
     totalGainLoss,
 
     marketSource: marketPrice.source,
+
     marketPriceAsOf,
 
     valuationStatus: "VALUED",
