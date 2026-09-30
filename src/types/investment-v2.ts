@@ -131,7 +131,10 @@ export interface InvestmentHoldingItem {
   isin: string | null;
   issuer: string | null;
   underlyingIndex: string | null;
-
+  annualInterestRate: number | null;
+  couponRate: number | null;
+  faceValue: number | null;
+  maturityDate: string | null;
   notes: string | null;
 
   category: InvestmentAssetCategory;

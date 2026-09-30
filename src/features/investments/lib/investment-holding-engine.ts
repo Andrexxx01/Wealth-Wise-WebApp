@@ -209,7 +209,13 @@ function calculateQuantityHolding(
     isin: asset.isin,
     issuer: asset.issuer,
     underlyingIndex: asset.underlyingIndex,
+    annualInterestRate: asset.annualInterestRate,
 
+    couponRate: asset.couponRate,
+
+    faceValue: asset.faceValue,
+
+    maturityDate: asset.maturityDate,
     notes: asset.notes,
 
     category: asset.category,
@@ -301,7 +307,13 @@ function calculatePrincipalHolding(
     isin: asset.isin,
     issuer: asset.issuer,
     underlyingIndex: asset.underlyingIndex,
+    annualInterestRate: asset.annualInterestRate,
 
+    couponRate: asset.couponRate,
+
+    faceValue: asset.faceValue,
+
+    maturityDate: asset.maturityDate,
     notes: asset.notes,
 
     category: asset.category,
