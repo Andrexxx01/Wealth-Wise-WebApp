@@ -14,7 +14,9 @@ export type DepositAccrualSummary = {
   dayCountBasis: 365;
 
   valuationStartAt: string | null;
+
   valuationEndAt: string;
+  accrualEndAt: string;
 
   principalBalanceAtValuation: number;
 
@@ -176,19 +178,31 @@ export function calculateDepositAccrual({
 
   const asOfTimestamp = requireValidDate(asOf, "deposit valuation date");
 
-  let valuationEndTimestamp = asOfTimestamp;
+  /*
+   * valuationEndTimestamp menentukan posisi
+   * investasi yang berlaku pada tanggal valuation.
+   *
+   * Transaction sampai asOf tetap harus diproses,
+   * termasuk CLOSE setelah maturity.
+   */
+  const valuationEndTimestamp = asOfTimestamp;
 
   /*
-   * Bunga tidak terus di-accrue melewati
-   * contractual maturity date.
+   * accrualEndTimestamp menentukan sampai kapan
+   * bunga boleh terus bertambah.
+   *
+   * Contractual maturity menghentikan accrual,
+   * tetapi tidak menghentikan pemrosesan transaksi.
    */
+  let accrualEndTimestamp = asOfTimestamp;
+
   if (asset.maturityDate !== null) {
     const maturityTimestamp = requireValidDate(
       asset.maturityDate,
       "deposit maturity date",
     );
 
-    valuationEndTimestamp = Math.min(valuationEndTimestamp, maturityTimestamp);
+    accrualEndTimestamp = Math.min(accrualEndTimestamp, maturityTimestamp);
   }
 
   // =====================================================
@@ -246,10 +260,15 @@ export function calculateDepositAccrual({
      * Jan 1 -> Mar 1
      * bunga dihitung dari 100 juta.
      */
-    if (previousTimestamp !== null) {
+    if (previousTimestamp !== null && previousTimestamp < accrualEndTimestamp) {
+      const accrualSegmentEnd = Math.min(
+        transactionTimestamp,
+        accrualEndTimestamp,
+      );
+
       const elapsedDays = calculateElapsedDays(
         previousTimestamp,
-        transactionTimestamp,
+        accrualSegmentEnd,
       );
 
       grossAccruedInterest += calculateSimpleInterest({
@@ -297,10 +316,10 @@ export function calculateDepositAccrual({
   // Setelah transaction terakhir hingga asOf/maturity.
   // =====================================================
 
-  if (previousTimestamp !== null && previousTimestamp < valuationEndTimestamp) {
+  if (previousTimestamp !== null && previousTimestamp < accrualEndTimestamp) {
     const elapsedDays = calculateElapsedDays(
       previousTimestamp,
-      valuationEndTimestamp,
+      accrualEndTimestamp,
     );
 
     grossAccruedInterest += calculateSimpleInterest({
@@ -368,6 +387,8 @@ export function calculateDepositAccrual({
     valuationStartAt,
 
     valuationEndAt: new Date(valuationEndTimestamp).toISOString(),
+
+    accrualEndAt: new Date(accrualEndTimestamp).toISOString(),
 
     principalBalanceAtValuation: principalBalance,
 
