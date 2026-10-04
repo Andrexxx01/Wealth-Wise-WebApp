@@ -118,7 +118,7 @@ export default function DashboardNavbar({
         <div className="flex items-center justify-between gap-4">
           <Link href="/dashboard" className="flex items-center gap-3">
             <Logo
-              href="/dashboard"
+              withLink={false}
               showText={false}
               iconClassName="h-11 w-11"
               wrapperClassName="shrink-0"
@@ -228,7 +228,6 @@ export default function DashboardNavbar({
                 <div className="border-t border-slate-200 pt-4">
                   <LogoutButton className="rounded-2xl px-4 py-3" />
                 </div>
-
               </div>
             </div>
           </div>
