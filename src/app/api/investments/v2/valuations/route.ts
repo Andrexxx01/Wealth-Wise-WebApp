@@ -14,6 +14,7 @@ import type { MarketPriceItem } from "@/types/market-price";
 import type { UserCurrency } from "@/types/user-subscription";
 import { calculateInvestmentPortfolioSummary } from "@/features/investments/lib/investment-portfolio-summary";
 import { calculateInvestmentEventSummary } from "@/features/investments/lib/investment-event-engine";
+import { calculateDepositAccrual } from "@/features/investments/lib/investment-deposit-accrual-engine";
 
 export const runtime = "nodejs";
 
@@ -139,6 +140,21 @@ export async function GET() {
 
     const marketPriceAsOf = new Date().toISOString();
 
+    const depositAccrualSummaries = serializedAssets.map((asset) => {
+      if (
+        asset.instrumentType !== "DEPOSIT" ||
+        asset.valuationType !== "ACCRUAL"
+      ) {
+        return null;
+      }
+
+      return calculateDepositAccrual({
+        asset,
+
+        asOf: marketPriceAsOf,
+      });
+    });
+
     // =====================================================
     // 6. VALUATION
     // =====================================================
@@ -153,7 +169,11 @@ export async function GET() {
 
       return calculateInvestmentValuation({
         holding,
+
         eventSummary: eventSummaries[index],
+
+        depositAccrualSummary: depositAccrualSummaries[index],
+
         marketPrice,
 
         displayCurrency,

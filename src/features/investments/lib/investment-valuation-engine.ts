@@ -10,12 +10,13 @@ import type { MarketPriceItem } from "@/types/market-price";
 import type { UserCurrency } from "@/types/user-subscription";
 
 import type { InvestmentEventSummary } from "@/features/investments/lib/investment-event-engine";
+import type { DepositAccrualSummary } from "@/features/investments/lib/investment-deposit-accrual-engine";
 
 type CalculateInvestmentValuationInput = {
   holding: InvestmentHoldingItem;
 
   eventSummary: InvestmentEventSummary;
-
+  depositAccrualSummary: DepositAccrualSummary | null;
   marketPrice: MarketPriceItem | null;
 
   displayCurrency: UserCurrency;
@@ -119,6 +120,7 @@ function createUnavailableValuation({
 export function calculateInvestmentValuation({
   holding,
   eventSummary,
+  depositAccrualSummary,
   marketPrice,
   displayCurrency,
   usdToIdrRate,
@@ -180,6 +182,82 @@ export function calculateInvestmentValuation({
     displayCurrency,
     usdToIdrRate,
   );
+
+  // =====================================================
+  // DEPOSIT ACCRUAL VALUATION
+  // =====================================================
+
+  if (
+    holding.instrumentType === "DEPOSIT" &&
+    holding.positionKind === "PRINCIPAL" &&
+    holding.valuationType === "ACCRUAL"
+  ) {
+    if (depositAccrualSummary === null) {
+      throw new Error(
+        `Deposit asset ${holding.assetId} is missing its accrual summary.`,
+      );
+    }
+
+    const marketValue = convertCurrency(
+      depositAccrualSummary.accruedValue,
+      transactionCurrencyCode,
+      displayCurrency,
+      usdToIdrRate,
+    );
+
+    /*
+     * Untuk deposito:
+     *
+     * market/accrued value
+     * =
+     * principal
+     * + bunga yang masih accrued dan belum dibayar.
+     *
+     * Cost basis tetap principal.
+     */
+    const unrealizedGainLoss = marketValue - costBasisInDisplayCurrency;
+
+    const unrealizedReturnPercentage =
+      costBasisInDisplayCurrency > 0
+        ? (unrealizedGainLoss / costBasisInDisplayCurrency) * 100
+        : null;
+
+    const totalGainLoss =
+      realizedGainLossInDisplayCurrency + unrealizedGainLoss;
+
+    return {
+      ...holding,
+
+      ...getInvestmentEventValuationFields(eventSummary),
+
+      displayCurrency,
+
+      /*
+       * Deposit tidak mempunyai quoted market price
+       * seperti crypto/saham.
+       */
+      marketPrice: null,
+      marketPriceCurrencyCode: null,
+
+      marketValue,
+
+      costBasisInDisplayCurrency,
+
+      realizedGainLossInDisplayCurrency,
+
+      unrealizedGainLoss,
+
+      unrealizedReturnPercentage,
+
+      totalGainLoss,
+
+      marketSource: null,
+
+      marketPriceAsOf,
+
+      valuationStatus: "VALUED",
+    };
+  }
 
   // =====================================================
   // VALUATION METHOD SUPPORT
