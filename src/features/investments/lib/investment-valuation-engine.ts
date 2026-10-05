@@ -52,9 +52,49 @@ function getInvestmentEventValuationFields(
   };
 }
 
+function getDepositAccrualValuationFields(
+  depositAccrualSummary: DepositAccrualSummary | null,
+) {
+  if (depositAccrualSummary === null) {
+    return {
+      depositAccrualStartAt: null,
+
+      depositAccrualEndAt: null,
+
+      depositGrossAccruedInterest: null,
+
+      depositRealizedGrossInterest: null,
+
+      depositUnpaidAccruedInterest: null,
+
+      depositAccruedValue: null,
+
+      depositRealizedInterestExceedsAccrual: null,
+    };
+  }
+
+  return {
+    depositAccrualStartAt: depositAccrualSummary.valuationStartAt,
+
+    depositAccrualEndAt: depositAccrualSummary.accrualEndAt,
+
+    depositGrossAccruedInterest: depositAccrualSummary.grossAccruedInterest,
+
+    depositRealizedGrossInterest: depositAccrualSummary.realizedGrossInterest,
+
+    depositUnpaidAccruedInterest: depositAccrualSummary.unpaidAccruedInterest,
+
+    depositAccruedValue: depositAccrualSummary.accruedValue,
+
+    depositRealizedInterestExceedsAccrual:
+      depositAccrualSummary.realizedInterestExceedsAccrual,
+  };
+}
+
 function createUnavailableValuation({
   holding,
   eventSummary,
+  depositAccrualSummary,
   displayCurrency,
   status,
   costBasisInDisplayCurrency,
@@ -63,6 +103,8 @@ function createUnavailableValuation({
   holding: InvestmentHoldingItem;
 
   eventSummary: InvestmentEventSummary;
+
+  depositAccrualSummary: DepositAccrualSummary | null;
 
   displayCurrency: UserCurrency;
 
@@ -79,7 +121,7 @@ function createUnavailableValuation({
     ...holding,
 
     ...getInvestmentEventValuationFields(eventSummary),
-
+    ...getDepositAccrualValuationFields(depositAccrualSummary),
     displayCurrency,
 
     marketPrice: null,
@@ -148,6 +190,8 @@ export function calculateInvestmentValuation({
       holding,
 
       eventSummary,
+
+      depositAccrualSummary,
 
       displayCurrency,
 
@@ -229,7 +273,7 @@ export function calculateInvestmentValuation({
       ...holding,
 
       ...getInvestmentEventValuationFields(eventSummary),
-
+      ...getDepositAccrualValuationFields(depositAccrualSummary),
       displayCurrency,
 
       /*
@@ -272,6 +316,8 @@ export function calculateInvestmentValuation({
 
       eventSummary,
 
+      depositAccrualSummary,
+
       displayCurrency,
 
       status: "UNSUPPORTED_VALUATION",
@@ -291,6 +337,8 @@ export function calculateInvestmentValuation({
       holding,
 
       eventSummary,
+
+      depositAccrualSummary,
 
       displayCurrency,
 
@@ -338,6 +386,8 @@ export function calculateInvestmentValuation({
     ...holding,
 
     ...getInvestmentEventValuationFields(eventSummary),
+
+    ...getDepositAccrualValuationFields(null),
 
     displayCurrency,
 

@@ -178,7 +178,18 @@ export interface InvestmentValuationItem extends InvestmentHoldingItem {
   marketValue: number | null;
 
   costBasisInDisplayCurrency: number | null;
+  depositAccrualStartAt: string | null;
+  depositAccrualEndAt: string | null;
 
+  depositGrossAccruedInterest: number | null;
+
+  depositRealizedGrossInterest: number | null;
+
+  depositUnpaidAccruedInterest: number | null;
+
+  depositAccruedValue: number | null;
+
+  depositRealizedInterestExceedsAccrual: boolean | null;
   realizedGainLossInDisplayCurrency: number | null;
   unrealizedGainLoss: number | null;
   unrealizedReturnPercentage: number | null;
