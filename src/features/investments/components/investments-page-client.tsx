@@ -614,6 +614,70 @@ export default function InvestmentsPageClient() {
                           : asset.unrealizedGainLoss < 0
                             ? "text-red-600"
                             : "text-slate-900";
+                    
+                    const isDeposit =
+                      asset.instrumentType === "DEPOSIT" &&
+                      asset.positionKind === "PRINCIPAL";
+
+                    const depositCurrency = asset.transactionCurrencyCode;
+
+                    const depositAccruedValue =
+                      isDeposit &&
+                      asset.depositAccruedValue !== null &&
+                      depositCurrency
+                        ? formatInvestmentTransactionAmount(
+                            asset.depositAccruedValue,
+                            depositCurrency,
+                          )
+                        : null;
+
+                    const depositGrossAccruedInterest =
+                      isDeposit &&
+                      asset.depositGrossAccruedInterest !== null &&
+                      depositCurrency
+                        ? formatInvestmentTransactionAmount(
+                            asset.depositGrossAccruedInterest,
+                            depositCurrency,
+                          )
+                        : null;
+
+                    const depositRealizedGrossInterest =
+                      isDeposit &&
+                      asset.depositRealizedGrossInterest !== null &&
+                      depositCurrency
+                        ? formatInvestmentTransactionAmount(
+                            asset.depositRealizedGrossInterest,
+                            depositCurrency,
+                          )
+                        : null;
+
+                    const depositUnpaidAccruedInterest =
+                      isDeposit &&
+                      asset.depositUnpaidAccruedInterest !== null &&
+                      depositCurrency
+                        ? formatInvestmentTransactionAmount(
+                            asset.depositUnpaidAccruedInterest,
+                            depositCurrency,
+                          )
+                        : null;
+
+                    const depositRate =
+                      isDeposit && asset.annualInterestRate !== null
+                        ? `${asset.annualInterestRate.toFixed(2)}% p.a.`
+                        : null;
+
+                    const depositMaturity =
+                      isDeposit && asset.maturityDate
+                        ? formatDate(asset.maturityDate)
+                        : null;
+
+                    const isMaturedDeposit =
+                      isDeposit &&
+                      !asset.isClosed &&
+                      asset.maturityDate !== null &&
+                      asset.marketPriceAsOf !== null &&
+                      new Date(asset.marketPriceAsOf).getTime() >=
+                        new Date(asset.maturityDate).getTime();
 
                     return (
                       <div
@@ -689,6 +753,97 @@ export default function InvestmentsPageClient() {
                             </p>
                           </div>
                         </div>
+
+                        {isDeposit ? (
+                          <div className="mt-4 rounded-[24px] border border-slate-200 bg-white p-4">
+                            <div className="flex flex-col gap-1">
+                              <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                                Deposit Details
+                              </p>
+
+                              <p className="text-sm font-semibold text-slate-700">
+                                Accrual-based valuation
+                              </p>
+                            </div>
+
+                            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4">
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Accrued Value
+                                </p>
+
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {depositAccruedValue ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Interest Rate
+                                </p>
+
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {depositRate ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Gross Accrued Interest
+                                </p>
+
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {depositGrossAccruedInterest ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Gross Interest Received
+                                </p>
+
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {depositRealizedGrossInterest ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Unpaid Accrued Interest
+                                </p>
+
+                                <p className="mt-1 text-sm font-bold text-emerald-600">
+                                  {depositUnpaidAccruedInterest ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Maturity
+                                </p>
+
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {depositMaturity ?? "—"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {isMaturedDeposit ? (
+                          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                            <p className="text-xs font-bold text-amber-800">
+                              Matured — principal still open
+                            </p>
+
+                            <p className="mt-1 text-xs leading-5 text-amber-700">
+                              This deposit has reached its maturity date, but
+                              the principal is still recorded as open. Record
+                              the principal withdrawal with a Close transaction
+                              when the funds are returned.
+                            </p>
+                          </div>
+                        ) : null}
 
                         {asset.valuationStatus !== "VALUED" ? (
                           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
