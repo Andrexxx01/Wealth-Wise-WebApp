@@ -309,7 +309,7 @@ export default function InvestmentsPageClient() {
             PORTFOLIO SUMMARY
         ================================================= */}
 
-        <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <section className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           <SummaryCard
             label="Portfolio Value"
             value={
@@ -319,7 +319,6 @@ export default function InvestmentsPageClient() {
                   ? "—"
                   : formatCurrency(
                       portfolioSummary.totalMarketValue,
-
                       portfolioDisplayCurrency,
                     )
             }
@@ -344,7 +343,6 @@ export default function InvestmentsPageClient() {
               isPortfolioSummaryReady
                 ? formatCurrency(
                     portfolioSummary.totalCostBasis,
-
                     portfolioDisplayCurrency,
                   )
                 : "—"
@@ -360,14 +358,13 @@ export default function InvestmentsPageClient() {
                 ? "—"
                 : formatCurrency(
                     portfolioSummary.totalUnrealizedGainLoss,
-
                     portfolioDisplayCurrency,
                   )
             }
             helper={
               hasUnvaluedAssets
-                ? "Calculated from assets with available market valuation only"
-                : "Market value minus remaining cost basis"
+                ? "Calculated from assets with available valuation only"
+                : "Current value minus remaining cost basis"
             }
             tone={
               isPortfolioSummaryReady && hasValuedAssets
@@ -390,8 +387,8 @@ export default function InvestmentsPageClient() {
             }
             helper={
               hasUnvaluedAssets
-                ? "Return based on assets with available market valuation only"
-                : "Unrealized gain/loss relative to cost basis"
+                ? "Return based on assets with available valuation only"
+                : "Unrealized gain/loss relative to remaining cost basis"
             }
             tone={
               isPortfolioSummaryReady &&
@@ -399,6 +396,50 @@ export default function InvestmentsPageClient() {
                 ? portfolioSummary.unrealizedReturnPercentage > 0
                   ? "positive"
                   : portfolioSummary.unrealizedReturnPercentage < 0
+                    ? "danger"
+                    : "default"
+                : "default"
+            }
+          />
+
+          <SummaryCard
+            label="Net Realized Income"
+            value={
+              isPortfolioSummaryReady
+                ? formatCurrency(
+                    portfolioSummary.totalNetRealizedIncome,
+                    portfolioDisplayCurrency,
+                  )
+                : "—"
+            }
+            helper="Dividends, interest, coupons, and distributions after recorded fees and tax"
+            tone={
+              isPortfolioSummaryReady
+                ? portfolioSummary.totalNetRealizedIncome > 0
+                  ? "positive"
+                  : portfolioSummary.totalNetRealizedIncome < 0
+                    ? "danger"
+                    : "default"
+                : "default"
+            }
+          />
+
+          <SummaryCard
+            label="Total Investment Return"
+            value={
+              isPortfolioSummaryReady
+                ? formatCurrency(
+                    portfolioSummary.totalInvestmentReturn,
+                    portfolioDisplayCurrency,
+                  )
+                : "—"
+            }
+            helper="Capital gain/loss plus net realized investment income"
+            tone={
+              isPortfolioSummaryReady
+                ? portfolioSummary.totalInvestmentReturn > 0
+                  ? "positive"
+                  : portfolioSummary.totalInvestmentReturn < 0
                     ? "danger"
                     : "default"
                 : "default"
@@ -614,7 +655,7 @@ export default function InvestmentsPageClient() {
                           : asset.unrealizedGainLoss < 0
                             ? "text-red-600"
                             : "text-slate-900";
-                    
+
                     const isDeposit =
                       asset.instrumentType === "DEPOSIT" &&
                       asset.positionKind === "PRINCIPAL";
