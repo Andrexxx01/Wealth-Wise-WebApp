@@ -719,6 +719,50 @@ export default function InvestmentsPageClient() {
                       asset.marketPriceAsOf !== null &&
                       new Date(asset.marketPriceAsOf).getTime() >=
                         new Date(asset.maturityDate).getTime();
+                    
+                    const hasOutstandingDepositInterest =
+                      isDeposit &&
+                      (asset.depositUnpaidAccruedInterest ?? 0) > 0.000001;
+
+                    let assetStatusLabel: string;
+
+                    let assetStatusClassName: string;
+
+                    if (isDeposit) {
+                      if (
+                        (asset.principalBalance ?? 0) <= 0 &&
+                        !hasOutstandingDepositInterest
+                      ) {
+                        assetStatusLabel = "Settled";
+
+                        assetStatusClassName =
+                          "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600";
+                      } else if (
+                        (asset.principalBalance ?? 0) <= 0 &&
+                        hasOutstandingDepositInterest
+                      ) {
+                        assetStatusLabel = "Principal Closed";
+
+                        assetStatusClassName =
+                          "w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700";
+                      } else if (isMaturedDeposit) {
+                        assetStatusLabel = "Matured";
+
+                        assetStatusClassName =
+                          "w-fit rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700";
+                      } else {
+                        assetStatusLabel = "Active";
+
+                        assetStatusClassName =
+                          "w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700";
+                      }
+                    } else {
+                      assetStatusLabel = asset.isClosed ? "Closed" : "Open";
+
+                      assetStatusClassName = asset.isClosed
+                        ? "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600"
+                        : "w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700";
+                    }
 
                     return (
                       <div
@@ -736,14 +780,8 @@ export default function InvestmentsPageClient() {
                             </p>
                           </div>
 
-                          <span
-                            className={
-                              asset.isClosed
-                                ? "w-fit rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-bold text-slate-600"
-                                : "w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700"
-                            }
-                          >
-                            {asset.isClosed ? "Closed" : "Open"}
+                          <span className={assetStatusClassName}>
+                            {assetStatusLabel}
                           </span>
                         </div>
 
