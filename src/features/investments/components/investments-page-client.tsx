@@ -912,14 +912,30 @@ export default function InvestmentsPageClient() {
                         {isMaturedDeposit ? (
                           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                             <p className="text-xs font-bold text-amber-800">
-                              Matured — principal still open
+                              Principal still open
                             </p>
 
                             <p className="mt-1 text-xs leading-5 text-amber-700">
                               This deposit has reached its maturity date, but
-                              the principal is still recorded as open. Record
-                              the principal withdrawal with a Close transaction
-                              when the funds are returned.
+                              the principal is still recorded as open. Record a
+                              Close transaction when the principal is returned.
+                            </p>
+                          </div>
+                        ) : null}
+
+                        {isDeposit &&
+                        (asset.principalBalance ?? 0) <= 0 &&
+                        hasOutstandingDepositInterest ? (
+                          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
+                            <p className="text-xs font-bold text-amber-800">
+                              Interest still outstanding
+                            </p>
+
+                            <p className="mt-1 text-xs leading-5 text-amber-700">
+                              The principal has already been returned, but some
+                              accrued interest is still recorded as unpaid.
+                              Record an Interest event when the remaining
+                              interest is received.
                             </p>
                           </div>
                         ) : null}
