@@ -764,6 +764,14 @@ export default function InvestmentsPageClient() {
                         : "w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700";
                     }
 
+                    const canRecordInvestmentEvent =
+                      supportsInvestmentEvents &&
+                      !(
+                        isDeposit &&
+                        (asset.principalBalance ?? 0) <= 0 &&
+                        !hasOutstandingDepositInterest
+                      );
+
                     return (
                       <div
                         key={asset.assetId}
@@ -949,7 +957,7 @@ export default function InvestmentsPageClient() {
                           </div>
                         ) : null}
                         <div className="mt-5 flex flex-wrap justify-end gap-3 border-t border-slate-200 pt-4">
-                          {supportsInvestmentEvents ? (
+                          {canRecordInvestmentEvent ? (
                             <Button
                               type="button"
                               variant="outline"
