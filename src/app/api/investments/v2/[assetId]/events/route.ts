@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
+import { calculateDepositAccrual } from "@/features/investments/lib/investment-deposit-accrual-engine";
+
 import { calculateInvestmentHolding } from "@/features/investments/lib/investment-holding-engine";
 
 import {
@@ -21,6 +23,8 @@ type RouteContext = {
     assetId: string;
   }>;
 };
+
+const DEPOSIT_SETTLEMENT_EPSILON = 0.000001;
 
 export async function POST(request: Request, context: RouteContext) {
   try {
@@ -134,7 +138,40 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 5. VALIDATE CASH EVENT CURRENCY
+    // 5. PREVENT INTEREST AFTER DEPOSIT IS FULLY SETTLED
+    // =====================================================
+
+    if (isDeposit && parsedBody.type === "INTEREST") {
+      const depositAccrualSummary = calculateDepositAccrual({
+        asset: serializedAsset,
+        asOf: new Date().toISOString(),
+      });
+
+      const principalIsClosed =
+        (currentHolding.principalBalance ?? 0) <= DEPOSIT_SETTLEMENT_EPSILON;
+
+      const hasOutstandingInterest =
+        depositAccrualSummary.unpaidAccruedInterest >
+        DEPOSIT_SETTLEMENT_EPSILON;
+
+      const isFullySettled = principalIsClosed && !hasOutstandingInterest;
+
+      if (isFullySettled) {
+        return NextResponse.json(
+          {
+            message:
+              "This deposit is fully settled and cannot accept additional interest events.",
+            code: "DEPOSIT_FULLY_SETTLED",
+          },
+          {
+            status: 409,
+          },
+        );
+      }
+    }
+
+    // =====================================================
+    // 6. VALIDATE CASH EVENT CURRENCY
     // =====================================================
 
     const isCashEvent =
@@ -160,7 +197,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 6. PREVENT DUPLICATE MATURITY
+    // 7. PREVENT DUPLICATE MATURITY
     // =====================================================
 
     if (parsedBody.type === "MATURITY") {
@@ -182,7 +219,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 7. CREATE EVENT
+    // 8. CREATE EVENT
     // =====================================================
 
     const createdEvent = await prisma.investmentEvent.create({
@@ -208,7 +245,7 @@ export async function POST(request: Request, context: RouteContext) {
     });
 
     // =====================================================
-    // 8. RESPONSE
+    // 9. RESPONSE
     // =====================================================
 
     return NextResponse.json(
