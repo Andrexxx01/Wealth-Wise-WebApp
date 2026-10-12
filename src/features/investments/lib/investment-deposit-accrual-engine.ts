@@ -6,7 +6,7 @@ import type {
 
 const MILLISECONDS_PER_DAY = 24 * 60 * 60 * 1000;
 
-const MONEY_EPSILON = 1e-8;
+const MONEY_EPSILON = 0.01;
 
 export type DepositAccrualSummary = {
   annualInterestRate: number;
