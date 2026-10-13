@@ -82,6 +82,8 @@ export async function POST(request: Request, context: RouteContext) {
 
     const currentHolding = calculateInvestmentHolding(serializedAsset);
 
+    const eventOccurredAt = new Date(parsedBody.occurredAt);
+
     // =====================================================
     // 4. VALIDATE EVENT TYPE AGAINST ASSET
     // =====================================================
@@ -138,7 +140,38 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 5. PREVENT INTEREST AFTER DEPOSIT IS FULLY SETTLED
+    // 5. VALIDATE MATURITY EVENT
+    // =====================================================
+
+    if (parsedBody.type === "MATURITY") {
+      if (asset.maturityDate === null) {
+        return NextResponse.json(
+          {
+            message: "This investment does not have a maturity date.",
+            code: "INVESTMENT_MATURITY_DATE_REQUIRED",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+
+      if (eventOccurredAt.getTime() < asset.maturityDate.getTime()) {
+        return NextResponse.json(
+          {
+            message:
+              "A maturity event cannot occur before the investment maturity date.",
+            code: "INVESTMENT_MATURITY_EVENT_TOO_EARLY",
+          },
+          {
+            status: 400,
+          },
+        );
+      }
+    }
+
+    // =====================================================
+    // 6. PREVENT INTEREST AFTER DEPOSIT IS FULLY SETTLED
     // =====================================================
 
     if (isDeposit && parsedBody.type === "INTEREST") {
@@ -171,7 +204,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 6. VALIDATE CASH EVENT CURRENCY
+    // 7. VALIDATE CASH EVENT CURRENCY
     // =====================================================
 
     const isCashEvent =
@@ -197,7 +230,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 7. PREVENT DUPLICATE MATURITY
+    // 8. PREVENT DUPLICATE MATURITY
     // =====================================================
 
     if (parsedBody.type === "MATURITY") {
@@ -219,7 +252,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     // =====================================================
-    // 8. CREATE EVENT
+    // 9. CREATE EVENT
     // =====================================================
 
     const createdEvent = await prisma.investmentEvent.create({
@@ -238,14 +271,14 @@ export async function POST(request: Request, context: RouteContext) {
 
         currencyCode: normalizedCurrencyCode,
 
-        occurredAt: new Date(parsedBody.occurredAt),
+        occurredAt: eventOccurredAt,
 
         notes: parsedBody.notes ?? null,
       },
     });
 
     // =====================================================
-    // 9. RESPONSE
+    // 10. RESPONSE
     // =====================================================
 
     return NextResponse.json(
