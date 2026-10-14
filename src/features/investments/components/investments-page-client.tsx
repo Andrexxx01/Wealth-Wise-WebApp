@@ -764,13 +764,16 @@ export default function InvestmentsPageClient() {
                         : "w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700";
                     }
 
+                    const isFullySettledDeposit =
+                      isDeposit &&
+                      (asset.principalBalance ?? 0) <= 0 &&
+                      !hasOutstandingDepositInterest;
+
                     const canRecordInvestmentEvent =
                       supportsInvestmentEvents &&
-                      !(
-                        isDeposit &&
-                        (asset.principalBalance ?? 0) <= 0 &&
-                        !hasOutstandingDepositInterest
-                      );
+                      (!isFullySettledDeposit ||
+                        (asset.maturityDate !== null &&
+                          !asset.maturityRecorded));
 
                     return (
                       <div
