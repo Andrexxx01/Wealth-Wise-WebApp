@@ -48,11 +48,30 @@ function getTodayInputValue() {
   return `${year}-${month}-${day}`;
 }
 
+const DEPOSIT_SETTLEMENT_EPSILON = 0.000001;
+
+function isFullySettledDeposit(asset: InvestmentValuationItem | null) {
+  return (
+    asset?.instrumentType === "DEPOSIT" &&
+    (asset.principalBalance ?? 0) <= DEPOSIT_SETTLEMENT_EPSILON &&
+    (asset.depositUnpaidAccruedInterest ?? 0) <= DEPOSIT_SETTLEMENT_EPSILON
+  );
+}
+
 function getDefaultEventType(
   asset: InvestmentValuationItem | null,
 ): InvestmentEventV2FormType {
   if (asset?.instrumentType === "BOND") {
     return "COUPON";
+  }
+
+  if (
+    asset &&
+    isFullySettledDeposit(asset) &&
+    asset.maturityDate !== null &&
+    !asset.maturityRecorded
+  ) {
+    return "MATURITY";
   }
 
   return "INTEREST";
@@ -181,6 +200,16 @@ export default function AddInvestmentEventV2Dialog({
 
   const isBond = asset?.instrumentType === "BOND";
 
+  const depositIsFullySettled = isFullySettledDeposit(asset);
+
+  const showDepositInterestOption = isDeposit && !depositIsFullySettled;
+
+  const showDepositMaturityOption =
+    isDeposit &&
+    asset !== null &&
+    asset.maturityDate !== null &&
+    !asset.maturityRecorded;
+
   return (
     <FormDialogShell
       open={open}
@@ -248,12 +277,12 @@ export default function AddInvestmentEventV2Dialog({
             {...form.register("type")}
             className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus-visible:ring-2 focus-visible:ring-slate-950"
           >
-            {isDeposit ? (
-              <>
-                <option value="INTEREST">Interest</option>
+            {showDepositInterestOption ? (
+              <option value="INTEREST">Interest</option>
+            ) : null}
 
-                <option value="MATURITY">Maturity</option>
-              </>
+            {showDepositMaturityOption ? (
+              <option value="MATURITY">Maturity</option>
             ) : null}
 
             {isBond ? (
