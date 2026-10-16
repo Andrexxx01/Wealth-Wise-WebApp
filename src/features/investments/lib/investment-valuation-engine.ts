@@ -304,6 +304,49 @@ export function calculateInvestmentValuation({
   }
 
   // =====================================================
+  // CLOSED QUANTITY POSITION
+  // =====================================================
+  //
+  // Posisi quantity yang sudah sepenuhnya ditutup
+  // tidak lagi membutuhkan current market valuation.
+  //
+  // Current market value = 0
+  // Unrealized gain/loss = 0
+  // Total capital gain/loss = realized gain/loss
+  // =====================================================
+
+  if (holding.positionKind === "QUANTITY" && holding.isClosed) {
+    return {
+      ...holding,
+
+      ...getInvestmentEventValuationFields(eventSummary),
+
+      ...getDepositAccrualValuationFields(null),
+
+      displayCurrency,
+
+      marketPrice: null,
+      marketPriceCurrencyCode: null,
+
+      marketValue: 0,
+
+      costBasisInDisplayCurrency,
+
+      realizedGainLossInDisplayCurrency,
+
+      unrealizedGainLoss: 0,
+      unrealizedReturnPercentage: null,
+
+      totalGainLoss: realizedGainLossInDisplayCurrency,
+
+      marketSource: null,
+      marketPriceAsOf: null,
+
+      valuationStatus: "VALUED",
+    };
+  }
+
+  // =====================================================
   // VALUATION METHOD SUPPORT
   // =====================================================
 
