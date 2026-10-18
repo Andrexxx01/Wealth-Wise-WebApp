@@ -32,8 +32,8 @@ export const createLoanSchema = z
     monthlyPayment: z
       .string()
       .min(1, "Monthly payment is required.")
-      .refine((value) => Number(value) >= 0, {
-        message: "Monthly payment must be 0 or greater.",
+      .refine((value) => Number(value) > 0, {
+        message: "Monthly payment must be greater than 0.",
       }),
 
     currency: z.enum(["USD", "IDR"]),
@@ -50,6 +50,7 @@ export const createLoanSchema = z
   .superRefine((values, ctx) => {
     const principalAmount = Number(values.principalAmount);
     const remainingBalance = Number(values.remainingBalance);
+    const monthlyPayment = Number(values.monthlyPayment);
 
     if (
       Number.isFinite(principalAmount) &&
@@ -60,6 +61,18 @@ export const createLoanSchema = z
         code: "custom",
         path: ["remainingBalance"],
         message: "Remaining balance cannot be greater than principal amount.",
+      });
+    }
+
+    if (
+      Number.isFinite(monthlyPayment) &&
+      Number.isFinite(remainingBalance) &&
+      monthlyPayment > remainingBalance
+    ) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["monthlyPayment"],
+        message: "Monthly payment cannot be greater than remaining balance.",
       });
     }
   });
