@@ -1,4 +1,5 @@
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
+import type { UserCurrency } from "@/types/user-subscription";
 
 export type FinanceInsightTone = "positive" | "warning" | "neutral";
 
@@ -11,39 +12,62 @@ type BuildAnalysisDataParams = {
   netGain: number;
   investmentReturnRate: number;
   totalLoanBalance: number;
-  debtToIncomeRatio: number;
+  debtToIncomeRatio: number | null;
   netWorth: number;
+  currency: UserCurrency;
 };
 
 export function buildHealthMetrics({
+  totalIncome,
   savingsRate,
   debtToIncomeRatio,
   netWorth,
+  portfolioValue,
   investmentReturnRate,
+  currency,
 }: Pick<
   BuildAnalysisDataParams,
-  "savingsRate" | "debtToIncomeRatio" | "netWorth" | "investmentReturnRate"
+  | "totalIncome"
+  | "savingsRate"
+  | "debtToIncomeRatio"
+  | "netWorth"
+  | "portfolioValue"
+  | "investmentReturnRate"
+  | "currency"
 >) {
   return [
     {
       label: "Savings Rate",
-      value: formatPercentage(savingsRate),
-      helper: "Monthly surplus compared to income",
+      value: totalIncome > 0 ? formatPercentage(savingsRate) : "—",
+      helper:
+        totalIncome > 0
+          ? "Monthly surplus compared to income"
+          : "Requires monthly income",
     },
     {
       label: "Debt Ratio",
-      value: formatPercentage(debtToIncomeRatio),
-      helper: "Monthly debt payment compared to income",
+      value:
+        debtToIncomeRatio === null
+          ? "—"
+          : formatPercentage(debtToIncomeRatio),
+      helper:
+        debtToIncomeRatio === null
+          ? "Requires monthly income"
+          : "Monthly debt payment compared to income",
     },
     {
       label: "Net Worth",
-      value: formatCurrency(netWorth),
+      value: formatCurrency(netWorth, currency),
       helper: "Surplus + investments - loan balance",
     },
     {
       label: "Investment Return",
-      value: formatPercentage(investmentReturnRate),
-      helper: "Current gain compared to invested capital",
+      value:
+        portfolioValue > 0 ? formatPercentage(investmentReturnRate) : "—",
+      helper:
+        portfolioValue > 0
+          ? "Current unrealized portfolio return"
+          : "Requires a valued open portfolio",
     },
   ];
 }
@@ -53,24 +77,29 @@ export function buildMonthlyReview({
   totalExpenses,
   monthlySurplus,
   totalLoanBalance,
+  currency,
 }: Pick<
   BuildAnalysisDataParams,
-  "totalIncome" | "totalExpenses" | "monthlySurplus" | "totalLoanBalance"
+  | "totalIncome"
+  | "totalExpenses"
+  | "monthlySurplus"
+  | "totalLoanBalance"
+  | "currency"
 >) {
   return [
     {
       title: "Income",
-      value: formatCurrency(totalIncome),
+      value: formatCurrency(totalIncome, currency),
       helper: "Total money received this month.",
     },
     {
       title: "Expenses",
-      value: formatCurrency(totalExpenses),
+      value: formatCurrency(totalExpenses, currency),
       helper: "Total spending recorded this month.",
     },
     {
       title: "Monthly Surplus",
-      value: formatCurrency(monthlySurplus),
+      value: formatCurrency(monthlySurplus, currency),
       helper:
         monthlySurplus >= 0
           ? "You are spending less than your income."
@@ -78,75 +107,119 @@ export function buildMonthlyReview({
     },
     {
       title: "Debt Balance",
-      value: formatCurrency(totalLoanBalance),
+      value: formatCurrency(totalLoanBalance, currency),
       helper: "Total remaining loan balance.",
     },
   ];
 }
 
 export function buildFinancialInsights({
+  totalIncome,
+  totalExpenses,
   monthlySurplus,
   savingsRate,
   debtToIncomeRatio,
   portfolioValue,
   netGain,
+  currency,
 }: Pick<
   BuildAnalysisDataParams,
+  | "totalIncome"
+  | "totalExpenses"
   | "monthlySurplus"
   | "savingsRate"
   | "debtToIncomeRatio"
   | "portfolioValue"
   | "netGain"
+  | "currency"
 >) {
-  return [
-    {
-      id: "cash-flow",
-      title:
-        monthlySurplus >= 0
-          ? "Positive cash flow"
-          : "Negative cash flow warning",
-      description:
-        monthlySurplus >= 0
-          ? `You currently have a monthly surplus of ${formatCurrency(
-              monthlySurplus,
-            )}. This gives you room to save, invest, or repay debt faster.`
-          : `You currently have a monthly deficit of ${formatCurrency(
-              Math.abs(monthlySurplus),
-            )}. Review lifestyle spending and recurring expenses.`,
-      tone: monthlySurplus >= 0 ? "positive" : "warning",
-    },
-    {
-      id: "savings-rate",
-      title:
-        savingsRate >= 20
-          ? "Healthy savings rate"
-          : "Savings rate can be improved",
-      description:
-        savingsRate >= 20
-          ? `Your savings rate is ${formatPercentage(
-              savingsRate,
-            )}, which shows strong monthly discipline.`
-          : `Your savings rate is ${formatPercentage(
-              savingsRate,
-            )}. Try increasing the gap between income and expenses.`,
-      tone: savingsRate >= 20 ? "positive" : "warning",
-    },
-    {
-      id: "debt-risk",
-      title:
-        debtToIncomeRatio <= 35
-          ? "Debt level looks manageable"
-          : "Debt pressure is getting high",
-      description:
-        debtToIncomeRatio <= 35
-          ? `Your debt ratio is ${formatPercentage(
+  const debtInsight =
+    debtToIncomeRatio === null
+      ? {
+          id: "debt-risk",
+          title: "Debt ratio unavailable",
+          description:
+            "Add current-month income so WealthWise can compare monthly debt payments with income accurately.",
+          tone: "neutral" as const,
+        }
+      : debtToIncomeRatio <= 35
+        ? {
+            id: "debt-risk",
+            title: "Debt level looks manageable",
+            description: `Your debt ratio is ${formatPercentage(
               debtToIncomeRatio,
-            )}, which is still manageable based on current income.`
-          : `Your debt ratio is ${formatPercentage(
+            )}, which is still manageable based on current-month income.`,
+            tone: "positive" as const,
+          }
+        : {
+            id: "debt-risk",
+            title: "Debt pressure is getting high",
+            description: `Your debt ratio is ${formatPercentage(
               debtToIncomeRatio,
             )}. Consider reducing monthly obligations or accelerating payoff.`,
-      tone: debtToIncomeRatio <= 35 ? "positive" : "warning",
-    },
+            tone: "warning" as const,
+          };
+
+  const cashFlowInsight =
+    totalIncome <= 0 && totalExpenses <= 0
+      ? {
+          id: "cash-flow",
+          title: "No monthly cash-flow data yet",
+          description:
+            "Add income or expense records for the current month to evaluate monthly cash flow.",
+          tone: "neutral" as const,
+        }
+      : monthlySurplus >= 0
+        ? {
+            id: "cash-flow",
+            title: "Positive cash flow",
+            description: `You currently have a monthly surplus of ${formatCurrency(
+              monthlySurplus,
+              currency,
+            )}. This gives you room to save, invest, or repay debt faster.`,
+            tone: "positive" as const,
+          }
+        : {
+            id: "cash-flow",
+            title: "Negative cash flow warning",
+            description: `You currently have a monthly deficit of ${formatCurrency(
+              Math.abs(monthlySurplus),
+              currency,
+            )}. Review lifestyle spending and recurring expenses.`,
+            tone: "warning" as const,
+          };
+
+  const savingsInsight =
+    totalIncome <= 0
+      ? {
+          id: "savings-rate",
+          title: "Savings rate unavailable",
+          description:
+            "Add current-month income so WealthWise can calculate your savings rate accurately.",
+          tone: "neutral" as const,
+        }
+      : savingsRate >= 20
+        ? {
+            id: "savings-rate",
+            title: "Healthy savings rate",
+            description: `Your savings rate is ${formatPercentage(
+              savingsRate,
+            )}, which shows strong monthly discipline.`,
+            tone: "positive" as const,
+          }
+        : {
+            id: "savings-rate",
+            title: "Savings rate can be improved",
+            description: `Your savings rate is ${formatPercentage(
+              savingsRate,
+            )}. Try increasing the gap between income and expenses.`,
+            tone: "warning" as const,
+          };
+
+  return [
+    cashFlowInsight,
+    savingsInsight,
+    debtInsight,
     {
       id: "investment-growth",
       title:
@@ -159,7 +232,8 @@ export function buildFinancialInsights({
         portfolioValue > 0
           ? `Your portfolio value is ${formatCurrency(
               portfolioValue,
-            )}, with total gain/loss of ${formatCurrency(netGain)}.`
+              currency,
+            )}, with total gain/loss of ${formatCurrency(netGain, currency)}.`
           : "You have not recorded any investment portfolio yet.",
       tone:
         portfolioValue <= 0 ? "neutral" : netGain >= 0 ? "positive" : "warning",
@@ -209,22 +283,30 @@ export function buildFinancialHealthHighlights({
   | "totalExpenses"
   | "totalIncome"
 >) {
-  const biggestStrength =
-    savingsRate >= 20
+  const hasMonthlyIncome = totalIncome > 0;
+
+  const biggestStrength = !hasMonthlyIncome
+    ? "Income Data Needed"
+    : savingsRate >= 20
       ? "Strong Savings Rate"
       : monthlySurplus >= 0
         ? "Positive Cash Flow"
         : "Needs More Surplus";
 
-  const biggestStrengthTone =
-    savingsRate >= 20 || monthlySurplus >= 0 ? "positive" : "warning";
+  const biggestStrengthTone: FinanceInsightTone = !hasMonthlyIncome
+    ? "neutral"
+    : savingsRate >= 20 || monthlySurplus >= 0
+      ? "positive"
+      : "warning";
 
   const mainWatchArea =
-    debtToIncomeRatio > 35
-      ? "Debt Pressure"
-      : totalExpenses > totalIncome
-        ? "Expense Control"
-        : "Portfolio Growth";
+    debtToIncomeRatio === null
+      ? "Income Coverage"
+      : debtToIncomeRatio > 35
+        ? "Debt Pressure"
+        : totalExpenses > totalIncome
+          ? "Expense Control"
+          : "Portfolio Growth";
 
   return {
     biggestStrength,

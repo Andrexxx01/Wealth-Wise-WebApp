@@ -66,7 +66,9 @@ export function calculateTotalLoanBalance(loanItems: LoanItem[]) {
 }
 
 export function calculateMonthlyLoanPayment(loanItems: LoanItem[]) {
-  return loanItems.reduce((total, item) => total + item.monthlyPayment, 0);
+  return loanItems
+    .filter((item) => item.status !== "PAID_OFF" && item.remainingBalance > 0)
+    .reduce((total, item) => total + item.monthlyPayment, 0);
 }
 
 export function calculateTotalPaidOff(loanItems: LoanItem[]) {
@@ -80,8 +82,10 @@ export function calculateTotalPaidOff(loanItems: LoanItem[]) {
 export function calculateDebtToIncomeRatio(
   monthlyPaymentTotal: number,
   monthlyIncome: number,
-) {
-  if (monthlyIncome <= 0) return 0;
+): number | null {
+  if (monthlyIncome <= 0) {
+    return null;
+  }
 
   return (monthlyPaymentTotal / monthlyIncome) * 100;
 }
@@ -238,7 +242,8 @@ export function buildLoanAccounts(loanItems: LoanItem[]) {
 }
 
 export function sortUpcomingLoanPayments(loanItems: LoanItem[], limit = 4) {
-  return [...loanItems]
+  return loanItems
+    .filter((item) => item.status !== "PAID_OFF" && item.remainingBalance > 0)
     .sort((a, b) => {
       if (!a.dueDate) return 1;
       if (!b.dueDate) return -1;
@@ -254,28 +259,47 @@ export function calculateFinancialHealthScore({
   monthlySurplus,
   portfolioValue,
   investmentReturnRate,
+  hasMonthlyIncome,
+  hasOpenInvestmentPosition,
 }: {
   savingsRate: number;
-  debtToIncomeRatio: number;
+  debtToIncomeRatio: number | null;
   monthlySurplus: number;
   portfolioValue: number;
   investmentReturnRate: number;
+  hasMonthlyIncome: boolean;
+  hasOpenInvestmentPosition: boolean;
 }) {
-  const savingsScore =
-    savingsRate >= 20 ? 30 : savingsRate >= 10 ? 22 : savingsRate >= 0 ? 12 : 0;
+  const savingsScore = hasMonthlyIncome
+    ? savingsRate >= 20
+      ? 30
+      : savingsRate >= 10
+        ? 22
+        : savingsRate >= 0
+          ? 12
+          : 0
+    : 0;
 
   const debtScore =
-    debtToIncomeRatio <= 20
-      ? 25
-      : debtToIncomeRatio <= 35
-        ? 18
-        : debtToIncomeRatio <= 50
-          ? 10
-          : 3;
+    debtToIncomeRatio === null
+      ? 0
+      : debtToIncomeRatio <= 20
+        ? 25
+        : debtToIncomeRatio <= 35
+          ? 18
+          : debtToIncomeRatio <= 50
+            ? 10
+            : 3;
 
-  const surplusScore = monthlySurplus > 0 ? 20 : 0;
-  const investingScore = portfolioValue > 0 ? 15 : 5;
-  const returnScore = investmentReturnRate >= 0 ? 10 : 3;
+  const surplusScore = hasMonthlyIncome && monthlySurplus > 0 ? 20 : 0;
+
+  const investingScore = hasOpenInvestmentPosition && portfolioValue > 0 ? 15 : 0;
+
+  const returnScore = hasOpenInvestmentPosition
+    ? investmentReturnRate >= 0
+      ? 10
+      : 3
+    : 0;
 
   const score = Math.min(
     Math.max(

@@ -89,9 +89,17 @@ export default function SettingsPageClient() {
     },
     {
       label: "Savings Rate",
-      value: formatPercentage(savingsRate),
-      helper: "Income compared with expenses",
-      tone: savingsRate >= 0 ? "positive" : "danger",
+      value: totalIncome > 0 ? formatPercentage(savingsRate) : "—",
+      helper:
+        totalIncome > 0
+          ? "Income compared with expenses this month"
+          : "Requires monthly income",
+      tone:
+        totalIncome <= 0
+          ? "default"
+          : savingsRate >= 0
+            ? "positive"
+            : "danger",
     },
     {
       label: "Debt Balance",

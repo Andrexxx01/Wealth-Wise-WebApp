@@ -26,6 +26,7 @@ import {
 } from "@/lib/finance-calculations";
 
 import { convertCurrency } from "@/lib/currency-conversion";
+import { filterItemsByReferenceMonth } from "@/lib/finance-period";
 
 import type { UserCurrency } from "@/types/user-subscription";
 
@@ -103,10 +104,14 @@ export function useFinanceSummary() {
    */
   const {
     investmentPortfolioV2,
+    investmentTransactionsV2,
     investmentContributionsV2,
 
     isInvestmentPortfolioV2Loading,
     investmentPortfolioV2Error,
+
+    isInvestmentTransactionsV2Loading,
+    investmentTransactionsV2Error,
 
     isInvestmentContributionsV2Loading,
     investmentContributionsV2Error,
@@ -119,9 +124,14 @@ export function useFinanceSummary() {
      * =========================================================
      */
 
-    const totalIncome = calculateTotalIncome(incomeItems);
+    const monthlyIncomeItems = filterItemsByReferenceMonth(
+      incomeItems,
+      (item) => item.receivedAt,
+    );
 
-    const recurringIncome = calculateRecurringIncome(incomeItems);
+    const totalIncome = calculateTotalIncome(monthlyIncomeItems);
+
+    const recurringIncome = calculateRecurringIncome(monthlyIncomeItems);
 
     const extraIncome = calculateExtraIncome(totalIncome, recurringIncome);
 
@@ -133,11 +143,16 @@ export function useFinanceSummary() {
      * =========================================================
      */
 
-    const totalExpenses = calculateTotalExpenses(expenseItems);
+    const monthlyExpenseItems = filterItemsByReferenceMonth(
+      expenseItems,
+      (item) => item.spentAt,
+    );
 
-    const essentialSpending = calculateEssentialSpending(expenseItems);
+    const totalExpenses = calculateTotalExpenses(monthlyExpenseItems);
 
-    const lifestyleSpending = calculateLifestyleSpending(expenseItems);
+    const essentialSpending = calculateEssentialSpending(monthlyExpenseItems);
+
+    const lifestyleSpending = calculateLifestyleSpending(monthlyExpenseItems);
 
     /*
      * =========================================================
@@ -156,8 +171,6 @@ export function useFinanceSummary() {
      */
 
     const portfolioSummary = investmentPortfolioV2?.summary ?? null;
-
-    const portfolioValuations = investmentPortfolioV2?.data ?? [];
 
     /*
      * Portfolio API sudah selesai dan response
@@ -303,19 +316,30 @@ export function useFinanceSummary() {
      * CLOSE
      * +(gross - fee)
      *
-     * Maka netTransactionCashFlow sudah
-     * merepresentasikan arus kas sebenarnya.
+     * Untuk metrik monthly, kita hitung ulang cash flow
+     * hanya dari transaction pada bulan berjalan agar
+     * periodenya konsisten dengan income dan expense.
      */
+
+    const monthlyInvestmentTransactions = filterItemsByReferenceMonth(
+      investmentTransactionsV2,
+      (transaction) => transaction.transactedAt,
+    );
 
     let netInvestmentTransactionCashFlow = 0;
 
     let isInvestmentCashFlowConversionReady = true;
 
-    for (const valuation of portfolioValuations) {
-      const convertedCashFlow = convertInvestmentV2Amount({
-        amount: valuation.netTransactionCashFlow,
+    for (const transaction of monthlyInvestmentTransactions) {
+      const signedCashFlow =
+        transaction.type === "BUY" || transaction.type === "OPEN"
+          ? -(transaction.grossAmount + transaction.feeAmount)
+          : transaction.grossAmount - transaction.feeAmount;
 
-        currencyCode: valuation.transactionCurrencyCode,
+      const convertedCashFlow = convertInvestmentV2Amount({
+        amount: signedCashFlow,
+
+        currencyCode: transaction.currencyCode,
 
         displayCurrency,
 
@@ -331,8 +355,11 @@ export function useFinanceSummary() {
       netInvestmentTransactionCashFlow += convertedCashFlow;
     }
 
+    const isInvestmentTransactionDataReady =
+      !isInvestmentTransactionsV2Loading && !investmentTransactionsV2Error;
+
     const isInvestmentCashFlowReady =
-      isPortfolioValuationReady && isInvestmentCashFlowConversionReady;
+      isInvestmentTransactionDataReady && isInvestmentCashFlowConversionReady;
 
     /*
      * netTransactionCashFlow memakai:
@@ -354,13 +381,11 @@ export function useFinanceSummary() {
      * = 1.000
      *
      *
-     * Jika kemudian SELL menghasilkan +400:
+     * Jika pada bulan yang sama kemudian SELL
+     * menghasilkan +400:
      *
-     * net cash flow
-     * = -600
-     *
-     * cash outflow bersih
-     * = 600
+     * net monthly cash flow = -600
+     * cash outflow bersih   = 600
      */
 
     const totalInvestmentCashOutflow = isInvestmentCashFlowReady
@@ -494,12 +519,19 @@ export function useFinanceSummary() {
      * =========================================================
      */
 
+    const hasMonthlyIncome = totalIncome > 0;
+
+    const hasOpenInvestmentPosition =
+      isPortfolioValuationReady && (portfolioSummary?.openAssets ?? 0) > 0;
+
     const financialHealthScore = calculateFinancialHealthScore({
       savingsRate,
       debtToIncomeRatio,
       monthlySurplus,
       portfolioValue,
       investmentReturnRate,
+      hasMonthlyIncome,
+      hasOpenInvestmentPosition,
     });
 
     /*
@@ -530,6 +562,7 @@ export function useFinanceSummary() {
       recurringIncome,
       extraIncome,
       projectedAnnualIncome,
+      monthlyIncomeItems,
 
       /*
        * Expense
@@ -537,6 +570,7 @@ export function useFinanceSummary() {
       totalExpenses,
       essentialSpending,
       lifestyleSpending,
+      monthlyExpenseItems,
 
       /*
        * Basic cash flow
@@ -629,10 +663,14 @@ export function useFinanceSummary() {
     exchangeRateError,
 
     investmentPortfolioV2,
+    investmentTransactionsV2,
     investmentContributionsV2,
 
     isInvestmentPortfolioV2Loading,
     investmentPortfolioV2Error,
+
+    isInvestmentTransactionsV2Loading,
+    investmentTransactionsV2Error,
 
     isInvestmentContributionsV2Loading,
     investmentContributionsV2Error,

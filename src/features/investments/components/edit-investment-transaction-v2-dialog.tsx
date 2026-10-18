@@ -237,10 +237,6 @@ export default function EditInvestmentTransactionV2Dialog({
       return;
     }
 
-    setSubmitError(
-      null,
-    );
-
     reset(
       transactionToFormValues(
         transaction,

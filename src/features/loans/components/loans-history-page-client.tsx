@@ -5,6 +5,7 @@ import HistoryFilterSelect from "@/components/dashboard/history-filter-select";
 import HistoryPageShell from "@/components/dashboard/history-page-shell";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import EditLoanDialog from "@/features/loans/components/edit-loan-dialog";
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 import useHistoryFilters from "@/hooks/use-history-filters";
@@ -40,6 +41,12 @@ export default function LoansHistoryPageClient() {
   } = useEditRecordDialog<LoanItem>();
 
   const { loanItems, updateLoan, deleteLoan } = useFinance();
+
+  const {
+    loanItems: convertedLoanItems,
+    displayCurrency,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
 
   const sortedLoanItems = sortLoanHistoryItems(loanItems);
 
@@ -84,14 +91,22 @@ export default function LoansHistoryPageClient() {
   const isFiltering = hasSearchQuery || hasActiveFilter;
   const hasActiveControls = isFiltering || hasActiveSort;
 
-  const totalRemainingBalance = visibleLoanItems.reduce(
+  const convertedLoanById = new Map(
+    convertedLoanItems.map((item) => [item.id, item]),
+  );
+
+  const visibleConvertedLoanItems = visibleLoanItems
+    .map((item) => convertedLoanById.get(item.id))
+    .filter((item): item is LoanItem => Boolean(item));
+
+  const totalRemainingBalance = visibleConvertedLoanItems.reduce(
     (total, item) => total + item.remainingBalance,
     0,
   );
 
   const averageRemainingBalance =
-    visibleLoanItems.length > 0
-      ? totalRemainingBalance / visibleLoanItems.length
+    visibleConvertedLoanItems.length > 0
+      ? totalRemainingBalance / visibleConvertedLoanItems.length
       : 0;
 
   return (
@@ -162,7 +177,9 @@ export default function LoansHistoryPageClient() {
           items={[
             {
               label: "Remaining Balance",
-              value: formatCurrency(totalRemainingBalance),
+              value: isCurrencyConversionReady
+                ? formatCurrency(totalRemainingBalance, displayCurrency)
+                : "—",
               description: "Outstanding balance from visible records.",
             },
             {
@@ -172,7 +189,9 @@ export default function LoansHistoryPageClient() {
             },
             {
               label: "Average Balance",
-              value: formatCurrency(averageRemainingBalance),
+              value: isCurrencyConversionReady
+                ? formatCurrency(averageRemainingBalance, displayCurrency)
+                : "—",
               description: "Average remaining balance.",
             },
           ]}

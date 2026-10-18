@@ -89,8 +89,6 @@ export default function EditInvestmentAssetV2Dialog({
       return;
     }
 
-    setSubmitError(null);
-
     reset(assetToFormValues(asset));
   }, [open, asset, reset]);
 

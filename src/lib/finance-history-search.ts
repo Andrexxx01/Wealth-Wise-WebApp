@@ -88,7 +88,7 @@ export function doesIncomeMatchSearch(item: IncomeItem, searchQuery: string) {
 
       formatIncomeFrequency(item.frequency),
 
-      formatCurrency(item.amount),
+      formatCurrency(item.amount, item.currency),
 
       formatDate(item.receivedAt),
 
@@ -108,7 +108,7 @@ export function doesExpenseMatchSearch(item: ExpenseItem, searchQuery: string) {
 
       formatExpenseType(item.type),
 
-      formatCurrency(item.amount),
+      formatCurrency(item.amount, item.currency),
 
       formatDate(item.spentAt),
 
@@ -130,11 +130,11 @@ export function doesLoanMatchSearch(item: LoanItem, searchQuery: string) {
 
       formatLoanStatus(item.status),
 
-      formatCurrency(item.principalAmount),
+      formatCurrency(item.principalAmount, item.currency),
 
-      formatCurrency(item.remainingBalance),
+      formatCurrency(item.remainingBalance, item.currency),
 
-      formatCurrency(item.monthlyPayment),
+      formatCurrency(item.monthlyPayment, item.currency),
 
       item.interestRate === null ? "" : `${item.interestRate}%`,
 

@@ -45,8 +45,6 @@ export default function InvestmentV2NewAssetFields({
 
   const initialTransactionType = watch("initialTransactionType");
 
-  const categoryConfig = INVESTMENT_V2_CATEGORY_CONFIG[category];
-
   const instrumentOptions = getInvestmentV2InstrumentOptions(category).map(
     (option) => ({
       value: option.value,

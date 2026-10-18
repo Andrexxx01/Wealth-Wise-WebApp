@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import {
   buildCashFlowChartData,
   buildQuickSnapshotItems,
 } from "@/lib/finance-dashboard";
 import { buildDashboardSummaryCards } from "@/lib/finance-summary-cards";
+import { getRecentFinanceMonthRangeLabel } from "@/lib/finance-period";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import { useCurrentUser } from "@/features/auth/components/current-user-provider";
 
@@ -47,11 +49,20 @@ export default function DashboardPageClient() {
     essentialSpending,
     recentActivity,
     financialHealthScore,
+    displayCurrency,
   } = useFinanceSummary();
+
+  const {
+    incomeItems: convertedIncomeItems,
+    expenseItems: convertedExpenseItems,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
 
   const { currentUser } = useCurrentUser();
 
-  const hasCashFlowData = incomeItems.length > 0 || expenseItems.length > 0;
+  const hasCashFlowData =
+    isCurrencyConversionReady &&
+    (convertedIncomeItems.length > 0 || convertedExpenseItems.length > 0);
   const hasInvestmentData =
     (investmentPortfolioV2?.summary.totalAssets ?? 0) > 0 ||
     investmentTransactionsV2.length > 0;
@@ -67,6 +78,7 @@ export default function DashboardPageClient() {
     totalIncome,
     totalExpenses,
     portfolioValue,
+    currency: displayCurrency,
   });
 
   const quickSnapshotItems = buildQuickSnapshotItems({
@@ -74,11 +86,12 @@ export default function DashboardPageClient() {
     netGain,
     recurringIncome,
     essentialSpending,
+    currency: displayCurrency,
   });
 
   const cashFlowChartData = buildCashFlowChartData({
-    incomeItems,
-    expenseItems,
+    incomeItems: convertedIncomeItems,
+    expenseItems: convertedExpenseItems,
   });
 
   return (
@@ -105,7 +118,7 @@ export default function DashboardPageClient() {
         <ChartCard
           eyebrow="Monthly Cash Flow"
           title="Income vs Expense"
-          badge="2026"
+          badge={getRecentFinanceMonthRangeLabel()}
         >
           {hasCashFlowData ? (
             <GroupedBarChartMock
@@ -163,23 +176,35 @@ export default function DashboardPageClient() {
                   <DashboardListItem
                     title="Monthly Surplus"
                     subtitle="Income minus expenses"
-                    value={formatCurrency(monthlySurplus)}
+                    value={formatCurrency(monthlySurplus, displayCurrency)}
                     tone={monthlySurplus >= 0 ? "positive" : "danger"}
                     className="border-none bg-slate-50 p-4"
                   />
 
                   <DashboardListItem
                     title="Savings Rate"
-                    subtitle="Current monthly ratio"
-                    value={formatPercentage(savingsRate)}
-                    tone={savingsRate >= 0 ? "positive" : "danger"}
+                    subtitle={
+                      totalIncome > 0
+                        ? "Current monthly ratio"
+                        : "Requires monthly income"
+                    }
+                    value={
+                      totalIncome > 0 ? formatPercentage(savingsRate) : "—"
+                    }
+                    tone={
+                      totalIncome <= 0
+                        ? "default"
+                        : savingsRate >= 0
+                          ? "positive"
+                          : "danger"
+                    }
                     className="border-none bg-slate-50 p-4"
                   />
 
                   <DashboardListItem
                     title="Debt Balance"
                     subtitle="Outstanding liabilities"
-                    value={formatCurrency(totalLoanBalance)}
+                    value={formatCurrency(totalLoanBalance, displayCurrency)}
                     className="border-none bg-slate-50 p-4"
                   />
                 </div>
@@ -257,6 +282,7 @@ export default function DashboardPageClient() {
                     subtitle={item.type}
                     value={`${item.amount >= 0 ? "+" : ""}${formatCurrency(
                       item.amount,
+                      displayCurrency,
                     )}`}
                     meta={formatDate(item.date)}
                     tone={item.amount >= 0 ? "positive" : "default"}

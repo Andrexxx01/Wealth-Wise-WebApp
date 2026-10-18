@@ -7,6 +7,7 @@ type BuildIncomeSummaryCardsParams = {
   recurringIncome: number;
   extraIncome: number;
   projectedAnnualIncome: number;
+  currency: UserCurrency;
 };
 
 type BuildExpenseSummaryCardsParams = {
@@ -14,6 +15,7 @@ type BuildExpenseSummaryCardsParams = {
   essentialSpending: number;
   lifestyleSpending: number;
   averageDailySpend: number;
+  currency: UserCurrency;
 };
 
 type BuildInvestmentSummaryCardsParams = {
@@ -29,7 +31,8 @@ type BuildLoanSummaryCardsParams = {
   totalLoanBalance: number;
   monthlyLoanPayment: number;
   totalPaidOff: number;
-  debtToIncomeRatio: number;
+  debtToIncomeRatio: number | null;
+  currency: UserCurrency;
 };
 
 type BuildDashboardSummaryCardsParams = {
@@ -37,6 +40,7 @@ type BuildDashboardSummaryCardsParams = {
   totalIncome: number;
   totalExpenses: number;
   portfolioValue: number;
+  currency: UserCurrency;
 };
 
 export function buildIncomeSummaryCards({
@@ -44,27 +48,28 @@ export function buildIncomeSummaryCards({
   recurringIncome,
   extraIncome,
   projectedAnnualIncome,
+  currency,
 }: BuildIncomeSummaryCardsParams): SummaryCardProps[] {
   return [
     {
       label: "Total Income",
-      value: formatCurrency(totalIncome),
+      value: formatCurrency(totalIncome, currency),
       helper: "This month",
     },
     {
       label: "Recurring Income",
-      value: formatCurrency(recurringIncome),
-      helper: "Salary & fixed sources",
+      value: formatCurrency(recurringIncome, currency),
+      helper: "This month",
     },
     {
       label: "Extra Income",
-      value: formatCurrency(extraIncome),
-      helper: "Freelance & side projects",
+      value: formatCurrency(extraIncome, currency),
+      helper: "This month",
     },
     {
       label: "Projected Annual",
-      value: formatCurrency(projectedAnnualIncome),
-      helper: "Estimated yearly income",
+      value: formatCurrency(projectedAnnualIncome, currency),
+      helper: "Current-month run rate × 12",
     },
   ];
 }
@@ -74,27 +79,28 @@ export function buildExpenseSummaryCards({
   essentialSpending,
   lifestyleSpending,
   averageDailySpend,
+  currency,
 }: BuildExpenseSummaryCardsParams): SummaryCardProps[] {
   return [
     {
       label: "Total Expenses",
-      value: formatCurrency(totalExpenses),
+      value: formatCurrency(totalExpenses, currency),
       helper: "This month",
     },
     {
       label: "Essential Spending",
-      value: formatCurrency(essentialSpending),
-      helper: "Needs & fixed costs",
+      value: formatCurrency(essentialSpending, currency),
+      helper: "This month",
     },
     {
       label: "Lifestyle Spending",
-      value: formatCurrency(lifestyleSpending),
-      helper: "Dining, shopping, fun",
+      value: formatCurrency(lifestyleSpending, currency),
+      helper: "This month",
     },
     {
       label: "Average Daily Spend",
-      value: formatCurrency(averageDailySpend),
-      helper: "Based on current month",
+      value: formatCurrency(averageDailySpend, currency),
+      helper: "Based on elapsed days this month",
     },
   ];
 }
@@ -127,7 +133,7 @@ export function buildInvestmentSummaryCards({
       value: isCurrencyConversionReady
         ? formatCurrency(totalCashOutflow, currency)
         : "—",
-      helper: "Investments plus transaction fees",
+      helper: "Net investment cash flow this month",
     },
     {
       label: "Transactions",
@@ -142,28 +148,35 @@ export function buildLoanSummaryCards({
   monthlyLoanPayment,
   totalPaidOff,
   debtToIncomeRatio,
+  currency,
 }: BuildLoanSummaryCardsParams): SummaryCardProps[] {
   return [
     {
       label: "Total Loan Balance",
-      value: formatCurrency(totalLoanBalance),
+      value: formatCurrency(totalLoanBalance, currency),
       helper: "Outstanding debt balance",
     },
     {
       label: "Monthly Payment",
-      value: formatCurrency(monthlyLoanPayment),
+      value: formatCurrency(monthlyLoanPayment, currency),
       helper: "Required this month",
     },
     {
       label: "Paid Off",
-      value: formatCurrency(totalPaidOff),
+      value: formatCurrency(totalPaidOff, currency),
       helper: "Total repaid so far",
       tone: "positive",
     },
     {
       label: "Debt Ratio",
-      value: formatPercentage(debtToIncomeRatio),
-      helper: "Based on current income",
+      value:
+        debtToIncomeRatio === null
+          ? "—"
+          : formatPercentage(debtToIncomeRatio),
+      helper:
+        debtToIncomeRatio === null
+          ? "Requires monthly income"
+          : "Based on current-month income",
     },
   ];
 }
@@ -173,28 +186,29 @@ export function buildDashboardSummaryCards({
   totalIncome,
   totalExpenses,
   portfolioValue,
+  currency,
 }: BuildDashboardSummaryCardsParams): SummaryCardProps[] {
   return [
     {
       label: "Net Worth",
-      value: formatCurrency(netWorth),
+      value: formatCurrency(netWorth, currency),
       helper: "Assets minus liabilities",
       tone: netWorth >= 0 ? "positive" : "danger",
     },
     {
       label: "Monthly Income",
-      value: formatCurrency(totalIncome),
+      value: formatCurrency(totalIncome, currency),
       helper: "Total income this month",
       tone: "positive",
     },
     {
       label: "Monthly Expenses",
-      value: formatCurrency(totalExpenses),
+      value: formatCurrency(totalExpenses, currency),
       helper: "Total spending this month",
     },
     {
       label: "Portfolio Value",
-      value: formatCurrency(portfolioValue),
+      value: formatCurrency(portfolioValue, currency),
       helper: "Current investment value",
       tone: portfolioValue > 0 ? "positive" : "default",
     },

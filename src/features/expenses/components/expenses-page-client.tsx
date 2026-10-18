@@ -22,6 +22,10 @@ import {
 } from "@/lib/finance-calculations";
 import { buildExpenseSummaryCards } from "@/lib/finance-summary-cards";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+import {
+  getElapsedDaysInReferenceMonth,
+  getRecentFinanceMonthRangeLabel,
+} from "@/lib/finance-period";
 import Link from "next/link";
 import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
@@ -44,18 +48,27 @@ export default function ExpensesPageClient() {
     isCurrencyConversionReady,
   } = useConvertedFinanceItems();
 
-  const { totalExpenses, essentialSpending, lifestyleSpending } =
-    useFinanceSummary();
+  const {
+    totalExpenses,
+    essentialSpending,
+    lifestyleSpending,
+    monthlyExpenseItems,
+  } = useFinanceSummary();
 
-  const hasExpenseItems = expenseItems.length > 0;
+  const hasExpenseChartData =
+    isCurrencyConversionReady && convertedExpenseItems.length > 0;
 
-  const averageDailySpend = calculateAverageDailySpend(totalExpenses);
+  const averageDailySpend = calculateAverageDailySpend(
+    totalExpenses,
+    getElapsedDaysInReferenceMonth(),
+  );
 
   const expenseSummaryCards = buildExpenseSummaryCards({
     totalExpenses,
     essentialSpending,
     lifestyleSpending,
     averageDailySpend,
+    currency: displayCurrency,
   });
 
   const monthlyExpenseChartData = buildMonthlyExpenseChartData({
@@ -63,7 +76,7 @@ export default function ExpensesPageClient() {
   });
 
   const expenseCategoryBreakdown = buildExpenseCategoryBreakdown({
-    expenseItems: convertedExpenseItems,
+    expenseItems: monthlyExpenseItems,
     totalExpenses,
     limit: 5,
   });
@@ -104,9 +117,9 @@ export default function ExpensesPageClient() {
           <ChartCard
             eyebrow="Monthly Expense Trend"
             title="Spending Over Time"
-            badge="2026"
+            badge={getRecentFinanceMonthRangeLabel()}
           >
-            {hasExpenseItems ? (
+            {hasExpenseChartData ? (
               <BarChartMock data={monthlyExpenseChartData} />
             ) : (
               <EmptyState

@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import type { ProfileDropdownProps } from "@/types/profile-dropdown";
 import LogoutButton from "@/features/auth/components/logout-button";
 
@@ -38,8 +37,6 @@ export default function ProfileDropdown({
   userPlan,
   subscriptionStatus,
 }: ProfileDropdownProps) {
-  const pathname = usePathname();
-
   const [isOpen, setIsOpen] = useState(false);
 
   const displayName = userName.trim() || "User";
@@ -49,10 +46,6 @@ export default function ProfileDropdown({
     userPlan,
     subscriptionStatus,
   );
-
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
 
   function handleToggleDropdown() {
     setIsOpen((currentValue) => !currentValue);

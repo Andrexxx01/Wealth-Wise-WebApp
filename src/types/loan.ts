@@ -32,7 +32,7 @@ export interface LoanSummary {
   totalLoanBalance: number;
   monthlyPaymentTotal: number;
   totalPaidOff: number;
-  debtToIncomeRatio: number;
+  debtToIncomeRatio: number | null;
 }
 
 export type CreateLoanFormValues = {

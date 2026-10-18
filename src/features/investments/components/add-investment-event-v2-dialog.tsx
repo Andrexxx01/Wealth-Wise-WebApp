@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import FormDialogFooter from "@/components/form/form-dialog-footer";
 import FormDialogShell from "@/components/form/form-dialog-shell";
@@ -124,7 +124,10 @@ export default function AddInvestmentEventV2Dialog({
 
   const reset = form.reset;
 
-  const eventType = form.watch("type");
+  const eventType = useWatch({
+    control: form.control,
+    name: "type",
+  });
 
   const isCashEvent = eventType === "INTEREST" || eventType === "COUPON";
 
@@ -136,8 +139,6 @@ export default function AddInvestmentEventV2Dialog({
     if (!open || !asset) {
       return;
     }
-
-    setSubmitError(null);
 
     reset(getDefaultFormValues(asset));
   }, [open, asset, reset]);

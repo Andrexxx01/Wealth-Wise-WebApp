@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import ProfileDropdown from "@/components/layout/profile-dropdown";
@@ -104,19 +104,23 @@ export default function DashboardNavbar({
     subscriptionStatus,
   );
 
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [pathname]);
-
   function handleToggleMobileMenu() {
     setIsMobileMenuOpen((currentValue) => !currentValue);
+  }
+
+  function handleCloseMobileMenu() {
+    setIsMobileMenuOpen(false);
   }
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-center justify-between gap-4">
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link
+            href="/dashboard"
+            onClick={handleCloseMobileMenu}
+            className="flex items-center gap-3"
+          >
             <Logo
               withLink={false}
               showText={false}
@@ -181,6 +185,7 @@ export default function DashboardNavbar({
                   <Link
                     key={link.href}
                     href={link.href}
+                    onClick={handleCloseMobileMenu}
                     className={getMobileLinkClassName(isActive)}
                   >
                     {link.label}
@@ -218,6 +223,7 @@ export default function DashboardNavbar({
                     <Link
                       key={link.href}
                       href={link.href}
+                      onClick={handleCloseMobileMenu}
                       className={getMobileAccountLinkClassName(isActive)}
                     >
                       {link.label}

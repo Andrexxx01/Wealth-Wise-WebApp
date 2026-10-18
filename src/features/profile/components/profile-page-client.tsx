@@ -71,25 +71,30 @@ export default function ProfilePageClient() {
   const profileSummaryCards: SummaryCardProps[] = [
     {
       label: "Net Worth",
-      value: formatCurrency(netWorth),
+      value: formatCurrency(netWorth, currentUser.currency),
       helper: "Assets minus liabilities",
       tone: netWorth >= 0 ? "positive" : "danger",
     },
     {
       label: "Savings Rate",
-      value: formatPercentage(savingsRate),
-      helper: "Current monthly ratio",
-      tone: savingsRate >= 0 ? "positive" : "danger",
+      value: totalIncome > 0 ? formatPercentage(savingsRate) : "—",
+      helper: totalIncome > 0 ? "Current monthly ratio" : "Requires monthly income",
+      tone:
+        totalIncome <= 0
+          ? "default"
+          : savingsRate >= 0
+            ? "positive"
+            : "danger",
     },
     {
       label: "Portfolio Value",
-      value: formatCurrency(portfolioValue),
+      value: formatCurrency(portfolioValue, currentUser.currency),
       helper: "Current investment value",
       tone: portfolioValue > 0 ? "positive" : "default",
     },
     {
       label: "Debt Balance",
-      value: formatCurrency(totalLoanBalance),
+      value: formatCurrency(totalLoanBalance, currentUser.currency),
       helper: "Outstanding liabilities",
     },
   ];
@@ -217,20 +222,20 @@ export default function ProfilePageClient() {
             <div className="space-y-4">
               <DashboardListItem
                 title="Monthly Income"
-                value={formatCurrency(totalIncome)}
+                value={formatCurrency(totalIncome, currentUser.currency)}
                 tone="positive"
                 className="border-none bg-slate-50 p-4"
               />
 
               <DashboardListItem
                 title="Monthly Expenses"
-                value={formatCurrency(totalExpenses)}
+                value={formatCurrency(totalExpenses, currentUser.currency)}
                 className="border-none bg-slate-50 p-4"
               />
 
               <DashboardListItem
                 title="Current Balance"
-                value={formatCurrency(totalIncome - totalExpenses)}
+                value={formatCurrency(totalIncome - totalExpenses, currentUser.currency)}
                 tone={totalIncome - totalExpenses >= 0 ? "positive" : "danger"}
                 className="border-none bg-slate-50 p-4"
               />

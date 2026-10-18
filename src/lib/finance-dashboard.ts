@@ -1,4 +1,8 @@
 import { formatCurrency } from "@/lib/formatters";
+import {
+  buildRecentFinanceMonthBuckets,
+  findFinanceMonthBucketIndex,
+} from "@/lib/finance-period";
 import type {
   BuildCashFlowChartDataParams,
   BuildQuickSnapshotItemsParams,
@@ -6,52 +10,43 @@ import type {
   QuickSnapshotItem,
 } from "@/types/finance-dashboard";
 
-const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-
 export function buildQuickSnapshotItems({
   totalInvested,
   netGain,
   recurringIncome,
   essentialSpending,
+  currency,
 }: BuildQuickSnapshotItemsParams): QuickSnapshotItem[] {
   return [
     {
       id: "total-invested",
       title: "Total Invested",
       subtitle: "Capital deployed",
-      value: formatCurrency(totalInvested),
-      meta: `${netGain >= 0 ? "+" : ""}${formatCurrency(netGain)}`,
+      value: formatCurrency(totalInvested, currency),
+      meta: `${netGain >= 0 ? "+" : ""}${formatCurrency(netGain, currency)}`,
       tone: netGain >= 0 ? "positive" : "danger",
     },
     {
       id: "recurring-income",
       title: "Recurring Income",
       subtitle: "Salary & fixed sources",
-      value: formatCurrency(recurringIncome),
-      meta: "Monthly",
+      value: formatCurrency(recurringIncome, currency),
+      meta: "This month",
     },
     {
       id: "essential-spending",
       title: "Essential Spending",
       subtitle: "Needs & fixed costs",
-      value: formatCurrency(essentialSpending),
-      meta: "Needs",
+      value: formatCurrency(essentialSpending, currency),
+      meta: "This month",
     },
   ];
 }
 
-function getMonthIndex(dateValue: string) {
-  const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return -1;
-  }
-
-  return date.getMonth();
-}
-
 function normalizeChartValue(value: number, maxValue: number) {
-  if (maxValue <= 0) return 0;
+  if (value <= 0 || maxValue <= 0) {
+    return 0;
+  }
 
   return Math.max(Math.round((value / maxValue) * 100), 6);
 }
@@ -60,29 +55,34 @@ export function buildCashFlowChartData({
   incomeItems,
   expenseItems,
 }: BuildCashFlowChartDataParams): CashFlowChartItem[] {
-  const monthlyIncome = Array.from({ length: 6 }, () => 0);
-  const monthlyExpenses = Array.from({ length: 6 }, () => 0);
+  const monthBuckets = buildRecentFinanceMonthBuckets();
+
+  const monthlyIncome = Array.from({ length: monthBuckets.length }, () => 0);
+  const monthlyExpenses = Array.from({ length: monthBuckets.length }, () => 0);
 
   incomeItems.forEach((item) => {
-    const monthIndex = getMonthIndex(item.receivedAt);
+    const monthIndex = findFinanceMonthBucketIndex(
+      monthBuckets,
+      item.receivedAt,
+    );
 
-    if (monthIndex >= 0 && monthIndex < 6) {
+    if (monthIndex >= 0) {
       monthlyIncome[monthIndex] += item.amount;
     }
   });
 
   expenseItems.forEach((item) => {
-    const monthIndex = getMonthIndex(item.spentAt);
+    const monthIndex = findFinanceMonthBucketIndex(monthBuckets, item.spentAt);
 
-    if (monthIndex >= 0 && monthIndex < 6) {
+    if (monthIndex >= 0) {
       monthlyExpenses[monthIndex] += item.amount;
     }
   });
 
   const maxValue = Math.max(...monthlyIncome, ...monthlyExpenses, 0);
 
-  return MONTH_LABELS.map((month, index) => ({
-    label: month,
+  return monthBuckets.map((bucket, index) => ({
+    label: bucket.label,
     primaryValue: normalizeChartValue(monthlyIncome[index], maxValue),
     secondaryValue: normalizeChartValue(monthlyExpenses[index], maxValue),
   }));

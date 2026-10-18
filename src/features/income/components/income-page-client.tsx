@@ -12,10 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import AddIncomeDialog from "@/features/income/components/add-income-dialog";
 import { buildMonthlyIncomeChartData } from "@/lib/finance-charts";
 import { sortRecentIncomeItems } from "@/lib/finance-calculations";
 import { buildIncomeSummaryCards } from "@/lib/finance-summary-cards";
+import { getRecentFinanceMonthRangeLabel } from "@/lib/finance-period";
 import { formatCurrency, formatDate, formatEnumLabel } from "@/lib/formatters";
 import Link from "next/link";
 
@@ -30,23 +32,37 @@ export default function IncomePageClient() {
 
   const { incomeItems, createIncome } = useFinance();
 
-  const { totalIncome, recurringIncome, extraIncome, projectedAnnualIncome } =
-    useFinanceSummary();
+  const {
+    totalIncome,
+    recurringIncome,
+    extraIncome,
+    projectedAnnualIncome,
+    monthlyIncomeItems,
+    displayCurrency,
+  } = useFinanceSummary();
 
-  const hasIncomeItems = incomeItems.length > 0;
+  const {
+    incomeItems: convertedIncomeItems,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
+
+  const hasCurrentMonthIncome = monthlyIncomeItems.length > 0;
+  const hasIncomeChartData =
+    isCurrencyConversionReady && convertedIncomeItems.length > 0;
 
   const incomeSummaryCards = buildIncomeSummaryCards({
     totalIncome,
     recurringIncome,
     extraIncome,
     projectedAnnualIncome,
+    currency: displayCurrency,
   });
 
   const monthlyIncomeChartData = buildMonthlyIncomeChartData({
-    incomeItems,
+    incomeItems: convertedIncomeItems,
   });
 
-  const incomeSources = incomeItems.map((item) => ({
+  const incomeSources = monthlyIncomeItems.map((item) => ({
     id: item.id,
     name: item.title,
     amount: item.amount,
@@ -90,9 +106,9 @@ export default function IncomePageClient() {
           <ChartCard
             eyebrow="Monthly Income Trend"
             title="Income Growth"
-            badge="2026"
+            badge={getRecentFinanceMonthRangeLabel()}
           >
-            {hasIncomeItems ? (
+            {hasIncomeChartData ? (
               <BarChartMock data={monthlyIncomeChartData} />
             ) : (
               <EmptyState
@@ -118,7 +134,7 @@ export default function IncomePageClient() {
                 title="Current Breakdown"
               />
 
-              {hasIncomeItems ? (
+              {hasCurrentMonthIncome ? (
                 <div className="space-y-4">
                   {incomeSources.map((item) => (
                     <DashboardListItem
@@ -132,8 +148,8 @@ export default function IncomePageClient() {
                 </div>
               ) : (
                 <EmptyState
-                  title="No income sources yet"
-                  description="Add salary, freelance work, business income, or other sources to see your income breakdown."
+                  title="No income recorded this month"
+                  description="Add salary, freelance work, business income, or another current-month income record to see this breakdown."
                   action={
                     <Button
                       type="button"

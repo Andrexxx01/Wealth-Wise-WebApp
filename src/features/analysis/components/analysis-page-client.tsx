@@ -62,6 +62,7 @@ export default function AnalysisPageClient() {
     debtToIncomeRatio,
     netWorth,
     financialHealthScore,
+    displayCurrency,
   } = useFinanceSummary();
 
   const hasInvestmentData =
@@ -75,10 +76,13 @@ export default function AnalysisPageClient() {
     loanItems.length > 0;
 
   const healthMetrics = buildHealthMetrics({
+    totalIncome,
     savingsRate,
     debtToIncomeRatio,
     netWorth,
+    portfolioValue,
     investmentReturnRate,
+    currency: displayCurrency,
   });
 
   const monthlyReview = buildMonthlyReview({
@@ -86,14 +90,18 @@ export default function AnalysisPageClient() {
     totalExpenses,
     monthlySurplus,
     totalLoanBalance,
+    currency: displayCurrency,
   });
 
   const insights = buildFinancialInsights({
+    totalIncome,
+    totalExpenses,
     monthlySurplus,
     savingsRate,
     debtToIncomeRatio,
     portfolioValue,
     netGain,
+    currency: displayCurrency,
   });
 
   const recommendedActions = buildRecommendedActions();
@@ -145,12 +153,9 @@ export default function AnalysisPageClient() {
                   <DashboardListItem
                     title="Biggest Strength"
                     value={financialHealthHighlights.biggestStrength}
-                    tone={
-                      financialHealthHighlights.biggestStrengthTone ===
-                      "positive"
-                        ? "positive"
-                        : "warning"
-                    }
+                    tone={getInsightListTone(
+                      financialHealthHighlights.biggestStrengthTone,
+                    )}
                     className="border-none bg-slate-50 p-4"
                   />
 

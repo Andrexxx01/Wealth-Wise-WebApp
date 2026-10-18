@@ -30,8 +30,10 @@ export function useMarketPrices(symbols: string[]) {
   useEffect(() => {
     let isCancelled = false;
 
+    const requestedSymbols = symbolsKey ? symbolsKey.split(",") : [];
+
     async function loadMarketPrices() {
-      if (normalizedSymbols.length === 0) {
+      if (requestedSymbols.length === 0) {
         setMarketPriceData({
           prices: {},
           quoteCurrency: "USD",
@@ -48,7 +50,7 @@ export function useMarketPrices(symbols: string[]) {
         setIsMarketPriceLoading(true);
         setMarketPriceError(null);
 
-        const data = await getMarketPrices(normalizedSymbols);
+        const data = await getMarketPrices(requestedSymbols);
 
         if (!isCancelled) {
           setMarketPriceData(data);

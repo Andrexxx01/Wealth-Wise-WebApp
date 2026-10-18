@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import AddLoanDialog from "@/features/loans/components/add-loan-dialog";
 import {
   buildLoanAccounts,
@@ -20,6 +21,7 @@ import {
 } from "@/lib/finance-calculations";
 import { buildLoanPayoffChartData } from "@/lib/finance-charts";
 import { buildLoanSummaryCards } from "@/lib/finance-summary-cards";
+import { getRecentFinanceMonthRangeLabel } from "@/lib/finance-period";
 import { formatCurrency, formatDate, formatPercentage } from "@/lib/formatters";
 import Link from "next/link";
 
@@ -51,19 +53,27 @@ export default function LoansPageClient() {
     monthlyLoanPayment,
     totalPaidOff,
     debtToIncomeRatio,
+    displayCurrency,
   } = useFinanceSummary();
 
-  const hasLoanItems = loanItems.length > 0;
+  const {
+    loanItems: convertedLoanItems,
+    isCurrencyConversionReady,
+  } = useConvertedFinanceItems();
+
+  const hasLoanChartData =
+    isCurrencyConversionReady && convertedLoanItems.length > 0;
 
   const loanSummaryCards = buildLoanSummaryCards({
     totalLoanBalance,
     monthlyLoanPayment,
     totalPaidOff,
     debtToIncomeRatio,
+    currency: displayCurrency,
   });
 
   const loanPayoffChartData = buildLoanPayoffChartData({
-    loanItems,
+    loanItems: convertedLoanItems,
   });
 
   const loanAccounts = buildLoanAccounts(loanItems);
@@ -103,9 +113,9 @@ export default function LoansPageClient() {
           <ChartCard
             eyebrow="Loan Payoff Progress"
             title="Repayment Trend"
-            badge="2026"
+            badge={getRecentFinanceMonthRangeLabel()}
           >
-            {hasLoanItems ? (
+            {hasLoanChartData ? (
               <BarChartMock data={loanPayoffChartData} />
             ) : (
               <EmptyState
