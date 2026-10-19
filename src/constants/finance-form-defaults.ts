@@ -30,6 +30,7 @@ export const DEFAULT_LOAN_FORM_VALUES: CreateLoanFormValues = {
   remainingBalance: "",
   monthlyPayment: "",
   currency: "USD",
+  status: "ACTIVE",
   interestRate: "",
   dueDate: "",
 };

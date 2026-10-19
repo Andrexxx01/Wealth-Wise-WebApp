@@ -43,6 +43,7 @@ export type CreateLoanFormValues = {
   remainingBalance: string;
   monthlyPayment: string;
   currency: UserCurrency;
+  status: LoanStatus;
   interestRate?: string;
   dueDate?: string;
 };

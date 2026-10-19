@@ -39,6 +39,7 @@ export function mapLoanItemToFormValues(loan: LoanItem): CreateLoanFormValues {
     remainingBalance: String(loan.remainingBalance),
     monthlyPayment: String(loan.monthlyPayment),
     currency: loan.currency,
+    status: loan.status,
     interestRate: loan.interestRate === null ? "" : String(loan.interestRate),
     dueDate: loan.dueDate ?? "",
   };

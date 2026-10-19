@@ -53,6 +53,8 @@ export const LOAN_CATEGORY_VALUES = [
   "OTHER",
 ] as const;
 
+export const LOAN_STATUS_VALUES = ["ACTIVE", "PAID_OFF", "OVERDUE"] as const;
+
 export const INCOME_CATEGORY_OPTIONS = [
   { value: "SALARY", label: "Salary" },
   { value: "FREELANCE", label: "Freelance" },
@@ -109,6 +111,12 @@ export const LOAN_CATEGORY_OPTIONS = [
   { value: "STUDENT", label: "Student Loan" },
   { value: "BUSINESS", label: "Business Loan" },
   { value: "OTHER", label: "Other Loan" },
+] as const;
+
+export const LOAN_STATUS_OPTIONS = [
+  { value: "ACTIVE", label: "Active" },
+  { value: "PAID_OFF", label: "Paid Off" },
+  { value: "OVERDUE", label: "Overdue" },
 ] as const;
 
 export const CURRENCY_OPTIONS = [

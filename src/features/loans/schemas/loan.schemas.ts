@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { LOAN_CATEGORY_VALUES } from "@/constants/finance-options";
+import {
+  LOAN_CATEGORY_VALUES,
+  LOAN_STATUS_VALUES,
+} from "@/constants/finance-options";
 
 export const createLoanSchema = z
   .object({
@@ -32,11 +35,12 @@ export const createLoanSchema = z
     monthlyPayment: z
       .string()
       .min(1, "Monthly payment is required.")
-      .refine((value) => Number(value) > 0, {
-        message: "Monthly payment must be greater than 0.",
+      .refine((value) => Number(value) >= 0, {
+        message: "Monthly payment must be 0 or greater.",
       }),
 
     currency: z.enum(["USD", "IDR"]),
+    status: z.enum(LOAN_STATUS_VALUES),
 
     interestRate: z
       .string()
@@ -61,6 +65,34 @@ export const createLoanSchema = z
         code: "custom",
         path: ["remainingBalance"],
         message: "Remaining balance cannot be greater than principal amount.",
+      });
+    }
+
+    if (values.status === "PAID_OFF") {
+      if (Number.isFinite(remainingBalance) && remainingBalance !== 0) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["remainingBalance"],
+          message: "Paid-off loans must have a remaining balance of 0.",
+        });
+      }
+
+      return;
+    }
+
+    if (Number.isFinite(remainingBalance) && remainingBalance <= 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["remainingBalance"],
+        message: "Active or overdue loans must have a remaining balance greater than 0.",
+      });
+    }
+
+    if (Number.isFinite(monthlyPayment) && monthlyPayment <= 0) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["monthlyPayment"],
+        message: "Monthly payment must be greater than 0 for active or overdue loans.",
       });
     }
 

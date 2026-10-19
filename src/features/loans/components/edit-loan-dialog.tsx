@@ -7,7 +7,10 @@ import FormDialogFooter from "@/components/form/form-dialog-footer";
 import FormDialogShell from "@/components/form/form-dialog-shell";
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
-import { LOAN_CATEGORY_OPTIONS } from "@/constants/finance-options";
+import {
+  LOAN_CATEGORY_OPTIONS,
+  LOAN_STATUS_OPTIONS,
+} from "@/constants/finance-options";
 import { createLoanSchema } from "@/features/loans/schemas/loan.schemas";
 import { transformLoanFormValues } from "@/lib/form-transformers";
 import type { EditLoanDialogProps } from "@/types/finance-dialog";
@@ -92,6 +95,13 @@ export default function EditLoanDialog({
           options={LOAN_CATEGORY_OPTIONS}
           error={errors.category?.message}
           registration={register("category")}
+        />
+
+        <FormSelect
+          label="Status"
+          options={LOAN_STATUS_OPTIONS}
+          error={errors.status?.message}
+          registration={register("status")}
         />
 
         <FormInput

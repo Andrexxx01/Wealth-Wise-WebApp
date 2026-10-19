@@ -1,6 +1,6 @@
 import type { IncomeCategory, IncomeFrequency } from "@/types/income";
 import type { ExpenseCategory, ExpenseType } from "@/types/expense";
-import type { LoanCategory } from "@/types/loan";
+import type { LoanCategory, LoanStatus } from "@/types/loan";
 import type { UserCurrency } from "@/types/user-subscription";
 
 export type CreateIncomePayload = {
@@ -31,6 +31,7 @@ export type CreateLoanPayload = {
   remainingBalance: number;
   monthlyPayment: number;
   currency: UserCurrency;
+  status: LoanStatus;
   interestRate: number | null;
   dueDate: string | null;
 };
