@@ -229,16 +229,22 @@ export function calculateLoanPayoffProgress(loanItem: LoanItem) {
 }
 
 export function buildLoanAccounts(loanItems: LoanItem[]) {
-  return loanItems.map((item) => ({
-    id: item.id,
-    title: item.title,
-    category: item.category,
-    remainingBalance: item.remainingBalance,
-    monthlyPayment: item.monthlyPayment,
-    currency: item.currency,
-    progress: calculateLoanPayoffProgress(item),
-    status: item.status,
-  }));
+  return loanItems
+    .filter(
+      (item) =>
+        (item.status === "ACTIVE" || item.status === "OVERDUE") &&
+        item.remainingBalance > 0,
+    )
+    .map((item) => ({
+      id: item.id,
+      title: item.title,
+      category: item.category,
+      remainingBalance: item.remainingBalance,
+      monthlyPayment: item.monthlyPayment,
+      currency: item.currency,
+      progress: calculateLoanPayoffProgress(item),
+      status: item.status,
+    }));
 }
 
 export function sortUpcomingLoanPayments(loanItems: LoanItem[], limit = 4) {
