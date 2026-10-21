@@ -347,6 +347,95 @@ export function calculateInvestmentValuation({
   }
 
   // =====================================================
+  // MANUAL QUANTITY VALUATION
+  // =====================================================
+  //
+  // Manual valuation stores a current price per pricing unit
+  // on the asset itself. This is useful for instruments such
+  // as bonds when an automatic market-data provider is not yet
+  // available.
+  // =====================================================
+
+  if (
+    holding.positionKind === "QUANTITY" &&
+    holding.valuationType === "MANUAL"
+  ) {
+    if (holding.manualPrice === null) {
+      return createUnavailableValuation({
+        holding,
+        eventSummary,
+        depositAccrualSummary,
+        displayCurrency,
+        status: "PRICE_UNAVAILABLE",
+        costBasisInDisplayCurrency,
+        realizedGainLossInDisplayCurrency,
+      });
+    }
+
+    const manualPriceCurrencyCode =
+      holding.marketCurrencyCode ?? transactionCurrencyCode;
+
+    if (!isUserCurrency(manualPriceCurrencyCode)) {
+      return createUnavailableValuation({
+        holding,
+        eventSummary,
+        depositAccrualSummary,
+        displayCurrency,
+        status: "UNSUPPORTED_CURRENCY",
+        costBasisInDisplayCurrency,
+        realizedGainLossInDisplayCurrency,
+      });
+    }
+
+    const quantity = holding.quantity ?? 0;
+
+    const marketValueInManualCurrency = quantity * holding.manualPrice;
+
+    const marketValue = convertCurrency(
+      marketValueInManualCurrency,
+      manualPriceCurrencyCode,
+      displayCurrency,
+      usdToIdrRate,
+    );
+
+    const unrealizedGainLoss = marketValue - costBasisInDisplayCurrency;
+
+    const unrealizedReturnPercentage =
+      costBasisInDisplayCurrency > 0
+        ? (unrealizedGainLoss / costBasisInDisplayCurrency) * 100
+        : null;
+
+    const totalGainLoss =
+      realizedGainLossInDisplayCurrency + unrealizedGainLoss;
+
+    return {
+      ...holding,
+
+      ...getInvestmentEventValuationFields(eventSummary),
+      ...getDepositAccrualValuationFields(null),
+
+      displayCurrency,
+
+      marketPrice: holding.manualPrice,
+      marketPriceCurrencyCode: manualPriceCurrencyCode,
+
+      marketValue,
+
+      costBasisInDisplayCurrency,
+      realizedGainLossInDisplayCurrency,
+
+      unrealizedGainLoss,
+      unrealizedReturnPercentage,
+      totalGainLoss,
+
+      marketSource: "manual",
+      marketPriceAsOf: holding.manualPriceUpdatedAt,
+
+      valuationStatus: "VALUED",
+    };
+  }
+
+  // =====================================================
   // VALUATION METHOD SUPPORT
   // =====================================================
 

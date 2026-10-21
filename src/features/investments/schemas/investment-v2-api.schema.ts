@@ -70,6 +70,8 @@ export const createInvestmentAssetV2Schema = z
 
     marketCurrencyCode: currencyCodeSchema.optional().nullable(),
 
+    manualPrice: z.coerce.number().finite().positive().optional().nullable(),
+
     annualInterestRate: z.coerce
       .number()
       .finite()
@@ -207,6 +209,8 @@ export const updateInvestmentAssetV2Schema = z
     issuer: updateOptionalTextSchema,
 
     underlyingIndex: updateOptionalTextSchema,
+
+    manualPrice: z.coerce.number().finite().positive().optional().nullable(),
 
     notes: z
       .string()

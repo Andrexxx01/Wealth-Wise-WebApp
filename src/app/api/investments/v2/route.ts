@@ -110,6 +110,13 @@ export async function POST(request: Request) {
 
           marketCurrencyCode: parsedBody.marketCurrencyCode,
 
+          manualPrice: parsedBody.manualPrice,
+
+          manualPriceUpdatedAt:
+            parsedBody.manualPrice !== null && parsedBody.manualPrice !== undefined
+              ? new Date()
+              : null,
+
           annualInterestRate: parsedBody.annualInterestRate,
 
           couponRate: parsedBody.couponRate,

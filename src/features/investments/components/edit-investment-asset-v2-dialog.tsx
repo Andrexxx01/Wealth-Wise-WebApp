@@ -40,6 +40,7 @@ function assetToFormValues(
     isin: asset.isin ?? "",
     issuer: asset.issuer ?? "",
     underlyingIndex: asset.underlyingIndex ?? "",
+    manualPrice: asset.manualPrice !== null ? String(asset.manualPrice) : "",
     notes: asset.notes ?? "",
   };
 }
@@ -74,6 +75,7 @@ export default function EditInvestmentAssetV2Dialog({
       isin: "",
       issuer: "",
       underlyingIndex: "",
+      manualPrice: "",
       notes: "",
     },
   });
@@ -161,6 +163,8 @@ export default function EditInvestmentAssetV2Dialog({
 
   const showUnderlyingIndex =
     instrumentType === "ETF" || instrumentType === "INDEX_FUND";
+
+  const showManualPrice = asset?.valuationType === "MANUAL";
 
   return (
     <FormDialogShell
@@ -328,6 +332,38 @@ export default function EditInvestmentAssetV2Dialog({
             {errors.underlyingIndex ? (
               <p className="text-xs font-medium text-red-600">
                 {errors.underlyingIndex.message}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showManualPrice ? (
+          <div className="space-y-2">
+            <label
+              htmlFor="edit-investment-asset-manual-price"
+              className="text-sm font-semibold text-slate-700"
+            >
+              Current Price per Unit
+            </label>
+
+            <Input
+              id="edit-investment-asset-manual-price"
+              type="number"
+              min="0"
+              step="any"
+              {...form.register("manualPrice")}
+              placeholder="Enter the latest manual price"
+            />
+
+            <p className="text-xs leading-5 text-slate-500">
+              Used only for current valuation. It does not change transaction
+              history or cost basis. Currency: {asset?.marketCurrencyCode ??
+                asset?.transactionCurrencyCode ?? "—"}.
+            </p>
+
+            {errors.manualPrice ? (
+              <p className="text-xs font-medium text-red-600">
+                {errors.manualPrice.message}
               </p>
             ) : null}
           </div>

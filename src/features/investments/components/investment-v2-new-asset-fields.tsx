@@ -357,6 +357,16 @@ export default function InvestmentV2NewAssetFields({
                 error={errors.marketCurrencyCode?.message}
                 registration={register("marketCurrencyCode")}
               />
+
+              <FormInput
+                label="Current Price per Unit (Optional)"
+                type="number"
+                min="0"
+                step="any"
+                placeholder="1000"
+                error={errors.manualPrice?.message}
+                registration={register("manualPrice")}
+              />
             </>
           ) : null}
 

@@ -206,6 +206,10 @@ model InvestmentAsset {
   // Examples: USD, IDR, JPY, KRW, HKD, EUR.
   marketCurrencyCode String? @db.VarChar(3)
 
+  // Optional manually entered current price used by MANUAL valuation.
+  manualPrice          Decimal? @db.Decimal(30, 12)
+  manualPriceUpdatedAt DateTime?
+
   // Deposit / fixed-income properties
   annualInterestRate Decimal?  @db.Decimal(10, 6)
   couponRate         Decimal?  @db.Decimal(10, 6)

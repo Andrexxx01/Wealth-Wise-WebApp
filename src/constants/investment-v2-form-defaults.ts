@@ -56,6 +56,7 @@ export function getDefaultInvestmentAssetV2FormValues(
     pricingUnit: categoryConfig.defaultPricingUnit,
 
     marketCurrencyCode: categoryConfig.defaultMarketCurrencyCode,
+    manualPrice: "",
 
     annualInterestRate: "",
     couponRate: "",

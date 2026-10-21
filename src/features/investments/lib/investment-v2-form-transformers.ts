@@ -97,6 +97,8 @@ export function transformEditInvestmentAssetV2FormValues(
 
     underlyingIndex: emptyStringToNull(values.underlyingIndex),
 
+    manualPrice: toOptionalNumber(values.manualPrice),
+
     notes: emptyStringToNull(values.notes),
   };
 }
@@ -129,6 +131,8 @@ export function transformInvestmentAssetV2FormValues(
   let marketCurrencyCode: string | null = normalizeOptionalUppercaseText(
     values.marketCurrencyCode,
   );
+
+  let manualPrice: number | null = null;
 
   let annualInterestRate: number | null = null;
 
@@ -217,6 +221,10 @@ export function transformInvestmentAssetV2FormValues(
 
     maturityDate = optionalDateInputToIsoDateTime(values.maturityDate);
 
+    manualPrice = toOptionalNumber(values.manualPrice);
+
+    marketCurrencyCode = marketCurrencyCode ?? transactionCurrencyCode;
+
     unit = "UNIT";
     pricingUnit = "UNIT";
   }
@@ -298,6 +306,8 @@ export function transformInvestmentAssetV2FormValues(
     pricingUnit,
 
     marketCurrencyCode,
+
+    manualPrice,
 
     annualInterestRate,
     couponRate,

@@ -660,6 +660,26 @@ export default function InvestmentsPageClient() {
                       asset.instrumentType === "DEPOSIT" &&
                       asset.positionKind === "PRINCIPAL";
 
+                    const isManualValuation =
+                      asset.positionKind === "QUANTITY" &&
+                      asset.valuationType === "MANUAL" &&
+                      !asset.isClosed;
+
+                    const manualPrice =
+                      isManualValuation &&
+                      asset.manualPrice !== null &&
+                      asset.marketPriceCurrencyCode !== null
+                        ? formatInvestmentTransactionAmount(
+                            asset.manualPrice,
+                            asset.marketPriceCurrencyCode,
+                          )
+                        : null;
+
+                    const manualPriceUpdatedAt =
+                      isManualValuation && asset.manualPriceUpdatedAt
+                        ? formatDate(asset.manualPriceUpdatedAt)
+                        : null;
+
                     const depositCurrency = asset.transactionCurrencyCode;
 
                     const depositAccruedValue =
@@ -844,6 +864,34 @@ export default function InvestmentsPageClient() {
                           </div>
                         </div>
 
+                        {isManualValuation ? (
+                          <div className="mt-4 rounded-[24px] border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                              Manual Valuation
+                            </p>
+
+                            <div className="mt-3 grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Current Price / Unit
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {manualPrice ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Last Updated
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {manualPriceUpdatedAt ?? "—"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+
                         {isDeposit ? (
                           <div className="mt-4 rounded-[24px] border border-slate-200 bg-white p-4">
                             <div className="flex flex-col gap-1">
@@ -954,8 +1002,9 @@ export default function InvestmentsPageClient() {
                         {asset.valuationStatus !== "VALUED" ? (
                           <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3">
                             <p className="text-xs font-semibold text-amber-700">
-                              Current market valuation is unavailable for this
-                              asset.
+                              {isManualValuation && asset.manualPrice === null
+                                ? "Enter a current price in Edit Asset to value this manual-price investment."
+                                : "Current market valuation is unavailable for this asset."}
                             </p>
                           </div>
                         ) : null}

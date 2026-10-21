@@ -119,6 +119,14 @@ export async function PATCH(
               }
             : {}),
 
+          ...(parsedBody.manualPrice !== undefined
+            ? {
+                manualPrice: parsedBody.manualPrice,
+                manualPriceUpdatedAt:
+                  parsedBody.manualPrice === null ? null : new Date(),
+              }
+            : {}),
+
           ...(parsedBody.notes !== undefined
             ? {
                 notes: parsedBody.notes,

@@ -120,6 +120,10 @@ export const createInvestmentAssetV2FormSchema = z
         message: "Market currency must use a 3-letter currency code.",
       }),
 
+    manualPrice: z.string().refine(isOptionalPositiveNumberString, {
+      message: "Manual current price must be greater than 0.",
+    }),
+
     annualInterestRate: z.string().refine(isOptionalNonNegativeNumberString, {
       message: "Annual interest rate cannot be negative.",
     }),
@@ -540,6 +544,10 @@ export const editInvestmentAssetV2FormSchema = z.object({
     .string()
     .trim()
     .max(100, "Underlying index must be 100 characters or fewer."),
+
+  manualPrice: z.string().refine(isOptionalPositiveNumberString, {
+    message: "Manual current price must be greater than 0.",
+  }),
 
   notes: z.string().trim().max(500, "Notes must be 500 characters or fewer."),
 });
