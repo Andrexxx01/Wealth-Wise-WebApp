@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { getCryptoSpotPrice } from "@/features/market-data/server/crypto-market-provider";
+import { getStockMarketPrice } from "@/features/market-data/server/stock-market-provider";
 import { getUsdToIdrRate } from "@/features/market-data/server/fx-rate-provider";
 
 import { calculateInvestmentHolding } from "@/features/investments/lib/investment-holding-engine";
@@ -115,27 +116,63 @@ export async function GET() {
     ];
 
     // =====================================================
-    // 5. AMBIL MARKET PRICE + FX RATE
+    // 5. CARI STOCK SYMBOL YANG MEMBUTUHKAN MARKET PRICE
     // =====================================================
 
-    const [exchangeRate, marketPriceEntries] = await Promise.all([
-      getUsdToIdrRate(),
-
-      Promise.all(
-        cryptoSymbols.map(
-          async (
-            symbol,
-          ): Promise<readonly [string, MarketPriceItem | null]> => {
-            const marketPrice = await getCryptoSpotPrice(symbol);
-
-            return [symbol, marketPrice] as const;
-          },
-        ),
+    const stockSymbols = [
+      ...new Set(
+        holdings
+          .filter(
+            (holding) =>
+              holding.category === "STOCK" &&
+              holding.instrumentType === "COMMON_STOCK" &&
+              holding.valuationType === "MARKET_PRICE" &&
+              holding.symbol !== null,
+          )
+          .map((holding) => holding.symbol!.trim().toUpperCase())
+          .filter(Boolean),
       ),
-    ]);
+    ];
 
-    const marketPrices = new Map<string, MarketPriceItem | null>(
-      marketPriceEntries,
+    // =====================================================
+    // 6. AMBIL MARKET PRICE + FX RATE
+    // =====================================================
+
+    const [exchangeRate, cryptoMarketPriceEntries, stockMarketPriceEntries] =
+      await Promise.all([
+        getUsdToIdrRate(),
+
+        Promise.all(
+          cryptoSymbols.map(
+            async (
+              symbol,
+            ): Promise<readonly [string, MarketPriceItem | null]> => {
+              const marketPrice = await getCryptoSpotPrice(symbol);
+
+              return [symbol, marketPrice] as const;
+            },
+          ),
+        ),
+
+        Promise.all(
+          stockSymbols.map(
+            async (
+              symbol,
+            ): Promise<readonly [string, MarketPriceItem | null]> => {
+              const marketPrice = await getStockMarketPrice(symbol);
+
+              return [symbol, marketPrice] as const;
+            },
+          ),
+        ),
+      ]);
+
+    const cryptoMarketPrices = new Map<string, MarketPriceItem | null>(
+      cryptoMarketPriceEntries,
+    );
+
+    const stockMarketPrices = new Map<string, MarketPriceItem | null>(
+      stockMarketPriceEntries,
     );
 
     const marketPriceAsOf = new Date().toISOString();
@@ -156,16 +193,24 @@ export async function GET() {
     });
 
     // =====================================================
-    // 6. VALUATION
+    // 7. VALUATION
     // =====================================================
 
     const valuations = holdings.map((holding, index) => {
       const symbol = holding.symbol?.trim().toUpperCase() ?? null;
 
-      const marketPrice =
-        holding.category === "CRYPTO" && symbol !== null
-          ? (marketPrices.get(symbol) ?? null)
-          : null;
+      let marketPrice: MarketPriceItem | null = null;
+
+      if (symbol !== null) {
+        if (holding.category === "CRYPTO") {
+          marketPrice = cryptoMarketPrices.get(symbol) ?? null;
+        } else if (
+          holding.category === "STOCK" &&
+          holding.instrumentType === "COMMON_STOCK"
+        ) {
+          marketPrice = stockMarketPrices.get(symbol) ?? null;
+        }
+      }
 
       return calculateInvestmentValuation({
         holding,
@@ -193,7 +238,7 @@ export async function GET() {
     });
 
     // =====================================================
-    // 7. RESPONSE
+    // 8. RESPONSE
     // =====================================================
 
     return NextResponse.json({

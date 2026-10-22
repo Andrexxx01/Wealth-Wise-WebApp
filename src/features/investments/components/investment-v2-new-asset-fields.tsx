@@ -211,7 +211,7 @@ export default function InvestmentV2NewAssetFields({
             <>
               <FormInput
                 label="Symbol"
-                placeholder="AAPL"
+                placeholder="AAPL or BBCA.JK"
                 error={errors.symbol?.message}
                 registration={register("symbol")}
               />

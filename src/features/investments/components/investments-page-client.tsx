@@ -680,6 +680,35 @@ export default function InvestmentsPageClient() {
                         ? formatDate(asset.manualPriceUpdatedAt)
                         : null;
 
+                    const isAutomaticMarketValuation =
+                      asset.positionKind === "QUANTITY" &&
+                      asset.valuationType === "MARKET_PRICE" &&
+                      !asset.isClosed;
+
+                    const automaticMarketPrice =
+                      isAutomaticMarketValuation &&
+                      asset.marketPrice !== null &&
+                      asset.marketPriceCurrencyCode !== null
+                        ? formatInvestmentTransactionAmount(
+                            asset.marketPrice,
+                            asset.marketPriceCurrencyCode,
+                          )
+                        : null;
+
+                    const automaticMarketSource =
+                      isAutomaticMarketValuation && asset.marketSource
+                        ? asset.marketSource === "yahoo"
+                          ? "Yahoo Finance"
+                          : asset.marketSource === "coinbase"
+                            ? "Coinbase"
+                            : asset.marketSource
+                        : null;
+
+                    const automaticMarketPriceAsOf =
+                      isAutomaticMarketValuation && asset.marketPriceAsOf
+                        ? formatDate(asset.marketPriceAsOf)
+                        : null;
+
                     const depositCurrency = asset.transactionCurrencyCode;
 
                     const depositAccruedValue =
@@ -886,6 +915,43 @@ export default function InvestmentsPageClient() {
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
                                   {manualPriceUpdatedAt ?? "—"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {isAutomaticMarketValuation ? (
+                          <div className="mt-4 rounded-[24px] border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                              Market Data
+                            </p>
+
+                            <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Current Price / Unit
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {automaticMarketPrice ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Source
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {automaticMarketSource ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Price As Of
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {automaticMarketPriceAsOf ?? "—"}
                                 </p>
                               </div>
                             </div>

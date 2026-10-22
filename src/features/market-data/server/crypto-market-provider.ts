@@ -1,6 +1,6 @@
 import type { MarketPriceItem } from "@/types/market-price";
 
-const MARKET_PRICE_REVALIDATE_SECONDS = 60 * 60 * 24;
+const MARKET_PRICE_REVALIDATE_SECONDS = 60 * 5;
 
 export async function getCryptoSpotPrice(
   symbol: string,
@@ -54,6 +54,7 @@ export async function getCryptoSpotPrice(
       price,
       currency: "USD",
       source: "coinbase",
+      asOf: new Date().toISOString(),
     };
   } catch (error) {
     console.error(

@@ -483,6 +483,22 @@ export function calculateInvestmentValuation({
   }
 
   // =====================================================
+  // MARKET PRICE CURRENCY
+  // =====================================================
+
+  if (!isUserCurrency(marketPrice.currency)) {
+    return createUnavailableValuation({
+      holding,
+      eventSummary,
+      depositAccrualSummary,
+      displayCurrency,
+      status: "UNSUPPORTED_CURRENCY",
+      costBasisInDisplayCurrency,
+      realizedGainLossInDisplayCurrency,
+    });
+  }
+
+  // =====================================================
   // MARKET VALUE
   // =====================================================
 
@@ -541,7 +557,7 @@ export function calculateInvestmentValuation({
 
     marketSource: marketPrice.source,
 
-    marketPriceAsOf,
+    marketPriceAsOf: marketPrice.asOf ?? marketPriceAsOf,
 
     valuationStatus: "VALUED",
   };
