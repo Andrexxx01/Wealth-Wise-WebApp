@@ -32,12 +32,54 @@ import { InvestmentV2ApiError } from "@/features/investments/api/investment-v2-a
 import useEditRecordDialog from "@/hooks/use-edit-record-dialog";
 
 import type {
+  InvestmentAssetCategory,
   InvestmentRecentTransactionV2Item,
   InvestmentValuationItem,
 } from "@/types/investment-v2";
 import { formatInvestmentV2Category } from "@/lib/finance-labels";
 import EditInvestmentAssetV2Dialog from "@/features/investments/components/edit-investment-asset-v2-dialog";
 import AddInvestmentEventV2Dialog from "@/features/investments/components/add-investment-event-v2-dialog";
+
+type InvestmentAssetStatusFilter = "ACTIVE" | "CLOSED" | "SETTLED" | "ALL";
+type InvestmentAssetCategoryFilter = InvestmentAssetCategory | "ALL";
+type InvestmentAssetSort = "VALUE_DESC" | "GAIN_DESC" | "NAME_ASC";
+
+const INVESTMENTS_PER_PAGE = 8;
+
+const INVESTMENT_CATEGORY_FILTER_OPTIONS: Array<{
+  value: InvestmentAssetCategoryFilter;
+  label: string;
+}> = [
+  { value: "ALL", label: "All categories" },
+  { value: "CRYPTO", label: "Crypto" },
+  { value: "STOCK", label: "Stock" },
+  { value: "DEPOSIT", label: "Deposit" },
+  { value: "INDEX", label: "Index" },
+  { value: "BOND", label: "Bond" },
+  { value: "MUTUAL_FUND", label: "Mutual fund" },
+  { value: "FOREX", label: "Forex" },
+  { value: "COMMODITY", label: "Commodity" },
+];
+
+function getInvestmentAssetStatus(
+  asset: InvestmentValuationItem,
+): Exclude<InvestmentAssetStatusFilter, "ALL"> {
+  const isDeposit =
+    asset.instrumentType === "DEPOSIT" && asset.positionKind === "PRINCIPAL";
+
+  if (isDeposit) {
+    const hasOutstandingInterest =
+      (asset.depositUnpaidAccruedInterest ?? 0) > 0.000001;
+
+    if ((asset.principalBalance ?? 0) <= 0 && !hasOutstandingInterest) {
+      return "SETTLED";
+    }
+
+    return "ACTIVE";
+  }
+
+  return asset.isClosed ? "CLOSED" : "ACTIVE";
+}
 
 function formatInvestmentTransactionType(
   type: "BUY" | "SELL" | "OPEN" | "CLOSE",
@@ -156,6 +198,15 @@ export default function InvestmentsPageClient() {
 
   const [assetActionError, setAssetActionError] = useState<string | null>(null);
 
+  const [assetSearchQuery, setAssetSearchQuery] = useState("");
+  const [assetStatusFilter, setAssetStatusFilter] =
+    useState<InvestmentAssetStatusFilter>("ACTIVE");
+  const [assetCategoryFilter, setAssetCategoryFilter] =
+    useState<InvestmentAssetCategoryFilter>("ALL");
+  const [assetSort, setAssetSort] =
+    useState<InvestmentAssetSort>("VALUE_DESC");
+  const [assetPage, setAssetPage] = useState(1);
+
   const {
     investmentPortfolioV2,
     isInvestmentPortfolioV2Loading,
@@ -180,6 +231,77 @@ export default function InvestmentsPageClient() {
   const portfolioSummary = investmentPortfolioV2?.summary ?? null;
 
   const portfolioAssets = investmentPortfolioV2?.data ?? [];
+
+  const normalizedAssetSearch = assetSearchQuery.trim().toLowerCase();
+
+  const filteredPortfolioAssets = portfolioAssets
+    .filter((asset) => {
+      const matchesSearch =
+        normalizedAssetSearch.length === 0 ||
+        [
+          asset.name,
+          asset.symbol,
+          asset.exchange,
+          asset.issuer,
+          formatInvestmentV2Category(asset.category),
+        ]
+          .filter((value): value is string => Boolean(value))
+          .some((value) => value.toLowerCase().includes(normalizedAssetSearch));
+
+      const matchesStatus =
+        assetStatusFilter === "ALL" ||
+        getInvestmentAssetStatus(asset) === assetStatusFilter;
+
+      const matchesCategory =
+        assetCategoryFilter === "ALL" || asset.category === assetCategoryFilter;
+
+      return matchesSearch && matchesStatus && matchesCategory;
+    })
+    .sort((left, right) => {
+      if (assetSort === "NAME_ASC") {
+        return left.name.localeCompare(right.name);
+      }
+
+      if (assetSort === "GAIN_DESC") {
+        const leftGain = left.totalGainLoss ?? Number.NEGATIVE_INFINITY;
+        const rightGain = right.totalGainLoss ?? Number.NEGATIVE_INFINITY;
+
+        return rightGain === leftGain ? 0 : rightGain > leftGain ? 1 : -1;
+      }
+
+      const leftValue = left.marketValue ?? Number.NEGATIVE_INFINITY;
+      const rightValue = right.marketValue ?? Number.NEGATIVE_INFINITY;
+
+      return rightValue === leftValue ? 0 : rightValue > leftValue ? 1 : -1;
+    });
+
+  const totalAssetPages = Math.max(
+    1,
+    Math.ceil(filteredPortfolioAssets.length / INVESTMENTS_PER_PAGE),
+  );
+
+  const currentAssetPage = Math.min(assetPage, totalAssetPages);
+
+  const paginatedPortfolioAssets = filteredPortfolioAssets.slice(
+    (currentAssetPage - 1) * INVESTMENTS_PER_PAGE,
+    currentAssetPage * INVESTMENTS_PER_PAGE,
+  );
+
+  const assetResultStart =
+    filteredPortfolioAssets.length === 0
+      ? 0
+      : (currentAssetPage - 1) * INVESTMENTS_PER_PAGE + 1;
+
+  const assetResultEnd = Math.min(
+    currentAssetPage * INVESTMENTS_PER_PAGE,
+    filteredPortfolioAssets.length,
+  );
+
+  const hasAssetFilters =
+    assetSearchQuery.trim().length > 0 ||
+    assetStatusFilter !== "ACTIVE" ||
+    assetCategoryFilter !== "ALL" ||
+    assetSort !== "VALUE_DESC";
 
   const hasPortfolioAssets = (portfolioSummary?.totalAssets ?? 0) > 0;
 
@@ -281,6 +403,18 @@ export default function InvestmentsPageClient() {
     if (!open) {
       setSelectedEventAsset(null);
     }
+  }
+
+  function resetAssetPage() {
+    setAssetPage(1);
+  }
+
+  function clearAssetFilters() {
+    setAssetSearchQuery("");
+    setAssetStatusFilter("ACTIVE");
+    setAssetCategoryFilter("ALL");
+    setAssetSort("VALUE_DESC");
+    resetAssetPage();
   }
 
   return (
@@ -541,8 +675,114 @@ export default function InvestmentsPageClient() {
               <DashboardCardHeader
                 eyebrow="Portfolio"
                 title="Your Investments"
-                description="View your current holdings, cost basis, market value, and investment performance by asset."
+                description="Search and filter active, closed, and settled investments without showing every card at once."
               />
+
+              {!isInvestmentPortfolioV2Loading &&
+              !investmentPortfolioV2Error &&
+              portfolioAssets.length > 0 ? (
+                <div className="space-y-3 rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+                    <label className="space-y-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Search
+                      </span>
+                      <input
+                        type="search"
+                        value={assetSearchQuery}
+                        onChange={(event) => {
+                          setAssetSearchQuery(event.target.value);
+                          resetAssetPage();
+                        }}
+                        placeholder="Name, symbol, exchange..."
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      />
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Status
+                      </span>
+                      <select
+                        value={assetStatusFilter}
+                        onChange={(event) => {
+                          setAssetStatusFilter(
+                            event.target.value as InvestmentAssetStatusFilter,
+                          );
+                          resetAssetPage();
+                        }}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      >
+                        <option value="ACTIVE">Active / Open</option>
+                        <option value="CLOSED">Closed</option>
+                        <option value="SETTLED">Settled</option>
+                        <option value="ALL">All statuses</option>
+                      </select>
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Category
+                      </span>
+                      <select
+                        value={assetCategoryFilter}
+                        onChange={(event) => {
+                          setAssetCategoryFilter(
+                            event.target.value as InvestmentAssetCategoryFilter,
+                          );
+                          resetAssetPage();
+                        }}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      >
+                        {INVESTMENT_CATEGORY_FILTER_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="space-y-1.5">
+                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        Sort
+                      </span>
+                      <select
+                        value={assetSort}
+                        onChange={(event) => {
+                          setAssetSort(event.target.value as InvestmentAssetSort);
+                          resetAssetPage();
+                        }}
+                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+                      >
+                        <option value="VALUE_DESC">
+                          Market value: high to low
+                        </option>
+                        <option value="GAIN_DESC">
+                          Total P/L: high to low
+                        </option>
+                        <option value="NAME_ASC">Name: A to Z</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="flex flex-col gap-2 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+                    <p>
+                      Showing {assetResultStart}–{assetResultEnd} of{" "}
+                      {filteredPortfolioAssets.length} matching investments
+                    </p>
+
+                    {hasAssetFilters ? (
+                      <button
+                        type="button"
+                        onClick={clearAssetFilters}
+                        className="w-fit font-semibold text-emerald-700 hover:text-emerald-800"
+                      >
+                        Reset filters
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
 
               {assetActionError ? (
                 <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
@@ -588,9 +828,29 @@ export default function InvestmentsPageClient() {
 
               {!isInvestmentPortfolioV2Loading &&
               !investmentPortfolioV2Error &&
-              portfolioAssets.length > 0 ? (
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                  {portfolioAssets.map((asset) => {
+              portfolioAssets.length > 0 &&
+              filteredPortfolioAssets.length === 0 ? (
+                <EmptyState
+                  title="No investments match these filters"
+                  description="Try a different search, status, or category filter."
+                  action={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={clearAssetFilters}
+                    >
+                      Reset Filters
+                    </Button>
+                  }
+                />
+              ) : null}
+
+              {!isInvestmentPortfolioV2Loading &&
+              !investmentPortfolioV2Error &&
+              paginatedPortfolioAssets.length > 0 ? (
+                <>
+                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                    {paginatedPortfolioAssets.map((asset) => {
                     const assetTitle = asset.symbol
                       ? `${asset.name} (${asset.symbol})`
                       : asset.name;
@@ -653,6 +913,40 @@ export default function InvestmentsPageClient() {
                         : asset.unrealizedGainLoss > 0
                           ? "text-emerald-600"
                           : asset.unrealizedGainLoss < 0
+                            ? "text-red-600"
+                            : "text-slate-900";
+
+                    const realizedGainLoss =
+                      asset.realizedGainLossInDisplayCurrency !== null
+                        ? formatCurrency(
+                            asset.realizedGainLossInDisplayCurrency,
+                            asset.displayCurrency,
+                          )
+                        : "—";
+
+                    const realizedTone =
+                      asset.realizedGainLossInDisplayCurrency === null
+                        ? "text-slate-900"
+                        : asset.realizedGainLossInDisplayCurrency > 0
+                          ? "text-emerald-600"
+                          : asset.realizedGainLossInDisplayCurrency < 0
+                            ? "text-red-600"
+                            : "text-slate-900";
+
+                    const totalGainLoss =
+                      asset.totalGainLoss !== null
+                        ? formatCurrency(
+                            asset.totalGainLoss,
+                            asset.displayCurrency,
+                          )
+                        : "—";
+
+                    const totalGainLossTone =
+                      asset.totalGainLoss === null
+                        ? "text-slate-900"
+                        : asset.totalGainLoss > 0
+                          ? "text-emerald-600"
+                          : asset.totalGainLoss < 0
                             ? "text-red-600"
                             : "text-slate-900";
 
@@ -891,6 +1185,32 @@ export default function InvestmentsPageClient() {
                               {unrealizedReturn ? ` (${unrealizedReturn})` : ""}
                             </p>
                           </div>
+
+                          {asset.positionKind === "QUANTITY" ? (
+                            <>
+                              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                  Realized P/L
+                                </p>
+                                <p
+                                  className={`mt-2 text-sm font-bold ${realizedTone}`}
+                                >
+                                  {realizedGainLoss}
+                                </p>
+                              </div>
+
+                              <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                                  Total P/L
+                                </p>
+                                <p
+                                  className={`mt-2 text-sm font-bold ${totalGainLossTone}`}
+                                >
+                                  {totalGainLoss}
+                                </p>
+                              </div>
+                            </>
+                          ) : null}
                         </div>
 
                         {isManualValuation ? (
@@ -1114,8 +1434,45 @@ export default function InvestmentsPageClient() {
                         </div>
                       </div>
                     );
-                  })}
-                </div>
+                    })}
+                  </div>
+
+                  {totalAssetPages > 1 ? (
+                    <div className="flex flex-col gap-3 rounded-[20px] border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="text-sm font-medium text-slate-500">
+                        Page {currentAssetPage} of {totalAssetPages}
+                      </p>
+
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={currentAssetPage <= 1}
+                          onClick={() =>
+                            setAssetPage((current) => Math.max(1, current - 1))
+                          }
+                          className="h-10 rounded-xl px-4"
+                        >
+                          Previous
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          disabled={currentAssetPage >= totalAssetPages}
+                          onClick={() =>
+                            setAssetPage((current) =>
+                              Math.min(totalAssetPages, current + 1),
+                            )
+                          }
+                          className="h-10 rounded-xl px-4"
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </CardContent>
           </Card>
