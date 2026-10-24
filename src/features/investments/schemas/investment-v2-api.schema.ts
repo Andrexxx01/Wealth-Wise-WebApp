@@ -60,6 +60,7 @@ export const createInvestmentAssetV2Schema = z
     ]),
 
     symbol: optionalTextSchema,
+    providerSymbol: optionalTextSchema,
     exchange: optionalTextSchema,
     isin: optionalTextSchema,
     issuer: optionalTextSchema,

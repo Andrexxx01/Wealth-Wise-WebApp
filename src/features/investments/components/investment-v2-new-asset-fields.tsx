@@ -11,6 +11,7 @@ import type {
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
+import StockSearchField from "@/features/investments/components/stock-search-field";
 
 import { CURRENCY_OPTIONS } from "@/constants/finance-options";
 
@@ -89,6 +90,8 @@ export default function InvestmentV2NewAssetFields({
       nextCategoryConfig.defaultMarketCurrencyCode,
     );
 
+    setValue("providerSymbol", "");
+
     setValue("unit", nextCategoryConfig.defaultUnit);
 
     setValue("pricingUnit", nextCategoryConfig.defaultPricingUnit);
@@ -151,12 +154,14 @@ export default function InvestmentV2NewAssetFields({
         </p>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <FormInput
-            label="Asset Name"
-            placeholder="Bitcoin"
-            error={errors.name?.message}
-            registration={register("name")}
-          />
+          {!isStock ? (
+            <FormInput
+              label="Asset Name"
+              placeholder="Bitcoin"
+              error={errors.name?.message}
+              registration={register("name")}
+            />
+          ) : null}
 
           <FormSelect
             label="Category"
@@ -209,25 +214,15 @@ export default function InvestmentV2NewAssetFields({
 
           {isStock ? (
             <>
-              <FormInput
-                label="Symbol"
-                placeholder="AAPL or BBCA.JK"
-                error={errors.symbol?.message}
-                registration={register("symbol")}
-              />
+              <input type="hidden" {...register("name")} />
+              <input type="hidden" {...register("symbol")} />
+              <input type="hidden" {...register("providerSymbol")} />
+              <input type="hidden" {...register("exchange")} />
+              <input type="hidden" {...register("marketCurrencyCode")} />
 
-              <FormInput
-                label="Exchange"
-                placeholder="NASDAQ"
-                error={errors.exchange?.message}
-                registration={register("exchange")}
-              />
-
-              <FormInput
-                label="Market Currency"
-                placeholder="USD"
-                error={errors.marketCurrencyCode?.message}
-                registration={register("marketCurrencyCode")}
+              <StockSearchField
+                setValue={setValue}
+                error={errors.symbol?.message ?? errors.name?.message}
               />
             </>
           ) : null}

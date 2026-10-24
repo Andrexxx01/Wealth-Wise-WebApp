@@ -47,6 +47,7 @@ export interface InvestmentAssetItem {
   valuationType: InvestmentValuationType;
 
   symbol: string | null;
+  providerSymbol: string | null;
   exchange: string | null;
   isin: string | null;
   issuer: string | null;
@@ -129,6 +130,7 @@ export interface InvestmentHoldingItem {
 
   name: string;
   symbol: string | null;
+  providerSymbol: string | null;
 
   exchange: string | null;
   isin: string | null;
@@ -294,6 +296,7 @@ export type CreateInvestmentAssetV2Payload = {
   valuationType: InvestmentValuationType;
 
   symbol: string | null;
+  providerSymbol: string | null;
   exchange: string | null;
   isin: string | null;
   issuer: string | null;

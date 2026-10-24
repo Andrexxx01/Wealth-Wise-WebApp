@@ -241,6 +241,7 @@ export default function InvestmentsPageClient() {
         [
           asset.name,
           asset.symbol,
+          asset.providerSymbol,
           asset.exchange,
           asset.issuer,
           formatInvestmentV2Category(asset.category),

@@ -15,6 +15,7 @@ type SerializableInvestmentAsset = {
   valuationType: InvestmentAssetItem["valuationType"];
 
   symbol: string | null;
+  providerSymbol: string | null;
   exchange: string | null;
   isin: string | null;
   issuer: string | null;
@@ -105,6 +106,7 @@ export function serializeInvestmentAsset(
     valuationType: asset.valuationType,
 
     symbol: asset.symbol,
+    providerSymbol: asset.providerSymbol,
     exchange: asset.exchange,
     isin: asset.isin,
     issuer: asset.issuer,

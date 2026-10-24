@@ -204,6 +204,7 @@ function calculateQuantityHolding(
 
     name: asset.name,
     symbol: asset.symbol,
+    providerSymbol: asset.providerSymbol,
 
     exchange: asset.exchange,
     isin: asset.isin,
@@ -305,6 +306,7 @@ function calculatePrincipalHolding(
 
     name: asset.name,
     symbol: asset.symbol,
+    providerSymbol: asset.providerSymbol,
 
     exchange: asset.exchange,
     isin: asset.isin,

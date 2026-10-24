@@ -127,9 +127,11 @@ export async function GET() {
               holding.category === "STOCK" &&
               holding.instrumentType === "COMMON_STOCK" &&
               holding.valuationType === "MARKET_PRICE" &&
-              holding.symbol !== null,
+              (holding.providerSymbol !== null || holding.symbol !== null),
           )
-          .map((holding) => holding.symbol!.trim().toUpperCase())
+          .map((holding) =>
+            (holding.providerSymbol ?? holding.symbol)!.trim().toUpperCase(),
+          )
           .filter(Boolean),
       ),
     ];
@@ -198,18 +200,19 @@ export async function GET() {
 
     const valuations = holdings.map((holding, index) => {
       const symbol = holding.symbol?.trim().toUpperCase() ?? null;
+      const providerSymbol =
+        holding.providerSymbol?.trim().toUpperCase() ?? symbol;
 
       let marketPrice: MarketPriceItem | null = null;
 
-      if (symbol !== null) {
-        if (holding.category === "CRYPTO") {
-          marketPrice = cryptoMarketPrices.get(symbol) ?? null;
-        } else if (
-          holding.category === "STOCK" &&
-          holding.instrumentType === "COMMON_STOCK"
-        ) {
-          marketPrice = stockMarketPrices.get(symbol) ?? null;
-        }
+      if (holding.category === "CRYPTO" && symbol !== null) {
+        marketPrice = cryptoMarketPrices.get(symbol) ?? null;
+      } else if (
+        holding.category === "STOCK" &&
+        holding.instrumentType === "COMMON_STOCK" &&
+        providerSymbol !== null
+      ) {
+        marketPrice = stockMarketPrices.get(providerSymbol) ?? null;
       }
 
       return calculateInvestmentValuation({

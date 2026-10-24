@@ -46,6 +46,7 @@ export function getDefaultInvestmentAssetV2FormValues(
     valuationType: instrumentConfig.valuationType,
 
     symbol: "",
+    providerSymbol: "",
     exchange: "",
     isin: "",
     issuer: "",

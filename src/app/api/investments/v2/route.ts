@@ -96,6 +96,8 @@ export async function POST(request: Request) {
 
           symbol: parsedBody.symbol,
 
+          providerSymbol: parsedBody.providerSymbol,
+
           exchange: parsedBody.exchange,
 
           isin: parsedBody.isin,

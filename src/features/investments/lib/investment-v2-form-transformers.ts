@@ -107,6 +107,7 @@ export function transformInvestmentAssetV2FormValues(
   values: CreateInvestmentAssetV2FormValues,
 ): CreateInvestmentAssetV2Payload {
   const symbol = normalizeOptionalUppercaseText(values.symbol);
+  const providerSymbol = normalizeOptionalUppercaseText(values.providerSymbol);
 
   const transactionCurrencyCode = normalizeRequiredUppercaseText(
     values.currencyCode,
@@ -296,6 +297,7 @@ export function transformInvestmentAssetV2FormValues(
     valuationType: values.valuationType,
 
     symbol,
+    providerSymbol,
 
     exchange,
     isin,

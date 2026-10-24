@@ -89,6 +89,11 @@ export const createInvestmentAssetV2FormSchema = z
 
     symbol: z.string().trim().max(30, "Symbol must be 30 characters or fewer."),
 
+    providerSymbol: z
+      .string()
+      .trim()
+      .max(40, "Provider symbol must be 40 characters or fewer."),
+
     exchange: z
       .string()
       .trim()

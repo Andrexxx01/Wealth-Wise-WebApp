@@ -15,6 +15,7 @@ export type CreateInvestmentAssetV2FormValues = {
   valuationType: InvestmentValuationType;
 
   symbol: string;
+  providerSymbol: string;
   exchange: string;
   isin: string;
   issuer: string;
