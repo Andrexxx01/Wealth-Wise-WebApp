@@ -1,4 +1,6 @@
-import { convertCurrency } from "@/lib/currency-conversion";
+import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
+
+import type { FxRatesByCurrency } from "@/types/fx-rate";
 
 import type {
   InvestmentPortfolioSummaryItem,
@@ -12,20 +14,14 @@ type CalculateInvestmentPortfolioSummaryParams = {
 
   displayCurrency: UserCurrency;
 
-  usdToIdrRate: number;
+  fxRates: FxRatesByCurrency;
 };
-
-function isSupportedCurrency(
-  currencyCode: string | null,
-): currencyCode is UserCurrency {
-  return currencyCode === "USD" || currencyCode === "IDR";
-}
 
 function convertHoldingAmount({
   amount,
   transactionCurrencyCode,
   displayCurrency,
-  usdToIdrRate,
+  fxRates,
 }: {
   amount: number;
 
@@ -33,24 +29,24 @@ function convertHoldingAmount({
 
   displayCurrency: UserCurrency;
 
-  usdToIdrRate: number;
+  fxRates: FxRatesByCurrency;
 }) {
-  if (!isSupportedCurrency(transactionCurrencyCode)) {
+  if (transactionCurrencyCode === null) {
     return null;
   }
 
-  return convertCurrency(
+  return convertCurrencyWithUsdRates({
     amount,
-    transactionCurrencyCode,
-    displayCurrency,
-    usdToIdrRate,
-  );
+    fromCurrency: transactionCurrencyCode,
+    toCurrency: displayCurrency,
+    usdRates: fxRates,
+  });
 }
 
 export function calculateInvestmentPortfolioSummary({
   valuations,
   displayCurrency,
-  usdToIdrRate,
+  fxRates,
 }: CalculateInvestmentPortfolioSummaryParams): InvestmentPortfolioSummaryItem {
   let valuedAssets = 0;
 
@@ -117,7 +113,7 @@ export function calculateInvestmentPortfolioSummary({
 
       displayCurrency,
 
-      usdToIdrRate,
+      fxRates,
     });
 
     if (convertedCostBasis !== null) {
@@ -139,7 +135,7 @@ export function calculateInvestmentPortfolioSummary({
 
       displayCurrency,
 
-      usdToIdrRate,
+      fxRates,
     });
 
     if (convertedRealizedGainLoss !== null) {
@@ -164,7 +160,7 @@ export function calculateInvestmentPortfolioSummary({
 
         displayCurrency,
 
-        usdToIdrRate,
+        fxRates,
       });
 
       const convertedEventFees = convertHoldingAmount({
@@ -174,7 +170,7 @@ export function calculateInvestmentPortfolioSummary({
 
         displayCurrency,
 
-        usdToIdrRate,
+        fxRates,
       });
 
       const convertedEventTax = convertHoldingAmount({
@@ -184,7 +180,7 @@ export function calculateInvestmentPortfolioSummary({
 
         displayCurrency,
 
-        usdToIdrRate,
+        fxRates,
       });
 
       const convertedNetIncome = convertHoldingAmount({
@@ -194,7 +190,7 @@ export function calculateInvestmentPortfolioSummary({
 
         displayCurrency,
 
-        usdToIdrRate,
+        fxRates,
       });
 
       if (convertedGrossIncome !== null) {
@@ -225,7 +221,7 @@ export function calculateInvestmentPortfolioSummary({
 
       displayCurrency,
 
-      usdToIdrRate,
+      fxRates,
     });
 
     if (convertedFees !== null) {

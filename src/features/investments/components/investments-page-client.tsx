@@ -103,24 +103,24 @@ function formatInvestmentTransactionAmount(
   amount: number,
   currencyCode: string,
 ) {
-  if (currencyCode === "IDR") {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  }
+  const normalizedCurrency = currencyCode.trim().toUpperCase();
 
-  if (currencyCode === "USD") {
+  try {
+    if (normalizedCurrency === "IDR") {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: normalizedCurrency,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      currency: normalizedCurrency,
     }).format(amount);
+  } catch {
+    return `${normalizedCurrency} ${amount.toLocaleString()}`;
   }
-
-  return `${currencyCode} ${amount.toLocaleString()}`;
 }
 
 function formatInvestmentTransactionQuantity(quantity: number) {
@@ -329,17 +329,17 @@ export default function InvestmentsPageClient() {
   // INVESTMENT CONTRIBUTION CHART
   // =====================================================
 
-  const contributionExchangeRate =
-    investmentPortfolioV2?.meta.exchangeRate.rate ?? null;
+  const contributionFxRates =
+    investmentPortfolioV2?.meta.fxRates.rates ?? null;
 
   const investmentContributionChartData =
-    contributionExchangeRate !== null
+    contributionFxRates !== null
       ? buildInvestmentV2ContributionChartData({
           contributions: investmentContributionsV2,
 
           displayCurrency: portfolioDisplayCurrency,
 
-          usdToIdrRate: contributionExchangeRate,
+          fxRates: contributionFxRates,
         })
       : [];
 
@@ -348,7 +348,7 @@ export default function InvestmentsPageClient() {
   const canShowInvestmentChart =
     !isInvestmentContributionsV2Loading &&
     !investmentContributionsV2Error &&
-    contributionExchangeRate !== null &&
+    contributionFxRates !== null &&
     hasInvestmentContributions;
   
   const recentInvestmentTransactions = investmentTransactionsV2.slice(0, 10);

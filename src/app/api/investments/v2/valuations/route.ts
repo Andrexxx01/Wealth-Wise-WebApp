@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getCryptoSpotPrice } from "@/features/market-data/server/crypto-market-provider";
 import { getStockMarketPrice } from "@/features/market-data/server/stock-market-provider";
-import { getUsdToIdrRate } from "@/features/market-data/server/fx-rate-provider";
+import { getUsdFxRates } from "@/features/market-data/server/fx-rate-provider";
 
 import { calculateInvestmentHolding } from "@/features/investments/lib/investment-holding-engine";
 import { serializeInvestmentAssetWithTransactions } from "@/features/investments/lib/investment-v2-serializer";
@@ -137,13 +137,11 @@ export async function GET() {
     ];
 
     // =====================================================
-    // 6. AMBIL MARKET PRICE + FX RATE
+    // 6. AMBIL MARKET PRICE
     // =====================================================
 
-    const [exchangeRate, cryptoMarketPriceEntries, stockMarketPriceEntries] =
+    const [cryptoMarketPriceEntries, stockMarketPriceEntries] =
       await Promise.all([
-        getUsdToIdrRate(),
-
         Promise.all(
           cryptoSymbols.map(
             async (
@@ -177,6 +175,64 @@ export async function GET() {
       stockMarketPriceEntries,
     );
 
+    // =====================================================
+    // 7. KUMPULKAN CURRENCY YANG DIBUTUHKAN
+    // =====================================================
+    //
+    // FX table dibuat dinamis dari currency yang benar-benar
+    // dipakai portfolio:
+    //
+    // - transaction currency
+    // - manual valuation currency
+    // - investment-event income currency
+    // - current market-price currency
+    //
+    // USD + IDR selalu diminta untuk menjaga compatibility
+    // dengan display currency WealthWise saat ini.
+    // =====================================================
+
+    const requiredCurrencies = new Set<string>([
+      "USD",
+      "IDR",
+      displayCurrency,
+    ]);
+
+    for (const holding of holdings) {
+      if (holding.transactionCurrencyCode) {
+        requiredCurrencies.add(holding.transactionCurrencyCode);
+      }
+
+      if (holding.marketCurrencyCode) {
+        requiredCurrencies.add(holding.marketCurrencyCode);
+      }
+    }
+
+    for (const eventSummary of eventSummaries) {
+      if (eventSummary.incomeCurrencyCode) {
+        requiredCurrencies.add(eventSummary.incomeCurrencyCode);
+      }
+    }
+
+    for (const marketPrice of cryptoMarketPrices.values()) {
+      if (marketPrice?.currency) {
+        requiredCurrencies.add(marketPrice.currency);
+      }
+    }
+
+    for (const marketPrice of stockMarketPrices.values()) {
+      if (marketPrice?.currency) {
+        requiredCurrencies.add(marketPrice.currency);
+      }
+    }
+
+    const fxRateTable = await getUsdFxRates([...requiredCurrencies]);
+
+    const usdToIdrRate = fxRateTable.rates.IDR;
+
+    if (!Number.isFinite(usdToIdrRate) || usdToIdrRate <= 0) {
+      throw new Error("USD to IDR exchange rate is unavailable.");
+    }
+
     const marketPriceAsOf = new Date().toISOString();
 
     const depositAccrualSummaries = serializedAssets.map((asset) => {
@@ -195,7 +251,7 @@ export async function GET() {
     });
 
     // =====================================================
-    // 7. VALUATION
+    // 8. VALUATION
     // =====================================================
 
     const valuations = holdings.map((holding, index) => {
@@ -226,7 +282,7 @@ export async function GET() {
 
         displayCurrency,
 
-        usdToIdrRate: exchangeRate.rate,
+        fxRates: fxRateTable.rates,
 
         marketPriceAsOf,
       });
@@ -237,11 +293,11 @@ export async function GET() {
 
       displayCurrency,
 
-      usdToIdrRate: exchangeRate.rate,
+      fxRates: fxRateTable.rates,
     });
 
     // =====================================================
-    // 8. RESPONSE
+    // 9. RESPONSE
     // =====================================================
 
     return NextResponse.json({
@@ -253,9 +309,15 @@ export async function GET() {
         displayCurrency,
 
         exchangeRate: {
-          base: exchangeRate.base,
-          quote: exchangeRate.quote,
-          rate: exchangeRate.rate,
+          base: "USD",
+          quote: "IDR",
+          rate: usdToIdrRate,
+        },
+
+        fxRates: {
+          base: fxRateTable.base,
+          rates: fxRateTable.rates,
+          asOf: fxRateTable.asOf,
         },
 
         marketPriceAsOf,

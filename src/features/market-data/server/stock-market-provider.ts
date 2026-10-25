@@ -63,6 +63,50 @@ function getDisplayStockSymbol(providerSymbol: string) {
   return normalizedSymbol.slice(0, separatorIndex);
 }
 
+function normalizeYahooPriceCurrency({
+  currency,
+  price,
+}: {
+  currency: string;
+  price: number | null;
+}) {
+  /*
+   * Yahoo uses minor-unit quote codes on several exchanges.
+   *
+   * Important example:
+   * GBp = British pence, while GBP = British pound.
+   *
+   * A quote of 3,900 GBp means GBP 39.00, not GBP 3,900.
+   * Normalize known minor-unit quotes before they enter the
+   * generic FX conversion layer.
+   */
+  if (currency === "GBp" || currency.toUpperCase() === "GBX") {
+    return {
+      currency: "GBP",
+      price: price === null ? null : price / 100,
+    };
+  }
+
+  if (currency === "ZAc") {
+    return {
+      currency: "ZAR",
+      price: price === null ? null : price / 100,
+    };
+  }
+
+  if (currency === "ILA") {
+    return {
+      currency: "ILS",
+      price: price === null ? null : price / 100,
+    };
+  }
+
+  return {
+    currency: currency.trim().toUpperCase(),
+    price,
+  };
+}
+
 function getLatestClose(result: unknown): number | null {
   if (
     typeof result !== "object" ||
@@ -170,9 +214,9 @@ async function getStockChartSnapshot(
       return null;
     }
 
-    const currency = getOptionalString(meta, "currency")?.toUpperCase() ?? "";
+    const rawCurrency = getOptionalString(meta, "currency") ?? "";
 
-    if (!currency) {
+    if (!rawCurrency) {
       return null;
     }
 
@@ -194,7 +238,12 @@ async function getStockChartSnapshot(
 
     const latestClose = getLatestClose(result);
 
-    const price = regularMarketPrice ?? latestClose ?? chartPreviousClose;
+    const rawPrice = regularMarketPrice ?? latestClose ?? chartPreviousClose;
+
+    const normalizedQuote = normalizeYahooPriceCurrency({
+      currency: rawCurrency,
+      price: rawPrice,
+    });
 
     const regularMarketTime =
       "regularMarketTime" in meta &&
@@ -229,8 +278,8 @@ async function getStockChartSnapshot(
       name,
       exchange,
       exchangeCode,
-      currency,
-      price,
+      currency: normalizedQuote.currency,
+      price: normalizedQuote.price,
       asOf,
     };
   } catch (error) {

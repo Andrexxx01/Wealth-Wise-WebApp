@@ -4,7 +4,7 @@ import type {
   BuildMonthlyIncomeChartDataParams,
   SingleBarChartItem,
 } from "@/types/finance-chart";
-import { convertCurrency } from "@/lib/currency-conversion";
+import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
 
 import type { InvestmentContributionV2Item } from "@/types/investment-v2";
 
@@ -20,7 +20,7 @@ type BuildInvestmentV2ContributionChartDataParams = {
 
   displayCurrency: UserCurrency;
 
-  usdToIdrRate: number;
+  fxRates: Record<string, number>;
 };
 
 function normalizeChartValue(value: number, maxValue: number) {
@@ -50,7 +50,7 @@ function createMonthlyValues() {
 export function buildInvestmentV2ContributionChartData({
   contributions,
   displayCurrency,
-  usdToIdrRate,
+  fxRates,
 }: BuildInvestmentV2ContributionChartDataParams): SingleBarChartItem[] {
   const monthBuckets = buildRecentFinanceMonthBuckets();
 
@@ -78,27 +78,18 @@ export function buildInvestmentV2ContributionChartData({
      */
     const contributionAmount = transaction.grossAmount + transaction.feeAmount;
 
-    let contributionInDisplayCurrency: number;
+    const contributionInDisplayCurrency = convertCurrencyWithUsdRates({
+      amount: contributionAmount,
+      fromCurrency: transaction.currencyCode,
+      toCurrency: displayCurrency,
+      usdRates: fxRates,
+    });
 
-    if (transaction.currencyCode === displayCurrency) {
-      contributionInDisplayCurrency = contributionAmount;
-    } else if (
-      (transaction.currencyCode === "USD" ||
-        transaction.currencyCode === "IDR") &&
-      (displayCurrency === "USD" || displayCurrency === "IDR")
-    ) {
-      contributionInDisplayCurrency = convertCurrency(
-        contributionAmount,
-        transaction.currencyCode,
-        displayCurrency,
-        usdToIdrRate,
-      );
-    } else {
-      /*
-       * Currency yang belum didukung
-       * tidak boleh diam-diam dijumlahkan
-       * bersama USD/IDR.
-       */
+    /*
+     * Currency tanpa FX rate tidak boleh diam-diam
+     * dijumlahkan bersama display currency.
+     */
+    if (contributionInDisplayCurrency === null) {
       return;
     }
 

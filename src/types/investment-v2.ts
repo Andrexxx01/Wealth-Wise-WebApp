@@ -170,6 +170,7 @@ export interface InvestmentHoldingItem {
 
 import type { UserCurrency } from "@/types/user-subscription";
 import type { MarketPriceItem } from "@/types/market-price";
+import type { FxRatesByCurrency } from "@/types/fx-rate";
 
 export type InvestmentValuationStatus =
   | "VALUED"
@@ -256,10 +257,27 @@ export interface InvestmentPortfolioSummaryItem {
 export interface InvestmentValuationsMeta {
   displayCurrency: UserCurrency;
 
+  /*
+   * Backward-compatible USD/IDR rate used by the
+   * existing income/expense currency layer.
+   */
   exchangeRate: {
     base: "USD";
     quote: "IDR";
     rate: number;
+  };
+
+  /*
+   * USD-base rate table used by Investment V2.
+   *
+   * Example:
+   * rates.JPY = 158
+   * means 1 USD = 158 JPY.
+   */
+  fxRates: {
+    base: "USD";
+    rates: FxRatesByCurrency;
+    asOf: string | null;
   };
 
   marketPriceAsOf: string;

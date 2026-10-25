@@ -1,4 +1,6 @@
-import { convertCurrency } from "@/lib/currency-conversion";
+import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
+
+import type { FxRatesByCurrency } from "@/types/fx-rate";
 
 import type {
   InvestmentHoldingItem,
@@ -21,14 +23,10 @@ type CalculateInvestmentValuationInput = {
 
   displayCurrency: UserCurrency;
 
-  usdToIdrRate: number;
+  fxRates: FxRatesByCurrency;
 
   marketPriceAsOf: string;
 };
-
-function isUserCurrency(currencyCode: string): currencyCode is UserCurrency {
-  return currencyCode === "USD" || currencyCode === "IDR";
-}
 
 function getInvestmentEventValuationFields(
   eventSummary: InvestmentEventSummary,
@@ -165,27 +163,16 @@ export function calculateInvestmentValuation({
   depositAccrualSummary,
   marketPrice,
   displayCurrency,
-  usdToIdrRate,
+  fxRates,
   marketPriceAsOf,
 }: CalculateInvestmentValuationInput): InvestmentValuationItem {
-  // =====================================================
-  // FX VALIDATION
-  // =====================================================
-
-  if (!Number.isFinite(usdToIdrRate) || usdToIdrRate <= 0) {
-    throw new Error("USD to IDR exchange rate must be greater than 0.");
-  }
-
   // =====================================================
   // TRANSACTION CURRENCY
   // =====================================================
 
   const transactionCurrencyCode = holding.transactionCurrencyCode;
 
-  if (
-    transactionCurrencyCode === null ||
-    !isUserCurrency(transactionCurrencyCode)
-  ) {
+  if (transactionCurrencyCode === null) {
     return createUnavailableValuation({
       holding,
 
@@ -213,19 +200,34 @@ export function calculateInvestmentValuation({
   // Mereka TIDAK bergantung pada current market price.
   // =====================================================
 
-  const costBasisInDisplayCurrency = convertCurrency(
-    holding.remainingCostBasis,
-    transactionCurrencyCode,
-    displayCurrency,
-    usdToIdrRate,
-  );
+  const costBasisInDisplayCurrency = convertCurrencyWithUsdRates({
+    amount: holding.remainingCostBasis,
+    fromCurrency: transactionCurrencyCode,
+    toCurrency: displayCurrency,
+    usdRates: fxRates,
+  });
 
-  const realizedGainLossInDisplayCurrency = convertCurrency(
-    holding.realizedGainLoss,
-    transactionCurrencyCode,
-    displayCurrency,
-    usdToIdrRate,
-  );
+  const realizedGainLossInDisplayCurrency = convertCurrencyWithUsdRates({
+    amount: holding.realizedGainLoss,
+    fromCurrency: transactionCurrencyCode,
+    toCurrency: displayCurrency,
+    usdRates: fxRates,
+  });
+
+  if (
+    costBasisInDisplayCurrency === null ||
+    realizedGainLossInDisplayCurrency === null
+  ) {
+    return createUnavailableValuation({
+      holding,
+      eventSummary,
+      depositAccrualSummary,
+      displayCurrency,
+      status: "UNSUPPORTED_CURRENCY",
+      costBasisInDisplayCurrency: null,
+      realizedGainLossInDisplayCurrency: null,
+    });
+  }
 
   // =====================================================
   // DEPOSIT ACCRUAL VALUATION
@@ -242,12 +244,24 @@ export function calculateInvestmentValuation({
       );
     }
 
-    const marketValue = convertCurrency(
-      depositAccrualSummary.accruedValue,
-      transactionCurrencyCode,
-      displayCurrency,
-      usdToIdrRate,
-    );
+    const marketValue = convertCurrencyWithUsdRates({
+      amount: depositAccrualSummary.accruedValue,
+      fromCurrency: transactionCurrencyCode,
+      toCurrency: displayCurrency,
+      usdRates: fxRates,
+    });
+
+    if (marketValue === null) {
+      return createUnavailableValuation({
+        holding,
+        eventSummary,
+        depositAccrualSummary,
+        displayCurrency,
+        status: "UNSUPPORTED_CURRENCY",
+        costBasisInDisplayCurrency,
+        realizedGainLossInDisplayCurrency,
+      });
+    }
 
     /*
      * Untuk deposito:
@@ -375,7 +389,18 @@ export function calculateInvestmentValuation({
     const manualPriceCurrencyCode =
       holding.marketCurrencyCode ?? transactionCurrencyCode;
 
-    if (!isUserCurrency(manualPriceCurrencyCode)) {
+    const quantity = holding.quantity ?? 0;
+
+    const marketValueInManualCurrency = quantity * holding.manualPrice;
+
+    const marketValue = convertCurrencyWithUsdRates({
+      amount: marketValueInManualCurrency,
+      fromCurrency: manualPriceCurrencyCode,
+      toCurrency: displayCurrency,
+      usdRates: fxRates,
+    });
+
+    if (marketValue === null) {
       return createUnavailableValuation({
         holding,
         eventSummary,
@@ -386,17 +411,6 @@ export function calculateInvestmentValuation({
         realizedGainLossInDisplayCurrency,
       });
     }
-
-    const quantity = holding.quantity ?? 0;
-
-    const marketValueInManualCurrency = quantity * holding.manualPrice;
-
-    const marketValue = convertCurrency(
-      marketValueInManualCurrency,
-      manualPriceCurrencyCode,
-      displayCurrency,
-      usdToIdrRate,
-    );
 
     const unrealizedGainLoss = marketValue - costBasisInDisplayCurrency;
 
@@ -486,7 +500,22 @@ export function calculateInvestmentValuation({
   // MARKET PRICE CURRENCY
   // =====================================================
 
-  if (!isUserCurrency(marketPrice.currency)) {
+  // =====================================================
+  // MARKET VALUE
+  // =====================================================
+
+  const quantity = holding.quantity ?? 0;
+
+  const marketValueInMarketCurrency = quantity * marketPrice.price;
+
+  const marketValue = convertCurrencyWithUsdRates({
+    amount: marketValueInMarketCurrency,
+    fromCurrency: marketPrice.currency,
+    toCurrency: displayCurrency,
+    usdRates: fxRates,
+  });
+
+  if (marketValue === null) {
     return createUnavailableValuation({
       holding,
       eventSummary,
@@ -497,21 +526,6 @@ export function calculateInvestmentValuation({
       realizedGainLossInDisplayCurrency,
     });
   }
-
-  // =====================================================
-  // MARKET VALUE
-  // =====================================================
-
-  const quantity = holding.quantity ?? 0;
-
-  const marketValueInMarketCurrency = quantity * marketPrice.price;
-
-  const marketValue = convertCurrency(
-    marketValueInMarketCurrency,
-    marketPrice.currency,
-    displayCurrency,
-    usdToIdrRate,
-  );
 
   // =====================================================
   // UNREALIZED GAIN / LOSS

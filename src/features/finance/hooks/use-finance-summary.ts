@@ -25,57 +25,32 @@ import {
   calculateTotalPaidOff,
 } from "@/lib/finance-calculations";
 
-import { convertCurrency } from "@/lib/currency-conversion";
+import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
 import { filterItemsByReferenceMonth } from "@/lib/finance-period";
 
 import type { UserCurrency } from "@/types/user-subscription";
-
-function normalizeUserCurrency(
-  currencyCode: string | null,
-): UserCurrency | null {
-  if (!currencyCode) {
-    return null;
-  }
-
-  const normalizedCurrency = currencyCode.trim().toUpperCase();
-
-  if (normalizedCurrency === "USD" || normalizedCurrency === "IDR") {
-    return normalizedCurrency;
-  }
-
-  return null;
-}
 
 function convertInvestmentV2Amount({
   amount,
   currencyCode,
   displayCurrency,
-  usdToIdrRate,
+  fxRates,
 }: {
   amount: number;
   currencyCode: string | null;
   displayCurrency: UserCurrency;
-  usdToIdrRate: number | null;
+  fxRates: Record<string, number> | null;
 }) {
-  const sourceCurrency = normalizeUserCurrency(currencyCode);
-
-  /*
-   * Currency di luar USD / IDR
-   * belum didukung oleh conversion layer MVP.
-   */
-  if (!sourceCurrency) {
+  if (!currencyCode || fxRates === null) {
     return null;
   }
 
-  if (sourceCurrency === displayCurrency) {
-    return amount;
-  }
-
-  if (usdToIdrRate === null || usdToIdrRate <= 0) {
-    return null;
-  }
-
-  return convertCurrency(amount, sourceCurrency, displayCurrency, usdToIdrRate);
+  return convertCurrencyWithUsdRates({
+    amount,
+    fromCurrency: currencyCode,
+    toCurrency: displayCurrency,
+    usdRates: fxRates,
+  });
 }
 
 export function useFinanceSummary() {
@@ -200,8 +175,8 @@ export function useFinanceSummary() {
      * Gunakan rate yang sama untuk investment
      * supaya perhitungan investment konsisten.
      */
-    const investmentUsdToIdrRate =
-      investmentPortfolioV2?.meta.exchangeRate.rate ?? null;
+    const investmentFxRates =
+      investmentPortfolioV2?.meta.fxRates.rates ?? null;
 
     /*
      * =========================================================
@@ -236,7 +211,7 @@ export function useFinanceSummary() {
 
         displayCurrency,
 
-        usdToIdrRate: investmentUsdToIdrRate,
+        fxRates: investmentFxRates,
       });
 
       if (convertedAmount === null) {
@@ -343,7 +318,7 @@ export function useFinanceSummary() {
 
         displayCurrency,
 
-        usdToIdrRate: investmentUsdToIdrRate,
+        fxRates: investmentFxRates,
       });
 
       if (convertedCashFlow === null) {

@@ -12,7 +12,6 @@ import HistorySummaryGrid from "@/components/dashboard/history-summary-grid";
 import RecordActionButtons from "@/components/dashboard/record-action-buttons";
 
 import { useCurrentUser } from "@/features/auth/components/current-user-provider";
-import { useExchangeRate } from "@/features/currency/hooks/use-exchange-rate";
 import { useFinance } from "@/features/finance/components/finance-provider";
 
 import EditInvestmentTransactionV2Dialog from "@/features/investments/components/edit-investment-transaction-v2-dialog";
@@ -25,7 +24,7 @@ import useHistoryFilters from "@/hooks/use-history-filters";
 import useHistorySearch from "@/hooks/use-history-search";
 import useHistorySort from "@/hooks/use-history-sort";
 
-import { convertCurrency } from "@/lib/currency-conversion";
+import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
 
 import {
   doesInvestmentTransactionV2PassFilters,
@@ -72,24 +71,24 @@ function formatInvestmentTransactionAmount(
   amount: number,
   currencyCode: string,
 ) {
-  if (currencyCode === "IDR") {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  }
+  const normalizedCurrency = currencyCode.trim().toUpperCase();
 
-  if (currencyCode === "USD") {
+  try {
+    if (normalizedCurrency === "IDR") {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: normalizedCurrency,
+        maximumFractionDigits: 0,
+      }).format(amount);
+    }
+
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
+      currency: normalizedCurrency,
     }).format(amount);
+  } catch {
+    return `${normalizedCurrency} ${amount.toLocaleString()}`;
   }
-
-  return `${currencyCode} ${amount.toLocaleString()}`;
 }
 
 function formatInvestmentTransactionQuantity(quantity: number) {
@@ -98,21 +97,11 @@ function formatInvestmentTransactionQuantity(quantity: number) {
   }).format(quantity);
 }
 
-function normalizeSupportedCurrency(currencyCode: string): UserCurrency | null {
-  const normalizedCurrency = currencyCode.trim().toUpperCase();
-
-  if (normalizedCurrency === "USD" || normalizedCurrency === "IDR") {
-    return normalizedCurrency;
-  }
-
-  return null;
-}
-
 function convertInvestmentHistoryAmount({
   amount,
   currencyCode,
   displayCurrency,
-  usdToIdrRate,
+  fxRates,
 }: {
   amount: number;
 
@@ -120,23 +109,18 @@ function convertInvestmentHistoryAmount({
 
   displayCurrency: UserCurrency;
 
-  usdToIdrRate: number | null;
+  fxRates: Record<string, number> | null;
 }) {
-  const sourceCurrency = normalizeSupportedCurrency(currencyCode);
-
-  if (!sourceCurrency) {
+  if (fxRates === null) {
     return null;
   }
 
-  if (sourceCurrency === displayCurrency) {
-    return amount;
-  }
-
-  if (usdToIdrRate === null || usdToIdrRate <= 0) {
-    return null;
-  }
-
-  return convertCurrency(amount, sourceCurrency, displayCurrency, usdToIdrRate);
+  return convertCurrencyWithUsdRates({
+    amount,
+    fromCurrency: currencyCode,
+    toCurrency: displayCurrency,
+    usdRates: fxRates,
+  });
 }
 
 function getDeleteInvestmentTransactionErrorMessage(error: unknown) {
@@ -192,15 +176,16 @@ export default function InvestmentsHistoryPageClient() {
 
   const { currentUser } = useCurrentUser();
 
-  const { usdToIdrRate, isExchangeRateLoading, exchangeRateError } =
-    useExchangeRate();
-
   // =====================================================
   // FINANCE V2
   // =====================================================
 
   const {
+    investmentPortfolioV2,
     investmentTransactionsV2,
+
+    isInvestmentPortfolioV2Loading,
+    investmentPortfolioV2Error,
 
     isInvestmentTransactionsV2Loading,
     investmentTransactionsV2Error,
@@ -209,6 +194,9 @@ export default function InvestmentsHistoryPageClient() {
   } = useFinance();
 
   const displayCurrency = currentUser.currency;
+
+  const investmentFxRates =
+    investmentPortfolioV2?.meta.fxRates.rates ?? null;
 
   // =====================================================
   // INITIAL DATE SORT
@@ -280,7 +268,7 @@ export default function InvestmentsHistoryPageClient() {
 
         displayCurrency,
 
-        usdToIdrRate,
+        fxRates: investmentFxRates,
       });
 
       return convertedAmount ?? transaction.grossAmount;
@@ -319,7 +307,7 @@ export default function InvestmentsHistoryPageClient() {
 
       displayCurrency,
 
-      usdToIdrRate,
+      fxRates: investmentFxRates,
     });
 
     const convertedFeeAmount = convertInvestmentHistoryAmount({
@@ -329,7 +317,7 @@ export default function InvestmentsHistoryPageClient() {
 
       displayCurrency,
 
-      usdToIdrRate,
+      fxRates: investmentFxRates,
     });
 
     if (convertedGrossAmount === null || convertedFeeAmount === null) {
@@ -359,8 +347,9 @@ export default function InvestmentsHistoryPageClient() {
   }
 
   const isSummaryReady =
-    !isExchangeRateLoading &&
-    !exchangeRateError &&
+    !isInvestmentPortfolioV2Loading &&
+    !investmentPortfolioV2Error &&
+    investmentFxRates !== null &&
     isVisibleSummaryConversionReady;
 
   // =====================================================
