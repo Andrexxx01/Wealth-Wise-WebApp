@@ -24,6 +24,28 @@ import {
 
 import type { CreateInvestmentAssetV2FormValues } from "@/types/investment-v2-form";
 
+function getInvestmentCurrencyLabel(currencyCode: string) {
+  const normalizedCurrency = currencyCode.trim().toUpperCase();
+
+  const labels: Record<string, string> = {
+    USD: "USD — US Dollar",
+    IDR: "IDR — Indonesian Rupiah",
+    JPY: "JPY — Japanese Yen",
+    EUR: "EUR — Euro",
+    SGD: "SGD — Singapore Dollar",
+    HKD: "HKD — Hong Kong Dollar",
+    GBP: "GBP — British Pound",
+    AUD: "AUD — Australian Dollar",
+    CAD: "CAD — Canadian Dollar",
+    CHF: "CHF — Swiss Franc",
+    KRW: "KRW — South Korean Won",
+    CNY: "CNY — Chinese Yuan",
+    INR: "INR — Indian Rupee",
+  };
+
+  return labels[normalizedCurrency] ?? normalizedCurrency;
+}
+
 type InvestmentV2NewAssetFieldsProps = {
   register: UseFormRegister<CreateInvestmentAssetV2FormValues>;
 
@@ -45,6 +67,8 @@ export default function InvestmentV2NewAssetFields({
   const instrumentType = watch("instrumentType");
 
   const initialTransactionType = watch("initialTransactionType");
+
+  const marketCurrencyCode = watch("marketCurrencyCode");
 
   const instrumentOptions = getInvestmentV2InstrumentOptions(category).map(
     (option) => ({
@@ -141,6 +165,18 @@ export default function InvestmentV2NewAssetFields({
   const isPhysicalCommodity = instrumentType === "PHYSICAL_COMMODITY";
 
   const isBuyTransaction = initialTransactionType === "BUY";
+
+  const normalizedMarketCurrency = marketCurrencyCode.trim().toUpperCase();
+
+  const transactionCurrencyOptions =
+    isStock && /^[A-Z]{3}$/.test(normalizedMarketCurrency)
+      ? [
+          {
+            value: normalizedMarketCurrency,
+            label: getInvestmentCurrencyLabel(normalizedMarketCurrency),
+          },
+        ]
+      : CURRENCY_OPTIONS;
 
   return (
     <div className="space-y-6">
@@ -522,7 +558,7 @@ export default function InvestmentV2NewAssetFields({
 
           <FormSelect
             label="Transaction Currency"
-            options={CURRENCY_OPTIONS}
+            options={transactionCurrencyOptions}
             error={errors.currencyCode?.message}
             registration={register("currencyCode")}
           />
