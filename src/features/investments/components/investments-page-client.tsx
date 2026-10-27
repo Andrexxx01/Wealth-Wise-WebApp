@@ -44,7 +44,7 @@ type InvestmentAssetStatusFilter = "ACTIVE" | "CLOSED" | "SETTLED" | "ALL";
 type InvestmentAssetCategoryFilter = InvestmentAssetCategory | "ALL";
 type InvestmentAssetSort = "VALUE_DESC" | "GAIN_DESC" | "NAME_ASC";
 
-const INVESTMENTS_PER_PAGE = 8;
+const INVESTMENTS_PER_PAGE = 6;
 
 const INVESTMENT_CATEGORY_FILTER_OPTIONS: Array<{
   value: InvestmentAssetCategoryFilter;
