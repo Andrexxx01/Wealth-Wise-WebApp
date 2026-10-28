@@ -13,6 +13,7 @@ import type {
 
 type StockSearchFieldProps = {
   setValue: UseFormSetValue<CreateInvestmentAssetV2FormValues>;
+  instrument?: "STOCK" | "ETF";
   error?: string;
 };
 
@@ -20,6 +21,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 
 export default function StockSearchField({
   setValue,
+  instrument = "STOCK",
   error,
 }: StockSearchFieldProps) {
   const [query, setQuery] = useState("");
@@ -44,7 +46,9 @@ export default function StockSearchField({
   async function runSearch(searchQuery: string, requestId: number) {
     try {
       const response = await fetch(
-        `/api/market-data/stocks/search?q=${encodeURIComponent(searchQuery)}`,
+        `/api/market-data/stocks/search?q=${encodeURIComponent(
+          searchQuery,
+        )}&instrument=${instrument}`,
       );
 
       const payload: unknown = await response.json();
@@ -55,7 +59,11 @@ export default function StockSearchField({
 
       if (!response.ok) {
         setResults([]);
-        setMessage("Stock search is temporarily unavailable.");
+        setMessage(
+          instrument === "ETF"
+            ? "ETF search is temporarily unavailable."
+            : "Stock search is temporarily unavailable.",
+        );
         return;
       }
 
@@ -66,7 +74,11 @@ export default function StockSearchField({
         !Array.isArray(payload.data)
       ) {
         setResults([]);
-        setMessage("Stock search returned an unexpected response.");
+        setMessage(
+          instrument === "ETF"
+            ? "ETF search returned an unexpected response."
+            : "Stock search returned an unexpected response.",
+        );
         return;
       }
 
@@ -75,7 +87,9 @@ export default function StockSearchField({
       setResults(nextResults);
       setMessage(
         nextResults.length === 0
-          ? "No matching listed stocks found. Try the company name or ticker."
+          ? instrument === "ETF"
+            ? "No matching ETFs found. Try the fund name or ticker."
+            : "No matching listed stocks found. Try the company name or ticker."
           : null,
       );
     } catch (searchError) {
@@ -83,7 +97,11 @@ export default function StockSearchField({
 
       if (requestId === requestIdRef.current) {
         setResults([]);
-        setMessage("Stock search is temporarily unavailable.");
+        setMessage(
+          instrument === "ETF"
+            ? "ETF search is temporarily unavailable."
+            : "Stock search is temporarily unavailable.",
+        );
       }
     } finally {
       if (requestId === requestIdRef.current) {
@@ -145,7 +163,11 @@ export default function StockSearchField({
         typeof payload.data !== "object" ||
         payload.data === null
       ) {
-        setMessage("Unable to load market details for this stock.");
+        setMessage(
+          instrument === "ETF"
+            ? "Unable to load market details for this ETF."
+            : "Unable to load market details for this stock.",
+        );
         return;
       }
 
@@ -188,7 +210,11 @@ export default function StockSearchField({
       );
     } catch (resolveError) {
       console.error("Failed to resolve stock:", resolveError);
-      setMessage("Unable to load market details for this stock.");
+      setMessage(
+        instrument === "ETF"
+          ? "Unable to load market details for this ETF."
+          : "Unable to load market details for this stock.",
+      );
     } finally {
       setResolvingSymbol(null);
     }
@@ -197,24 +223,31 @@ export default function StockSearchField({
   return (
     <div className="space-y-2 md:col-span-2">
       <label className="text-sm font-semibold text-slate-900">
-        Search Stock
+        {instrument === "ETF" ? "Search ETF" : "Search Stock"}
       </label>
 
       <Input
         value={query}
         onChange={(event) => handleQueryChange(event.target.value)}
-        placeholder="Search Apple, Bank Central Asia, AAPL, BBCA..."
+        placeholder={
+          instrument === "ETF"
+            ? "Search Vanguard S&P 500, VOO, CSPX..."
+            : "Search Apple, Bank Central Asia, AAPL, BBCA..."
+        }
         autoComplete="off"
         className="h-12 rounded-2xl border-slate-200 shadow-none"
       />
 
       <p className="text-xs leading-5 text-slate-500">
-        Search by company name or ticker. Exchange suffixes such as .JK are
-        handled automatically.
+        {instrument === "ETF"
+          ? "Search by ETF name or ticker. Exchange suffixes are handled automatically."
+          : "Search by company name or ticker. Exchange suffixes such as .JK are handled automatically."}
       </p>
 
       {isSearching ? (
-        <p className="text-sm text-slate-500">Searching listed stocks...</p>
+        <p className="text-sm text-slate-500">
+          {instrument === "ETF" ? "Searching ETFs..." : "Searching listed stocks..."}
+        </p>
       ) : null}
 
       {results.length > 0 ? (

@@ -13,6 +13,9 @@ export async function GET(request: NextRequest) {
   }
 
   const query = request.nextUrl.searchParams.get("q")?.trim() ?? "";
+  const instrument =
+    request.nextUrl.searchParams.get("instrument")?.trim().toUpperCase() ??
+    "STOCK";
 
   if (query.length < 2) {
     return NextResponse.json({ data: [] });
@@ -25,7 +28,9 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const data = await searchStocks(query);
+  const allowedQuoteTypes = instrument === "ETF" ? ["ETF"] : ["EQUITY"];
+
+  const data = await searchStocks(query, allowedQuoteTypes);
 
   return NextResponse.json({ data });
 }

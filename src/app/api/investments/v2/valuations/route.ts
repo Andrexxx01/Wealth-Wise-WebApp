@@ -116,7 +116,7 @@ export async function GET() {
     ];
 
     // =====================================================
-    // 5. CARI STOCK SYMBOL YANG MEMBUTUHKAN MARKET PRICE
+    // 5. CARI LISTED SECURITY YANG MEMBUTUHKAN MARKET PRICE
     // =====================================================
 
     const stockSymbols = [
@@ -124,9 +124,13 @@ export async function GET() {
         holdings
           .filter(
             (holding) =>
-              holding.category === "STOCK" &&
-              holding.instrumentType === "COMMON_STOCK" &&
               holding.valuationType === "MARKET_PRICE" &&
+              (
+                (holding.category === "STOCK" &&
+                  holding.instrumentType === "COMMON_STOCK") ||
+                (holding.category === "INDEX" &&
+                  holding.instrumentType === "ETF")
+              ) &&
               (holding.providerSymbol !== null || holding.symbol !== null),
           )
           .map((holding) =>
@@ -264,8 +268,12 @@ export async function GET() {
       if (holding.category === "CRYPTO" && symbol !== null) {
         marketPrice = cryptoMarketPrices.get(symbol) ?? null;
       } else if (
-        holding.category === "STOCK" &&
-        holding.instrumentType === "COMMON_STOCK" &&
+        holding.valuationType === "MARKET_PRICE" &&
+        (
+          (holding.category === "STOCK" &&
+            holding.instrumentType === "COMMON_STOCK") ||
+          (holding.category === "INDEX" && holding.instrumentType === "ETF")
+        ) &&
         providerSymbol !== null
       ) {
         marketPrice = stockMarketPrices.get(providerSymbol) ?? null;

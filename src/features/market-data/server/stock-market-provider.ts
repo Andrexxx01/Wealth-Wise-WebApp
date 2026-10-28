@@ -294,6 +294,7 @@ async function getStockChartSnapshot(
 
 export async function searchStocks(
   query: string,
+  allowedQuoteTypes: readonly string[] = ["EQUITY"],
 ): Promise<StockSearchResultItem[]> {
   const normalizedQuery = query.trim();
 
@@ -339,7 +340,7 @@ export async function searchStocks(
 
       const quoteType = getOptionalString(quote, "quoteType")?.toUpperCase();
 
-      if (quoteType !== "EQUITY") {
+      if (!quoteType || !allowedQuoteTypes.includes(quoteType)) {
         continue;
       }
 

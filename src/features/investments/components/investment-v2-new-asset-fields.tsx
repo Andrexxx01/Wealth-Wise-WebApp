@@ -164,12 +164,14 @@ export default function InvestmentV2NewAssetFields({
 
   const isPhysicalCommodity = instrumentType === "PHYSICAL_COMMODITY";
 
+  const usesListedSecuritySearch = isStock || (isIndex && isEtf);
+
   const isBuyTransaction = initialTransactionType === "BUY";
 
   const normalizedMarketCurrency = marketCurrencyCode.trim().toUpperCase();
 
   const transactionCurrencyOptions =
-    isStock && /^[A-Z]{3}$/.test(normalizedMarketCurrency)
+    usesListedSecuritySearch && /^[A-Z]{3}$/.test(normalizedMarketCurrency)
       ? [
           {
             value: normalizedMarketCurrency,
@@ -190,7 +192,7 @@ export default function InvestmentV2NewAssetFields({
         </p>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {!isStock ? (
+          {!usesListedSecuritySearch ? (
             <FormInput
               label="Asset Name"
               placeholder="Bitcoin"
@@ -301,6 +303,22 @@ export default function InvestmentV2NewAssetFields({
 
           {isIndex ? (
             <>
+              {isEtf ? (
+                <>
+                  <input type="hidden" {...register("name")} />
+                  <input type="hidden" {...register("symbol")} />
+                  <input type="hidden" {...register("providerSymbol")} />
+                  <input type="hidden" {...register("exchange")} />
+                  <input type="hidden" {...register("marketCurrencyCode")} />
+
+                  <StockSearchField
+                    instrument="ETF"
+                    setValue={setValue}
+                    error={errors.symbol?.message ?? errors.name?.message}
+                  />
+                </>
+              ) : null}
+
               <FormInput
                 label="Underlying Index"
                 placeholder="S&P 500"
@@ -308,30 +326,14 @@ export default function InvestmentV2NewAssetFields({
                 registration={register("underlyingIndex")}
               />
 
-              {isEtf ? (
-                <>
-                  <FormInput
-                    label="Symbol"
-                    placeholder="VOO"
-                    error={errors.symbol?.message}
-                    registration={register("symbol")}
-                  />
-
-                  <FormInput
-                    label="Exchange"
-                    placeholder="NYSE Arca"
-                    error={errors.exchange?.message}
-                    registration={register("exchange")}
-                  />
-                </>
+              {!isEtf ? (
+                <FormInput
+                  label="Market Currency"
+                  placeholder="USD"
+                  error={errors.marketCurrencyCode?.message}
+                  registration={register("marketCurrencyCode")}
+                />
               ) : null}
-
-              <FormInput
-                label="Market Currency"
-                placeholder="USD"
-                error={errors.marketCurrencyCode?.message}
-                registration={register("marketCurrencyCode")}
-              />
             </>
           ) : null}
 
