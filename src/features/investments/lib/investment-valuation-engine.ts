@@ -450,6 +450,87 @@ export function calculateInvestmentValuation({
   }
 
   // =====================================================
+  // NAV QUANTITY VALUATION
+  // =====================================================
+
+  if (
+    holding.positionKind === "QUANTITY" &&
+    holding.valuationType === "NAV"
+  ) {
+    if (holding.currentNav === null) {
+      return createUnavailableValuation({
+        holding,
+        eventSummary,
+        depositAccrualSummary,
+        displayCurrency,
+        status: "PRICE_UNAVAILABLE",
+        costBasisInDisplayCurrency,
+        realizedGainLossInDisplayCurrency,
+      });
+    }
+
+    const navCurrencyCode =
+      holding.marketCurrencyCode ?? transactionCurrencyCode;
+
+    const quantity = holding.quantity ?? 0;
+
+    const marketValueInNavCurrency = quantity * holding.currentNav;
+
+    const marketValue = convertCurrencyWithUsdRates({
+      amount: marketValueInNavCurrency,
+      fromCurrency: navCurrencyCode,
+      toCurrency: displayCurrency,
+      usdRates: fxRates,
+    });
+
+    if (marketValue === null) {
+      return createUnavailableValuation({
+        holding,
+        eventSummary,
+        depositAccrualSummary,
+        displayCurrency,
+        status: "UNSUPPORTED_CURRENCY",
+        costBasisInDisplayCurrency,
+        realizedGainLossInDisplayCurrency,
+      });
+    }
+
+    const unrealizedGainLoss = marketValue - costBasisInDisplayCurrency;
+
+    const unrealizedReturnPercentage =
+      costBasisInDisplayCurrency > 0
+        ? (unrealizedGainLoss / costBasisInDisplayCurrency) * 100
+        : null;
+
+    return {
+      ...holding,
+
+      ...getInvestmentEventValuationFields(eventSummary),
+      ...getDepositAccrualValuationFields(null),
+
+      displayCurrency,
+
+      marketPrice: holding.currentNav,
+      marketPriceCurrencyCode: navCurrencyCode,
+
+      marketValue,
+
+      costBasisInDisplayCurrency,
+      realizedGainLossInDisplayCurrency,
+
+      unrealizedGainLoss,
+      unrealizedReturnPercentage,
+      totalGainLoss:
+        realizedGainLossInDisplayCurrency + unrealizedGainLoss,
+
+      marketSource: "nav",
+      marketPriceAsOf: holding.navUpdatedAt,
+
+      valuationStatus: "VALUED",
+    };
+  }
+
+  // =====================================================
   // VALUATION METHOD SUPPORT
   // =====================================================
 

@@ -119,6 +119,13 @@ export async function POST(request: Request) {
               ? new Date()
               : null,
 
+          currentNav: parsedBody.currentNav,
+
+          navUpdatedAt:
+            parsedBody.currentNav !== null && parsedBody.currentNav !== undefined
+              ? new Date()
+              : null,
+
           annualInterestRate: parsedBody.annualInterestRate,
 
           couponRate: parsedBody.couponRate,

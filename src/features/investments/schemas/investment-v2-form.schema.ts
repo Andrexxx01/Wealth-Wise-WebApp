@@ -129,6 +129,10 @@ export const createInvestmentAssetV2FormSchema = z
       message: "Manual current price must be greater than 0.",
     }),
 
+    currentNav: z.string().refine(isOptionalPositiveNumberString, {
+      message: "Current NAV must be greater than 0.",
+    }),
+
     annualInterestRate: z.string().refine(isOptionalNonNegativeNumberString, {
       message: "Annual interest rate cannot be negative.",
     }),
@@ -552,6 +556,10 @@ export const editInvestmentAssetV2FormSchema = z.object({
 
   manualPrice: z.string().refine(isOptionalPositiveNumberString, {
     message: "Manual current price must be greater than 0.",
+  }),
+
+  currentNav: z.string().refine(isOptionalPositiveNumberString, {
+    message: "Current NAV must be greater than 0.",
   }),
 
   notes: z.string().trim().max(500, "Notes must be 500 characters or fewer."),

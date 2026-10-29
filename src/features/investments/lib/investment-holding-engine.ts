@@ -213,6 +213,8 @@ function calculateQuantityHolding(
     marketCurrencyCode: asset.marketCurrencyCode,
     manualPrice: asset.manualPrice,
     manualPriceUpdatedAt: asset.manualPriceUpdatedAt,
+    currentNav: asset.currentNav,
+    navUpdatedAt: asset.navUpdatedAt,
     annualInterestRate: asset.annualInterestRate,
 
     couponRate: asset.couponRate,
@@ -315,6 +317,8 @@ function calculatePrincipalHolding(
     marketCurrencyCode: asset.marketCurrencyCode,
     manualPrice: asset.manualPrice,
     manualPriceUpdatedAt: asset.manualPriceUpdatedAt,
+    currentNav: asset.currentNav,
+    navUpdatedAt: asset.navUpdatedAt,
     annualInterestRate: asset.annualInterestRate,
 
     couponRate: asset.couponRate,

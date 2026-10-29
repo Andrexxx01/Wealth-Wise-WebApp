@@ -61,6 +61,9 @@ export interface InvestmentAssetItem {
   manualPrice: number | null;
   manualPriceUpdatedAt: string | null;
 
+  currentNav: number | null;
+  navUpdatedAt: string | null;
+
   annualInterestRate: number | null;
   couponRate: number | null;
   faceValue: number | null;
@@ -139,6 +142,8 @@ export interface InvestmentHoldingItem {
   marketCurrencyCode: string | null;
   manualPrice: number | null;
   manualPriceUpdatedAt: string | null;
+  currentNav: number | null;
+  navUpdatedAt: string | null;
   annualInterestRate: number | null;
   couponRate: number | null;
   faceValue: number | null;
@@ -217,7 +222,7 @@ export interface InvestmentValuationItem extends InvestmentHoldingItem {
 
   totalGainLoss: number | null;
 
-  marketSource: MarketPriceItem["source"] | "manual" | null;
+  marketSource: MarketPriceItem["source"] | "manual" | "nav" | null;
   marketPriceAsOf: string | null;
 
   valuationStatus: InvestmentValuationStatus;
@@ -326,6 +331,7 @@ export type CreateInvestmentAssetV2Payload = {
   marketCurrencyCode: string | null;
 
   manualPrice: number | null;
+  currentNav: number | null;
 
   annualInterestRate: number | null;
   couponRate: number | null;
@@ -405,6 +411,7 @@ export type UpdateInvestmentAssetV2Payload = {
   underlyingIndex?: string | null;
 
   manualPrice?: number | null;
+  currentNav?: number | null;
 
   notes?: string | null;
 };

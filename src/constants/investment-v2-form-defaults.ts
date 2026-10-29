@@ -58,6 +58,7 @@ export function getDefaultInvestmentAssetV2FormValues(
 
     marketCurrencyCode: categoryConfig.defaultMarketCurrencyCode,
     manualPrice: "",
+    currentNav: "",
 
     annualInterestRate: "",
     couponRate: "",

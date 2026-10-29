@@ -41,6 +41,7 @@ function assetToFormValues(
     issuer: asset.issuer ?? "",
     underlyingIndex: asset.underlyingIndex ?? "",
     manualPrice: asset.manualPrice !== null ? String(asset.manualPrice) : "",
+    currentNav: asset.currentNav !== null ? String(asset.currentNav) : "",
     notes: asset.notes ?? "",
   };
 }
@@ -76,6 +77,7 @@ export default function EditInvestmentAssetV2Dialog({
       issuer: "",
       underlyingIndex: "",
       manualPrice: "",
+      currentNav: "",
       notes: "",
     },
   });
@@ -165,6 +167,8 @@ export default function EditInvestmentAssetV2Dialog({
     instrumentType === "ETF" || instrumentType === "INDEX_FUND";
 
   const showManualPrice = asset?.valuationType === "MANUAL";
+
+  const showCurrentNav = asset?.valuationType === "NAV";
 
   return (
     <FormDialogShell
@@ -364,6 +368,37 @@ export default function EditInvestmentAssetV2Dialog({
             {errors.manualPrice ? (
               <p className="text-xs font-medium text-red-600">
                 {errors.manualPrice.message}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showCurrentNav ? (
+          <div className="space-y-2">
+            <label
+              htmlFor="edit-investment-asset-current-nav"
+              className="text-sm font-semibold text-slate-700"
+            >
+              Current NAV per Unit
+            </label>
+
+            <Input
+              id="edit-investment-asset-current-nav"
+              type="number"
+              min="0"
+              step="any"
+              {...form.register("currentNav")}
+              placeholder="Enter the latest NAV"
+            />
+
+            <p className="text-xs leading-5 text-slate-500">
+              Used for current NAV valuation only. Currency: {asset?.marketCurrencyCode ??
+                asset?.transactionCurrencyCode ?? "—"}.
+            </p>
+
+            {errors.currentNav ? (
+              <p className="text-xs font-medium text-red-600">
+                {errors.currentNav.message}
               </p>
             ) : null}
           </div>

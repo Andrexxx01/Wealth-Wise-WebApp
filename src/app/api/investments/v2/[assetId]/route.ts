@@ -127,6 +127,14 @@ export async function PATCH(
               }
             : {}),
 
+          ...(parsedBody.currentNav !== undefined
+            ? {
+                currentNav: parsedBody.currentNav,
+                navUpdatedAt:
+                  parsedBody.currentNav === null ? null : new Date(),
+              }
+            : {}),
+
           ...(parsedBody.notes !== undefined
             ? {
                 notes: parsedBody.notes,

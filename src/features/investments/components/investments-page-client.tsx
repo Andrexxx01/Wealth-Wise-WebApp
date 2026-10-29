@@ -975,6 +975,26 @@ export default function InvestmentsPageClient() {
                         ? formatDate(asset.manualPriceUpdatedAt)
                         : null;
 
+                    const isNavValuation =
+                      asset.positionKind === "QUANTITY" &&
+                      asset.valuationType === "NAV" &&
+                      !asset.isClosed;
+
+                    const currentNav =
+                      isNavValuation &&
+                      asset.currentNav !== null &&
+                      asset.marketPriceCurrencyCode !== null
+                        ? formatInvestmentTransactionAmount(
+                            asset.currentNav,
+                            asset.marketPriceCurrencyCode,
+                          )
+                        : null;
+
+                    const navUpdatedAt =
+                      isNavValuation && asset.navUpdatedAt
+                        ? formatDate(asset.navUpdatedAt)
+                        : null;
+
                     const isAutomaticMarketValuation =
                       asset.positionKind === "QUANTITY" &&
                       asset.valuationType === "MARKET_PRICE" &&
@@ -1236,6 +1256,34 @@ export default function InvestmentsPageClient() {
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
                                   {manualPriceUpdatedAt ?? "—"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        ) : null}
+
+                        {isNavValuation ? (
+                          <div className="mt-4 rounded-[24px] border border-slate-200 bg-white p-4">
+                            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                              NAV Valuation
+                            </p>
+
+                            <div className="mt-3 grid grid-cols-2 gap-4">
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Current NAV / Unit
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {currentNav ?? "—"}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs font-medium text-slate-500">
+                                  Last Updated
+                                </p>
+                                <p className="mt-1 text-sm font-bold text-slate-900">
+                                  {navUpdatedAt ?? "—"}
                                 </p>
                               </div>
                             </div>

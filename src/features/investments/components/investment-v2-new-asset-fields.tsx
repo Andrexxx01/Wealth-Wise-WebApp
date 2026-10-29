@@ -70,6 +70,8 @@ export default function InvestmentV2NewAssetFields({
 
   const marketCurrencyCode = watch("marketCurrencyCode");
 
+  const valuationType = watch("valuationType");
+
   const instrumentOptions = getInvestmentV2InstrumentOptions(category).map(
     (option) => ({
       value: option.value,
@@ -116,6 +118,9 @@ export default function InvestmentV2NewAssetFields({
 
     setValue("providerSymbol", "");
 
+    setValue("manualPrice", "");
+    setValue("currentNav", "");
+
     setValue("unit", nextCategoryConfig.defaultUnit);
 
     setValue("pricingUnit", nextCategoryConfig.defaultPricingUnit);
@@ -144,6 +149,20 @@ export default function InvestmentV2NewAssetFields({
     });
   }, [category, instrumentType, setValue]);
 
+  useEffect(() => {
+    if (valuationType !== "NAV") {
+      return;
+    }
+
+    const normalizedCurrency = marketCurrencyCode.trim().toUpperCase();
+
+    if (/^[A-Z]{3}$/.test(normalizedCurrency)) {
+      setValue("currencyCode", normalizedCurrency, {
+        shouldValidate: true,
+      });
+    }
+  }, [valuationType, marketCurrencyCode, setValue]);
+
   const isCrypto = category === "CRYPTO";
 
   const isStock = category === "STOCK";
@@ -162,6 +181,8 @@ export default function InvestmentV2NewAssetFields({
 
   const isEtf = instrumentType === "ETF";
 
+  const isNavValuation = valuationType === "NAV";
+
   const isPhysicalCommodity = instrumentType === "PHYSICAL_COMMODITY";
 
   const usesListedSecuritySearch = isStock || (isIndex && isEtf);
@@ -171,7 +192,8 @@ export default function InvestmentV2NewAssetFields({
   const normalizedMarketCurrency = marketCurrencyCode.trim().toUpperCase();
 
   const transactionCurrencyOptions =
-    usesListedSecuritySearch && /^[A-Z]{3}$/.test(normalizedMarketCurrency)
+    (usesListedSecuritySearch || isNavValuation) &&
+    /^[A-Z]{3}$/.test(normalizedMarketCurrency)
       ? [
           {
             value: normalizedMarketCurrency,
@@ -327,12 +349,24 @@ export default function InvestmentV2NewAssetFields({
               />
 
               {!isEtf ? (
-                <FormInput
-                  label="Market Currency"
-                  placeholder="USD"
-                  error={errors.marketCurrencyCode?.message}
-                  registration={register("marketCurrencyCode")}
-                />
+                <>
+                  <FormInput
+                    label="NAV Currency"
+                    placeholder="USD"
+                    error={errors.marketCurrencyCode?.message}
+                    registration={register("marketCurrencyCode")}
+                  />
+
+                  <FormInput
+                    label="Current NAV per Unit (Optional)"
+                    type="number"
+                    min="0"
+                    step="any"
+                    placeholder="1.15"
+                    error={errors.currentNav?.message}
+                    registration={register("currentNav")}
+                  />
+                </>
               ) : null}
             </>
           ) : null}
@@ -417,10 +451,20 @@ export default function InvestmentV2NewAssetFields({
               />
 
               <FormInput
-                label="Market Currency"
+                label="NAV Currency"
                 placeholder="IDR"
                 error={errors.marketCurrencyCode?.message}
                 registration={register("marketCurrencyCode")}
+              />
+
+              <FormInput
+                label="Current NAV per Unit (Optional)"
+                type="number"
+                min="0"
+                step="any"
+                placeholder="1150"
+                error={errors.currentNav?.message}
+                registration={register("currentNav")}
               />
             </>
           ) : null}

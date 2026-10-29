@@ -99,6 +99,8 @@ export function transformEditInvestmentAssetV2FormValues(
 
     manualPrice: toOptionalNumber(values.manualPrice),
 
+    currentNav: toOptionalNumber(values.currentNav),
+
     notes: emptyStringToNull(values.notes),
   };
 }
@@ -134,6 +136,8 @@ export function transformInvestmentAssetV2FormValues(
   );
 
   let manualPrice: number | null = null;
+
+  let currentNav: number | null = null;
 
   let annualInterestRate: number | null = null;
 
@@ -202,6 +206,8 @@ export function transformInvestmentAssetV2FormValues(
     }
 
     if (values.instrumentType === "INDEX_FUND") {
+      currentNav = toOptionalNumber(values.currentNav);
+      marketCurrencyCode = marketCurrencyCode ?? transactionCurrencyCode;
       unit = "UNIT";
       pricingUnit = "UNIT";
     }
@@ -236,6 +242,9 @@ export function transformInvestmentAssetV2FormValues(
 
   if (values.category === "MUTUAL_FUND") {
     issuer = normalizeOptionalText(values.issuer);
+
+    currentNav = toOptionalNumber(values.currentNav);
+    marketCurrencyCode = marketCurrencyCode ?? transactionCurrencyCode;
 
     unit = "UNIT";
     pricingUnit = "UNIT";
@@ -310,6 +319,7 @@ export function transformInvestmentAssetV2FormValues(
     marketCurrencyCode,
 
     manualPrice,
+    currentNav,
 
     annualInterestRate,
     couponRate,

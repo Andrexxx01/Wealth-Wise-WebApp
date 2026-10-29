@@ -29,6 +29,9 @@ type SerializableInvestmentAsset = {
   manualPrice: unknown;
   manualPriceUpdatedAt: Date | null;
 
+  currentNav: unknown;
+  navUpdatedAt: Date | null;
+
   annualInterestRate: unknown;
   couponRate: unknown;
   faceValue: unknown;
@@ -119,6 +122,9 @@ export function serializeInvestmentAsset(
 
     manualPrice: nullableNumber(asset.manualPrice),
     manualPriceUpdatedAt: asset.manualPriceUpdatedAt?.toISOString() ?? null,
+
+    currentNav: nullableNumber(asset.currentNav),
+    navUpdatedAt: asset.navUpdatedAt?.toISOString() ?? null,
 
     annualInterestRate: nullableNumber(asset.annualInterestRate),
     couponRate: nullableNumber(asset.couponRate),

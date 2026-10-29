@@ -26,6 +26,7 @@ export type CreateInvestmentAssetV2FormValues = {
 
   marketCurrencyCode: string;
   manualPrice: string;
+  currentNav: string;
 
   annualInterestRate: string;
   couponRate: string;
@@ -74,6 +75,7 @@ export type EditInvestmentAssetV2FormValues = {
   underlyingIndex: string;
 
   manualPrice: string;
+  currentNav: string;
 
   notes: string;
 };

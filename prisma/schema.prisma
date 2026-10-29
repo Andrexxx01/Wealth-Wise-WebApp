@@ -211,6 +211,10 @@ model InvestmentAsset {
   manualPrice          Decimal? @db.Decimal(30, 12)
   manualPriceUpdatedAt DateTime?
 
+  // Optional current NAV per unit used by NAV valuation.
+  currentNav          Decimal? @db.Decimal(30, 12)
+  navUpdatedAt        DateTime?
+
   // Deposit / fixed-income properties
   annualInterestRate Decimal?  @db.Decimal(10, 6)
   couponRate         Decimal?  @db.Decimal(10, 6)

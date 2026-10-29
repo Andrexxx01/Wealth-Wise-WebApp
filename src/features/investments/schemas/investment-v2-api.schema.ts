@@ -73,6 +73,8 @@ export const createInvestmentAssetV2Schema = z
 
     manualPrice: z.coerce.number().finite().positive().optional().nullable(),
 
+    currentNav: z.coerce.number().finite().positive().optional().nullable(),
+
     annualInterestRate: z.coerce
       .number()
       .finite()
@@ -212,6 +214,8 @@ export const updateInvestmentAssetV2Schema = z
     underlyingIndex: updateOptionalTextSchema,
 
     manualPrice: z.coerce.number().finite().positive().optional().nullable(),
+
+    currentNav: z.coerce.number().finite().positive().optional().nullable(),
 
     notes: z
       .string()
