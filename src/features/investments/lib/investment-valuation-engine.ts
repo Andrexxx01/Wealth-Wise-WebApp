@@ -534,10 +534,11 @@ export function calculateInvestmentValuation({
   // VALUATION METHOD SUPPORT
   // =====================================================
 
-  if (
-    holding.positionKind !== "QUANTITY" ||
-    holding.valuationType !== "MARKET_PRICE"
-  ) {
+  const usesLiveUnitPrice =
+    holding.valuationType === "MARKET_PRICE" ||
+    holding.valuationType === "FX_RATE";
+
+  if (holding.positionKind !== "QUANTITY" || !usesLiveUnitPrice) {
     return createUnavailableValuation({
       holding,
 

@@ -432,6 +432,30 @@ export const createInvestmentAssetV2FormSchema = z
         });
       }
 
+      if (data.symbol.trim() === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["symbol"],
+          message: "Base currency is required for forex holdings.",
+        });
+      }
+
+      if (data.providerSymbol.trim() === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["providerSymbol"],
+          message: "Select a currency pair from the search results.",
+        });
+      }
+
+      if (data.marketCurrencyCode.trim() === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["marketCurrencyCode"],
+          message: "Quote currency is required for forex holdings.",
+        });
+      }
+
       if (data.initialTransactionType !== "BUY") {
         ctx.addIssue({
           code: "custom",

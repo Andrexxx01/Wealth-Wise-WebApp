@@ -11,6 +11,7 @@ import type {
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
+import ForexSearchField from "@/features/investments/components/forex-search-field";
 import StockSearchField from "@/features/investments/components/stock-search-field";
 
 import { CURRENCY_OPTIONS } from "@/constants/finance-options";
@@ -187,12 +188,14 @@ export default function InvestmentV2NewAssetFields({
 
   const usesListedSecuritySearch = isStock || (isIndex && isEtf);
 
+  const usesAutomaticInstrumentSearch = usesListedSecuritySearch || isForex;
+
   const isBuyTransaction = initialTransactionType === "BUY";
 
   const normalizedMarketCurrency = marketCurrencyCode.trim().toUpperCase();
 
   const transactionCurrencyOptions =
-    (usesListedSecuritySearch || isNavValuation) &&
+    (usesAutomaticInstrumentSearch || isNavValuation) &&
     /^[A-Z]{3}$/.test(normalizedMarketCurrency)
       ? [
           {
@@ -214,7 +217,7 @@ export default function InvestmentV2NewAssetFields({
         </p>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {!usesListedSecuritySearch ? (
+          {!usesAutomaticInstrumentSearch ? (
             <FormInput
               label="Asset Name"
               placeholder="Bitcoin"
@@ -475,18 +478,17 @@ export default function InvestmentV2NewAssetFields({
 
           {isForex ? (
             <>
-              <FormInput
-                label="Currency Code"
-                placeholder="USD"
-                error={errors.symbol?.message}
-                registration={register("symbol")}
-              />
+              <input type="hidden" {...register("name")} />
+              <input type="hidden" {...register("symbol")} />
+              <input type="hidden" {...register("providerSymbol")} />
+              <input type="hidden" {...register("exchange")} />
+              <input type="hidden" {...register("marketCurrencyCode")} />
+              <input type="hidden" {...register("unit")} />
+              <input type="hidden" {...register("pricingUnit")} />
 
-              <FormInput
-                label="Market Quote Currency"
-                placeholder="IDR"
-                error={errors.marketCurrencyCode?.message}
-                registration={register("marketCurrencyCode")}
+              <ForexSearchField
+                setValue={setValue}
+                error={errors.symbol?.message ?? errors.name?.message}
               />
             </>
           ) : null}
@@ -572,18 +574,24 @@ export default function InvestmentV2NewAssetFields({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {isBuyTransaction ? (
             <FormInput
-              label="Quantity"
+              label={isForex ? "Base Currency Amount" : "Quantity"}
               type="number"
               min="0"
               step="any"
-              placeholder="0.001"
+              placeholder={isForex ? "1000" : "0.001"}
               error={errors.quantity?.message}
               registration={register("quantity")}
             />
           ) : null}
 
           <FormInput
-            label={isBuyTransaction ? "Invested Amount" : "Principal Amount"}
+            label={
+              isForex
+                ? "Quote Currency Amount"
+                : isBuyTransaction
+                  ? "Invested Amount"
+                  : "Principal Amount"
+            }
             type="number"
             min="0"
             step="0.01"

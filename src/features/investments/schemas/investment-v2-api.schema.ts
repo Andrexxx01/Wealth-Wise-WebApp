@@ -173,6 +173,40 @@ export const createInvestmentAssetV2Schema = z
         message: "Symbol is required for ETFs.",
       });
     }
+
+    if (data.instrumentType === "FOREIGN_CURRENCY") {
+      if (!data.symbol) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["symbol"],
+          message: "Base currency is required for forex holdings.",
+        });
+      }
+
+      if (!data.providerSymbol) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["providerSymbol"],
+          message: "Forex provider symbol is required.",
+        });
+      }
+
+      if (!data.marketCurrencyCode) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["marketCurrencyCode"],
+          message: "Quote currency is required for forex holdings.",
+        });
+      }
+
+      if (data.valuationType !== "FX_RATE") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["valuationType"],
+          message: "Foreign currency holdings must use FX_RATE valuation.",
+        });
+      }
+    }
   });
 
 export type CreateInvestmentAssetV2Input = z.infer<

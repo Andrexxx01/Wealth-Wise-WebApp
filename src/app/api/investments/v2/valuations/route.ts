@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getCryptoSpotPrice } from "@/features/market-data/server/crypto-market-provider";
 import { getStockMarketPrice } from "@/features/market-data/server/stock-market-provider";
+import { getForexMarketPrice } from "@/features/market-data/server/forex-market-provider";
 import { getUsdFxRates } from "@/features/market-data/server/fx-rate-provider";
 
 import { calculateInvestmentHolding } from "@/features/investments/lib/investment-holding-engine";
@@ -141,35 +142,69 @@ export async function GET() {
     ];
 
     // =====================================================
-    // 6. AMBIL MARKET PRICE
+    // 6. CARI FOREX PAIR YANG MEMBUTUHKAN FX RATE
     // =====================================================
 
-    const [cryptoMarketPriceEntries, stockMarketPriceEntries] =
-      await Promise.all([
-        Promise.all(
-          cryptoSymbols.map(
-            async (
-              symbol,
-            ): Promise<readonly [string, MarketPriceItem | null]> => {
-              const marketPrice = await getCryptoSpotPrice(symbol);
+    const forexSymbols = [
+      ...new Set(
+        holdings
+          .filter(
+            (holding) =>
+              holding.category === "FOREX" &&
+              holding.instrumentType === "FOREIGN_CURRENCY" &&
+              holding.valuationType === "FX_RATE" &&
+              holding.providerSymbol !== null,
+          )
+          .map((holding) => holding.providerSymbol!.trim().toUpperCase())
+          .filter(Boolean),
+      ),
+    ];
 
-              return [symbol, marketPrice] as const;
-            },
-          ),
+    // =====================================================
+    // 7. AMBIL MARKET PRICE + FOREX RATE
+    // =====================================================
+
+    const [
+      cryptoMarketPriceEntries,
+      stockMarketPriceEntries,
+      forexMarketPriceEntries,
+    ] = await Promise.all([
+      Promise.all(
+        cryptoSymbols.map(
+          async (
+            symbol,
+          ): Promise<readonly [string, MarketPriceItem | null]> => {
+            const marketPrice = await getCryptoSpotPrice(symbol);
+
+            return [symbol, marketPrice] as const;
+          },
         ),
+      ),
 
-        Promise.all(
-          stockSymbols.map(
-            async (
-              symbol,
-            ): Promise<readonly [string, MarketPriceItem | null]> => {
-              const marketPrice = await getStockMarketPrice(symbol);
+      Promise.all(
+        stockSymbols.map(
+          async (
+            symbol,
+          ): Promise<readonly [string, MarketPriceItem | null]> => {
+            const marketPrice = await getStockMarketPrice(symbol);
 
-              return [symbol, marketPrice] as const;
-            },
-          ),
+            return [symbol, marketPrice] as const;
+          },
         ),
-      ]);
+      ),
+
+      Promise.all(
+        forexSymbols.map(
+          async (
+            symbol,
+          ): Promise<readonly [string, MarketPriceItem | null]> => {
+            const marketPrice = await getForexMarketPrice(symbol);
+
+            return [symbol, marketPrice] as const;
+          },
+        ),
+      ),
+    ]);
 
     const cryptoMarketPrices = new Map<string, MarketPriceItem | null>(
       cryptoMarketPriceEntries,
@@ -179,8 +214,12 @@ export async function GET() {
       stockMarketPriceEntries,
     );
 
+    const forexMarketPrices = new Map<string, MarketPriceItem | null>(
+      forexMarketPriceEntries,
+    );
+
     // =====================================================
-    // 7. KUMPULKAN CURRENCY YANG DIBUTUHKAN
+    // 8. KUMPULKAN CURRENCY YANG DIBUTUHKAN
     // =====================================================
     //
     // FX table dibuat dinamis dari currency yang benar-benar
@@ -229,6 +268,12 @@ export async function GET() {
       }
     }
 
+    for (const marketPrice of forexMarketPrices.values()) {
+      if (marketPrice?.currency) {
+        requiredCurrencies.add(marketPrice.currency);
+      }
+    }
+
     const fxRateTable = await getUsdFxRates([...requiredCurrencies]);
 
     const usdToIdrRate = fxRateTable.rates.IDR;
@@ -255,7 +300,7 @@ export async function GET() {
     });
 
     // =====================================================
-    // 8. VALUATION
+    // 9. VALUATION
     // =====================================================
 
     const valuations = holdings.map((holding, index) => {
@@ -277,6 +322,13 @@ export async function GET() {
         providerSymbol !== null
       ) {
         marketPrice = stockMarketPrices.get(providerSymbol) ?? null;
+      } else if (
+        holding.category === "FOREX" &&
+        holding.instrumentType === "FOREIGN_CURRENCY" &&
+        holding.valuationType === "FX_RATE" &&
+        providerSymbol !== null
+      ) {
+        marketPrice = forexMarketPrices.get(providerSymbol) ?? null;
       }
 
       return calculateInvestmentValuation({
@@ -305,7 +357,7 @@ export async function GET() {
     });
 
     // =====================================================
-    // 9. RESPONSE
+    // 10. RESPONSE
     // =====================================================
 
     return NextResponse.json({
