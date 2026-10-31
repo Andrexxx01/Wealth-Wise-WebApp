@@ -852,9 +852,12 @@ export default function InvestmentsPageClient() {
                 <>
                   <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                     {paginatedPortfolioAssets.map((asset) => {
-                    const assetTitle = asset.symbol
-                      ? `${asset.name} (${asset.symbol})`
-                      : asset.name;
+                    const assetTitle =
+                      asset.category === "FOREX"
+                        ? asset.name
+                        : asset.symbol
+                          ? `${asset.name} (${asset.symbol})`
+                          : asset.name;
 
                     const supportsInvestmentEvents =
                       asset.instrumentType === "DEPOSIT" ||
@@ -995,19 +998,30 @@ export default function InvestmentsPageClient() {
                         ? formatDate(asset.navUpdatedAt)
                         : null;
 
+                    const isForexMarketValuation =
+                      asset.positionKind === "QUANTITY" &&
+                      asset.valuationType === "FX_RATE" &&
+                      !asset.isClosed;
+
                     const isAutomaticMarketValuation =
                       asset.positionKind === "QUANTITY" &&
-                      asset.valuationType === "MARKET_PRICE" &&
+                      (asset.valuationType === "MARKET_PRICE" ||
+                        asset.valuationType === "FX_RATE") &&
                       !asset.isClosed;
 
                     const automaticMarketPrice =
                       isAutomaticMarketValuation &&
                       asset.marketPrice !== null &&
                       asset.marketPriceCurrencyCode !== null
-                        ? formatInvestmentTransactionAmount(
-                            asset.marketPrice,
-                            asset.marketPriceCurrencyCode,
-                          )
+                        ? isForexMarketValuation
+                          ? `${asset.marketPrice.toLocaleString("en-US", {
+                              minimumFractionDigits: 4,
+                              maximumFractionDigits: 6,
+                            })} ${asset.marketPriceCurrencyCode} / ${asset.symbol ?? "unit"}`
+                          : formatInvestmentTransactionAmount(
+                              asset.marketPrice,
+                              asset.marketPriceCurrencyCode,
+                            )
                         : null;
 
                     const automaticMarketSource =
@@ -1299,7 +1313,9 @@ export default function InvestmentsPageClient() {
                             <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
                               <div>
                                 <p className="text-xs font-medium text-slate-500">
-                                  Current Price / Unit
+                                  {isForexMarketValuation
+                                    ? "Current Rate"
+                                    : "Current Price / Unit"}
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
                                   {automaticMarketPrice ?? "—"}
@@ -1317,7 +1333,9 @@ export default function InvestmentsPageClient() {
 
                               <div>
                                 <p className="text-xs font-medium text-slate-500">
-                                  Price As Of
+                                  {isForexMarketValuation
+                                    ? "Rate As Of"
+                                    : "Price As Of"}
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
                                   {automaticMarketPriceAsOf ?? "—"}
