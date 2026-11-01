@@ -588,14 +588,45 @@ export function calculateInvestmentValuation({
 
   const quantity = holding.quantity ?? 0;
 
+  const normalizedTransactionCurrency = transactionCurrencyCode
+    .trim()
+    .toUpperCase();
+  const normalizedMarketPriceCurrency = marketPrice.currency
+    .trim()
+    .toUpperCase();
+  const normalizedBaseCurrency = holding.symbol?.trim().toUpperCase() ?? null;
+
+  const isForexDisplayedInBaseCurrency =
+    holding.valuationType === "FX_RATE" &&
+    normalizedBaseCurrency === displayCurrency &&
+    normalizedTransactionCurrency === normalizedMarketPriceCurrency;
+
+  /*
+   * Forex stores quantity in the base currency, while cost basis and realized
+   * P/L are stored in the quote currency. When the user's display currency is
+   * the same as the base currency, converting quote -> display through the
+   * generic FX table would mix two different providers with the Yahoo pair
+   * rate. Use the pair rate itself for all three values instead.
+   */
+  const valuationCostBasisInDisplayCurrency = isForexDisplayedInBaseCurrency
+    ? holding.remainingCostBasis / marketPrice.price
+    : costBasisInDisplayCurrency;
+
+  const valuationRealizedGainLossInDisplayCurrency =
+    isForexDisplayedInBaseCurrency
+      ? holding.realizedGainLoss / marketPrice.price
+      : realizedGainLossInDisplayCurrency;
+
   const marketValueInMarketCurrency = quantity * marketPrice.price;
 
-  const marketValue = convertCurrencyWithUsdRates({
-    amount: marketValueInMarketCurrency,
-    fromCurrency: marketPrice.currency,
-    toCurrency: displayCurrency,
-    usdRates: fxRates,
-  });
+  const marketValue = isForexDisplayedInBaseCurrency
+    ? quantity
+    : convertCurrencyWithUsdRates({
+        amount: marketValueInMarketCurrency,
+        fromCurrency: marketPrice.currency,
+        toCurrency: displayCurrency,
+        usdRates: fxRates,
+      });
 
   if (marketValue === null) {
     return createUnavailableValuation({
@@ -604,8 +635,9 @@ export function calculateInvestmentValuation({
       depositAccrualSummary,
       displayCurrency,
       status: "UNSUPPORTED_CURRENCY",
-      costBasisInDisplayCurrency,
-      realizedGainLossInDisplayCurrency,
+      costBasisInDisplayCurrency: valuationCostBasisInDisplayCurrency,
+      realizedGainLossInDisplayCurrency:
+        valuationRealizedGainLossInDisplayCurrency,
     });
   }
 
@@ -613,18 +645,20 @@ export function calculateInvestmentValuation({
   // UNREALIZED GAIN / LOSS
   // =====================================================
 
-  const unrealizedGainLoss = marketValue - costBasisInDisplayCurrency;
+  const unrealizedGainLoss =
+    marketValue - valuationCostBasisInDisplayCurrency;
 
   const unrealizedReturnPercentage =
-    costBasisInDisplayCurrency > 0
-      ? (unrealizedGainLoss / costBasisInDisplayCurrency) * 100
+    valuationCostBasisInDisplayCurrency > 0
+      ? (unrealizedGainLoss / valuationCostBasisInDisplayCurrency) * 100
       : null;
 
   // =====================================================
   // TOTAL CAPITAL GAIN / LOSS
   // =====================================================
 
-  const totalGainLoss = realizedGainLossInDisplayCurrency + unrealizedGainLoss;
+  const totalGainLoss =
+    valuationRealizedGainLossInDisplayCurrency + unrealizedGainLoss;
 
   return {
     ...holding,
@@ -641,9 +675,10 @@ export function calculateInvestmentValuation({
 
     marketValue,
 
-    costBasisInDisplayCurrency,
+    costBasisInDisplayCurrency: valuationCostBasisInDisplayCurrency,
 
-    realizedGainLossInDisplayCurrency,
+    realizedGainLossInDisplayCurrency:
+      valuationRealizedGainLossInDisplayCurrency,
 
     unrealizedGainLoss,
 
