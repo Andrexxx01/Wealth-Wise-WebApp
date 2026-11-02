@@ -11,6 +11,7 @@ import type {
 import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
+import CommodityBenchmarkField from "@/features/investments/components/commodity-benchmark-field";
 import ForexSearchField from "@/features/investments/components/forex-search-field";
 import StockSearchField from "@/features/investments/components/stock-search-field";
 
@@ -475,6 +476,13 @@ export default function InvestmentV2NewAssetFields({
           {/* =============================================
               FOREX HOLDING
           ============================================= */}
+
+          {category === "COMMODITY" && isPhysicalCommodity ? (
+            <CommodityBenchmarkField
+              setValue={setValue}
+              error={errors.symbol?.message ?? errors.name?.message}
+            />
+          ) : null}
 
           {isForex ? (
             <>

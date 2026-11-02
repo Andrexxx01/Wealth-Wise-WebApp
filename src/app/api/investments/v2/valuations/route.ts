@@ -130,7 +130,9 @@ export async function GET() {
                 (holding.category === "STOCK" &&
                   holding.instrumentType === "COMMON_STOCK") ||
                 (holding.category === "INDEX" &&
-                  holding.instrumentType === "ETF")
+                  holding.instrumentType === "ETF") ||
+                (holding.category === "COMMODITY" &&
+                  holding.instrumentType === "PHYSICAL_COMMODITY")
               ) &&
               (holding.providerSymbol !== null || holding.symbol !== null),
           )
@@ -317,7 +319,10 @@ export async function GET() {
         (
           (holding.category === "STOCK" &&
             holding.instrumentType === "COMMON_STOCK") ||
-          (holding.category === "INDEX" && holding.instrumentType === "ETF")
+          (holding.category === "INDEX" &&
+            holding.instrumentType === "ETF") ||
+          (holding.category === "COMMODITY" &&
+            holding.instrumentType === "PHYSICAL_COMMODITY")
         ) &&
         providerSymbol !== null
       ) {
