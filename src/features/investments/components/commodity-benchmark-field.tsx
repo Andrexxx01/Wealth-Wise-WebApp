@@ -16,7 +16,7 @@ const COMMODITY_BENCHMARKS = {
     providerSymbol: "GC=F",
     exchange: "COMEX",
     marketCurrencyCode: "USD",
-    unit: "TROY_OUNCE",
+    unit: "GRAM",
     pricingUnit: "TROY_OUNCE",
   },
 
@@ -26,7 +26,7 @@ const COMMODITY_BENCHMARKS = {
     providerSymbol: "SI=F",
     exchange: "COMEX",
     marketCurrencyCode: "USD",
-    unit: "TROY_OUNCE",
+    unit: "GRAM",
     pricingUnit: "TROY_OUNCE",
   },
 } as const;
@@ -69,11 +69,6 @@ export default function CommodityBenchmarkField({
       shouldValidate: true,
     });
 
-    setValue("currencyCode", benchmark.marketCurrencyCode, {
-      shouldDirty: true,
-      shouldValidate: true,
-    });
-
     setValue("unit", benchmark.unit, {
       shouldDirty: true,
     });
@@ -108,9 +103,10 @@ export default function CommodityBenchmarkField({
       </select>
 
       <p className="text-xs leading-5 text-slate-500">
-        Quantity is measured in troy ounces. Market price uses the
-        Yahoo Finance COMEX benchmark and is not a dealer-specific
-        physical gold or silver buyback price.
+        Quantity is entered in grams. Yahoo Finance provides the
+        benchmark price per troy ounce, and WealthWise converts the
+        holding automatically. Transaction currency can be different
+        from the benchmark currency.
       </p>
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}

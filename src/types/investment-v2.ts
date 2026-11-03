@@ -139,6 +139,10 @@ export interface InvestmentHoldingItem {
   isin: string | null;
   issuer: string | null;
   underlyingIndex: string | null;
+
+  unit: string | null;
+  pricingUnit: string | null;
+
   marketCurrencyCode: string | null;
   manualPrice: number | null;
   manualPriceUpdatedAt: string | null;

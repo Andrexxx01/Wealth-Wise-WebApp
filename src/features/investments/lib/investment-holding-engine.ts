@@ -210,6 +210,10 @@ function calculateQuantityHolding(
     isin: asset.isin,
     issuer: asset.issuer,
     underlyingIndex: asset.underlyingIndex,
+
+    unit: asset.unit,
+    pricingUnit: asset.pricingUnit,
+
     marketCurrencyCode: asset.marketCurrencyCode,
     manualPrice: asset.manualPrice,
     manualPriceUpdatedAt: asset.manualPriceUpdatedAt,
@@ -314,6 +318,10 @@ function calculatePrincipalHolding(
     isin: asset.isin,
     issuer: asset.issuer,
     underlyingIndex: asset.underlyingIndex,
+
+    unit: asset.unit,
+    pricingUnit: asset.pricingUnit,
+
     marketCurrencyCode: asset.marketCurrencyCode,
     manualPrice: asset.manualPrice,
     manualPriceUpdatedAt: asset.manualPriceUpdatedAt,

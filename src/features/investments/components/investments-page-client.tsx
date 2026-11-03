@@ -867,12 +867,22 @@ export default function InvestmentsPageClient() {
                       asset.category,
                     );
 
+                    const positionUnit =
+                      asset.category === "COMMODITY" &&
+                      asset.instrumentType === "PHYSICAL_COMMODITY"
+                        ? asset.unit === "GRAM"
+                          ? "g"
+                          : asset.unit === "TROY_OUNCE"
+                            ? "oz t"
+                            : asset.unit ?? asset.symbol ?? "units"
+                        : asset.symbol ?? asset.unit ?? "units";
+
                     const positionValue =
                       asset.positionKind === "QUANTITY"
                         ? asset.quantity !== null
                           ? `${formatInvestmentTransactionQuantity(
                               asset.quantity,
-                            )} ${asset.symbol ?? "units"}`
+                            )} ${positionUnit}`
                           : "—"
                         : asset.principalBalance !== null &&
                             asset.transactionCurrencyCode
@@ -1001,6 +1011,13 @@ export default function InvestmentsPageClient() {
                     const isForexMarketValuation =
                       asset.positionKind === "QUANTITY" &&
                       asset.valuationType === "FX_RATE" &&
+                      !asset.isClosed;
+
+                    const isCommodityBenchmarkValuation =
+                      asset.positionKind === "QUANTITY" &&
+                      asset.category === "COMMODITY" &&
+                      asset.instrumentType === "PHYSICAL_COMMODITY" &&
+                      asset.valuationType === "MARKET_PRICE" &&
                       !asset.isClosed;
 
                     const isAutomaticMarketValuation =
@@ -1315,7 +1332,9 @@ export default function InvestmentsPageClient() {
                                 <p className="text-xs font-medium text-slate-500">
                                   {isForexMarketValuation
                                     ? "Current Rate"
-                                    : "Current Price / Unit"}
+                                    : isCommodityBenchmarkValuation
+                                      ? "Current Price / Troy oz"
+                                      : "Current Price / Unit"}
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
                                   {automaticMarketPrice ?? "—"}

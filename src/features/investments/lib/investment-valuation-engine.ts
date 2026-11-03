@@ -617,7 +617,54 @@ export function calculateInvestmentValuation({
       ? holding.realizedGainLoss / marketPrice.price
       : realizedGainLossInDisplayCurrency;
 
-  const marketValueInMarketCurrency = quantity * marketPrice.price;
+  const normalizedHoldingUnit =
+    holding.unit?.trim().toUpperCase() ?? null;
+
+  const normalizedPricingUnit =
+    holding.pricingUnit?.trim().toUpperCase() ?? null;
+
+  const isDirectCommodityMarketValuation =
+    holding.category === "COMMODITY" &&
+    holding.instrumentType === "PHYSICAL_COMMODITY" &&
+    holding.valuationType === "MARKET_PRICE";
+
+  let marketQuantity = quantity;
+
+  if (
+    isDirectCommodityMarketValuation &&
+    normalizedHoldingUnit !== null &&
+    normalizedPricingUnit !== null &&
+    normalizedHoldingUnit !== normalizedPricingUnit
+  ) {
+    if (
+      (normalizedHoldingUnit === "GRAM" ||
+        normalizedHoldingUnit === "G") &&
+      normalizedPricingUnit === "TROY_OUNCE"
+    ) {
+      marketQuantity = quantity / 31.1034768;
+    } else if (
+      normalizedHoldingUnit === "TROY_OUNCE" &&
+      (normalizedPricingUnit === "GRAM" ||
+        normalizedPricingUnit === "G")
+    ) {
+      marketQuantity = quantity * 31.1034768;
+    } else {
+      return createUnavailableValuation({
+        holding,
+        eventSummary,
+        depositAccrualSummary,
+        displayCurrency,
+        status: "UNSUPPORTED_VALUATION",
+        costBasisInDisplayCurrency:
+          valuationCostBasisInDisplayCurrency,
+        realizedGainLossInDisplayCurrency:
+          valuationRealizedGainLossInDisplayCurrency,
+      });
+    }
+  }
+
+  const marketValueInMarketCurrency =
+    marketQuantity * marketPrice.price;
 
   const marketValue = isForexDisplayedInBaseCurrency
     ? quantity
