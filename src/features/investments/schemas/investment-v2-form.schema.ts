@@ -21,6 +21,7 @@ const investmentInstrumentTypeValues = [
   "INDEX_FUND",
   "FOREIGN_CURRENCY",
   "PHYSICAL_COMMODITY",
+  "DIGITAL_COMMODITY",
   "OTHER",
 ] as const;
 
@@ -471,23 +472,39 @@ export const createInvestmentAssetV2FormSchema = z
     // ===============================================
 
     if (data.category === "COMMODITY") {
-      const validInstrument =
+      const isDirectCommodity =
         data.instrumentType === "PHYSICAL_COMMODITY" ||
-        data.instrumentType === "ETF";
+        data.instrumentType === "DIGITAL_COMMODITY";
+
+      const validInstrument = isDirectCommodity || data.instrumentType === "ETF";
 
       if (!validInstrument) {
         ctx.addIssue({
           code: "custom",
           path: ["instrumentType"],
-          message: "Commodity investments must use Physical Commodity or ETF.",
+          message:
+            "Commodity investments must use Physical Commodity, Digital Commodity, or ETF.",
         });
       }
 
-      if (data.valuationType !== "MARKET_PRICE") {
+      if (data.instrumentType === "ETF" && data.valuationType !== "MARKET_PRICE") {
         ctx.addIssue({
           code: "custom",
           path: ["valuationType"],
-          message: "Commodity investments must use market price valuation.",
+          message: "Commodity ETFs must use market price valuation.",
+        });
+      }
+
+      if (
+        isDirectCommodity &&
+        data.valuationType !== "MARKET_PRICE" &&
+        data.valuationType !== "MANUAL"
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["valuationType"],
+          message:
+            "Direct commodity holdings must use market benchmark or manual valuation.",
         });
       }
 
@@ -496,6 +513,46 @@ export const createInvestmentAssetV2FormSchema = z
           code: "custom",
           path: ["symbol"],
           message: "Symbol is required for commodity ETFs.",
+        });
+      }
+
+      if (isDirectCommodity && data.symbol.trim() === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["symbol"],
+          message: "Select Gold or Silver.",
+        });
+      }
+
+      if (
+        isDirectCommodity &&
+        data.valuationType === "MARKET_PRICE" &&
+        data.providerSymbol.trim() === ""
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["providerSymbol"],
+          message: "Commodity benchmark provider symbol is required.",
+        });
+      }
+
+      if (
+        isDirectCommodity &&
+        data.valuationType === "MANUAL" &&
+        data.manualPrice.trim() === ""
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["manualPrice"],
+          message: "Current provider buyback price per gram is required.",
+        });
+      }
+
+      if (isDirectCommodity && data.marketCurrencyCode.trim() === "") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["marketCurrencyCode"],
+          message: "Commodity price currency is required.",
         });
       }
 

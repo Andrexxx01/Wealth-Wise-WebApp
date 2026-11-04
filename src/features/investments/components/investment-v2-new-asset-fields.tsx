@@ -72,6 +72,8 @@ export default function InvestmentV2NewAssetFields({
 
   const marketCurrencyCode = watch("marketCurrencyCode");
 
+  const symbol = watch("symbol");
+
   const valuationType = watch("valuationType");
 
   const instrumentOptions = getInvestmentV2InstrumentOptions(category).map(
@@ -187,9 +189,19 @@ export default function InvestmentV2NewAssetFields({
 
   const isPhysicalCommodity = instrumentType === "PHYSICAL_COMMODITY";
 
+  const isDigitalCommodity = instrumentType === "DIGITAL_COMMODITY";
+
+  const isDirectCommodity = isPhysicalCommodity || isDigitalCommodity;
+
+  const isManualCommodityValuation =
+    isDirectCommodity && valuationType === "MANUAL";
+
   const usesListedSecuritySearch = isStock || (isIndex && isEtf);
 
   const usesAutomaticInstrumentSearch = usesListedSecuritySearch || isForex;
+
+  const usesResolvedInstrumentSelection =
+    usesAutomaticInstrumentSearch || (isCommodity && isDirectCommodity);
 
   const isBuyTransaction = initialTransactionType === "BUY";
 
@@ -218,7 +230,7 @@ export default function InvestmentV2NewAssetFields({
         </p>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {!usesAutomaticInstrumentSearch ? (
+          {!usesResolvedInstrumentSelection ? (
             <FormInput
               label="Asset Name"
               placeholder="Bitcoin"
@@ -477,13 +489,6 @@ export default function InvestmentV2NewAssetFields({
               FOREX HOLDING
           ============================================= */}
 
-          {category === "COMMODITY" && isPhysicalCommodity ? (
-            <CommodityBenchmarkField
-              setValue={setValue}
-              error={errors.symbol?.message ?? errors.name?.message}
-            />
-          ) : null}
-
           {isForex ? (
             <>
               <input type="hidden" {...register("name")} />
@@ -522,33 +527,89 @@ export default function InvestmentV2NewAssetFields({
                     error={errors.exchange?.message}
                     registration={register("exchange")}
                   />
+
+                  <FormInput
+                    label="Market Currency"
+                    placeholder="USD"
+                    error={errors.marketCurrencyCode?.message}
+                    registration={register("marketCurrencyCode")}
+                  />
                 </>
               ) : null}
 
-              {isPhysicalCommodity ? (
+              {isDirectCommodity ? (
                 <>
-                  <FormInput
-                    label="Holding Unit"
-                    placeholder="GRAM"
-                    error={errors.unit?.message}
-                    registration={register("unit")}
+                  <input type="hidden" {...register("name")} />
+                  <input type="hidden" {...register("symbol")} />
+                  <input type="hidden" {...register("providerSymbol")} />
+                  <input type="hidden" {...register("exchange")} />
+                  <input type="hidden" {...register("unit")} />
+                  <input type="hidden" {...register("pricingUnit")} />
+
+                  <FormSelect
+                    label="Pricing Source"
+                    options={[
+                      {
+                        value: "MARKET_PRICE",
+                        label: "Global Market Benchmark",
+                      },
+                      {
+                        value: "MANUAL",
+                        label: "Provider / Manual Buyback Price",
+                      },
+                    ]}
+                    error={errors.valuationType?.message}
+                    registration={register("valuationType")}
                   />
 
-                  <FormInput
-                    label="Market Pricing Unit"
-                    placeholder="TROY_OUNCE"
-                    error={errors.pricingUnit?.message}
-                    registration={register("pricingUnit")}
+                  <CommodityBenchmarkField
+                    instrumentType={
+                      isDigitalCommodity
+                        ? "DIGITAL_COMMODITY"
+                        : "PHYSICAL_COMMODITY"
+                    }
+                    valuationType={
+                      valuationType === "MANUAL" ? "MANUAL" : "MARKET_PRICE"
+                    }
+                    symbol={symbol}
+                    setValue={setValue}
+                    error={errors.symbol?.message ?? errors.name?.message}
                   />
+
+                  {isManualCommodityValuation ? (
+                    <>
+                      <FormInput
+                        label="Provider / Platform"
+                        placeholder="Pegadaian, Treasury, Pluang..."
+                        error={errors.issuer?.message}
+                        registration={register("issuer")}
+                      />
+
+                      <FormInput
+                        label="Buyback Price Currency"
+                        placeholder="IDR"
+                        error={errors.marketCurrencyCode?.message}
+                        registration={register("marketCurrencyCode")}
+                      />
+
+                      <FormInput
+                        label="Current Buyback Price / Gram"
+                        type="number"
+                        min="0"
+                        step="any"
+                        placeholder="2150000"
+                        error={errors.manualPrice?.message}
+                        registration={register("manualPrice")}
+                      />
+                    </>
+                  ) : (
+                    <input
+                      type="hidden"
+                      {...register("marketCurrencyCode")}
+                    />
+                  )}
                 </>
               ) : null}
-
-              <FormInput
-                label="Market Currency"
-                placeholder="USD"
-                error={errors.marketCurrencyCode?.message}
-                registration={register("marketCurrencyCode")}
-              />
             </>
           ) : null}
 
@@ -582,7 +643,13 @@ export default function InvestmentV2NewAssetFields({
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {isBuyTransaction ? (
             <FormInput
-              label={isForex ? "Base Currency Amount" : "Quantity"}
+              label={
+                isForex
+                  ? "Base Currency Amount"
+                  : isDirectCommodity
+                    ? "Holding Amount (g)"
+                    : "Quantity"
+              }
               type="number"
               min="0"
               step="any"

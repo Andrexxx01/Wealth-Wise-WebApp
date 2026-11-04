@@ -161,7 +161,9 @@ export default function EditInvestmentAssetV2Dialog({
     instrumentType === "DEPOSIT" ||
     instrumentType === "BOND" ||
     instrumentType === "OPEN_END_FUND" ||
-    instrumentType === "INDEX_FUND";
+    instrumentType === "INDEX_FUND" ||
+    instrumentType === "PHYSICAL_COMMODITY" ||
+    instrumentType === "DIGITAL_COMMODITY";
 
   const showUnderlyingIndex =
     instrumentType === "ETF" || instrumentType === "INDEX_FUND";
@@ -295,7 +297,10 @@ export default function EditInvestmentAssetV2Dialog({
                   htmlFor="edit-investment-asset-issuer"
                   className="text-sm font-semibold text-slate-700"
                 >
-                  Issuer
+                  {instrumentType === "PHYSICAL_COMMODITY" ||
+                  instrumentType === "DIGITAL_COMMODITY"
+                    ? "Provider / Platform"
+                    : "Issuer"}
                 </label>
 
                 <Input
@@ -304,7 +309,10 @@ export default function EditInvestmentAssetV2Dialog({
                   placeholder={
                     instrumentType === "DEPOSIT"
                       ? "Bank or financial institution"
-                      : "Optional"
+                      : instrumentType === "PHYSICAL_COMMODITY" ||
+                          instrumentType === "DIGITAL_COMMODITY"
+                        ? "Pegadaian, Treasury, dealer..."
+                        : "Optional"
                   }
                 />
 
@@ -347,7 +355,10 @@ export default function EditInvestmentAssetV2Dialog({
               htmlFor="edit-investment-asset-manual-price"
               className="text-sm font-semibold text-slate-700"
             >
-              Current Price per Unit
+              {instrumentType === "PHYSICAL_COMMODITY" ||
+              instrumentType === "DIGITAL_COMMODITY"
+                ? "Current Buyback Price / Gram"
+                : "Current Price per Unit"}
             </label>
 
             <Input

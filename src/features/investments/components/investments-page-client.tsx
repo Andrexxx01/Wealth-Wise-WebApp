@@ -869,7 +869,8 @@ export default function InvestmentsPageClient() {
 
                     const positionUnit =
                       asset.category === "COMMODITY" &&
-                      asset.instrumentType === "PHYSICAL_COMMODITY"
+                      (asset.instrumentType === "PHYSICAL_COMMODITY" ||
+                        asset.instrumentType === "DIGITAL_COMMODITY")
                         ? asset.unit === "GRAM"
                           ? "g"
                           : asset.unit === "TROY_OUNCE"
@@ -988,6 +989,16 @@ export default function InvestmentsPageClient() {
                         ? formatDate(asset.manualPriceUpdatedAt)
                         : null;
 
+                    const isCommodityManualValuation =
+                      isManualValuation &&
+                      asset.category === "COMMODITY" &&
+                      (asset.instrumentType === "PHYSICAL_COMMODITY" ||
+                        asset.instrumentType === "DIGITAL_COMMODITY");
+
+                    const commodityProvider = isCommodityManualValuation
+                      ? asset.issuer
+                      : null;
+
                     const isNavValuation =
                       asset.positionKind === "QUANTITY" &&
                       asset.valuationType === "NAV" &&
@@ -1016,7 +1027,8 @@ export default function InvestmentsPageClient() {
                     const isCommodityBenchmarkValuation =
                       asset.positionKind === "QUANTITY" &&
                       asset.category === "COMMODITY" &&
-                      asset.instrumentType === "PHYSICAL_COMMODITY" &&
+                      (asset.instrumentType === "PHYSICAL_COMMODITY" ||
+                        asset.instrumentType === "DIGITAL_COMMODITY") &&
                       asset.valuationType === "MARKET_PRICE" &&
                       !asset.isClosed;
 
@@ -1268,13 +1280,17 @@ export default function InvestmentsPageClient() {
                         {isManualValuation ? (
                           <div className="mt-4 rounded-[24px] border border-slate-200 bg-white p-4">
                             <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-                              Manual Valuation
+                              {isCommodityManualValuation
+                                ? "Provider / Manual Valuation"
+                                : "Manual Valuation"}
                             </p>
 
-                            <div className="mt-3 grid grid-cols-2 gap-4">
+                            <div className="mt-3 grid grid-cols-2 gap-4 sm:grid-cols-3">
                               <div>
                                 <p className="text-xs font-medium text-slate-500">
-                                  Current Price / Unit
+                                  {isCommodityManualValuation
+                                    ? "Current Buyback Price / Gram"
+                                    : "Current Price / Unit"}
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">
                                   {manualPrice ?? "—"}
@@ -1289,6 +1305,17 @@ export default function InvestmentsPageClient() {
                                   {manualPriceUpdatedAt ?? "—"}
                                 </p>
                               </div>
+
+                              {isCommodityManualValuation ? (
+                                <div>
+                                  <p className="text-xs font-medium text-slate-500">
+                                    Provider / Platform
+                                  </p>
+                                  <p className="mt-1 text-sm font-bold text-slate-900">
+                                    {commodityProvider ?? "Manual"}
+                                  </p>
+                                </div>
+                              ) : null}
                             </div>
                           </div>
                         ) : null}

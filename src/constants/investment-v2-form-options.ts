@@ -231,8 +231,13 @@ export const INVESTMENT_V2_CATEGORY_CONFIG: Record<
     instruments: [
       {
         value: "PHYSICAL_COMMODITY",
-        label: "Physical Commodity",
+        label: "Physical Gold / Silver",
         valuationType: "MARKET_PRICE",
+      },
+      {
+        value: "DIGITAL_COMMODITY",
+        label: "Digital Gold / Silver",
+        valuationType: "MANUAL",
       },
       {
         value: "ETF",

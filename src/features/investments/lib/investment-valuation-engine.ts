@@ -625,7 +625,8 @@ export function calculateInvestmentValuation({
 
   const isDirectCommodityMarketValuation =
     holding.category === "COMMODITY" &&
-    holding.instrumentType === "PHYSICAL_COMMODITY" &&
+    (holding.instrumentType === "PHYSICAL_COMMODITY" ||
+      holding.instrumentType === "DIGITAL_COMMODITY") &&
     holding.valuationType === "MARKET_PRICE";
 
   let marketQuantity = quantity;

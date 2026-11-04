@@ -282,10 +282,23 @@ export function transformInvestmentAssetV2FormValues(
       pricingUnit = "SHARE";
     }
 
-    if (values.instrumentType === "PHYSICAL_COMMODITY") {
-      unit = normalizeOptionalUppercaseText(values.unit);
+    const isDirectCommodity =
+      values.instrumentType === "PHYSICAL_COMMODITY" ||
+      values.instrumentType === "DIGITAL_COMMODITY";
 
-      pricingUnit = normalizeOptionalUppercaseText(values.pricingUnit);
+    if (isDirectCommodity) {
+      exchange = normalizeOptionalText(values.exchange);
+      issuer = normalizeOptionalText(values.issuer);
+
+      unit = normalizeOptionalUppercaseText(values.unit) ?? "GRAM";
+      pricingUnit =
+        normalizeOptionalUppercaseText(values.pricingUnit) ??
+        (values.valuationType === "MANUAL" ? "GRAM" : "TROY_OUNCE");
+
+      if (values.valuationType === "MANUAL") {
+        manualPrice = toOptionalNumber(values.manualPrice);
+        marketCurrencyCode = marketCurrencyCode ?? transactionCurrencyCode;
+      }
     }
   }
 

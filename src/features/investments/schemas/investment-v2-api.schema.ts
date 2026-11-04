@@ -48,6 +48,7 @@ export const createInvestmentAssetV2Schema = z
       "INDEX_FUND",
       "FOREIGN_CURRENCY",
       "PHYSICAL_COMMODITY",
+      "DIGITAL_COMMODITY",
       "OTHER",
     ]),
 
@@ -204,6 +205,84 @@ export const createInvestmentAssetV2Schema = z
           code: "custom",
           path: ["valuationType"],
           message: "Foreign currency holdings must use FX_RATE valuation.",
+        });
+      }
+    }
+
+    if (data.category === "COMMODITY") {
+      const isDirectCommodity =
+        data.instrumentType === "PHYSICAL_COMMODITY" ||
+        data.instrumentType === "DIGITAL_COMMODITY";
+
+      const validInstrument = isDirectCommodity || data.instrumentType === "ETF";
+
+      if (!validInstrument) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["instrumentType"],
+          message:
+            "Commodity investments must use Physical Commodity, Digital Commodity, or ETF.",
+        });
+      }
+
+      if (data.instrumentType === "ETF" && data.valuationType !== "MARKET_PRICE") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["valuationType"],
+          message: "Commodity ETFs must use MARKET_PRICE valuation.",
+        });
+      }
+
+      if (
+        isDirectCommodity &&
+        data.valuationType !== "MARKET_PRICE" &&
+        data.valuationType !== "MANUAL"
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["valuationType"],
+          message:
+            "Direct commodity holdings must use MARKET_PRICE or MANUAL valuation.",
+        });
+      }
+
+      if (isDirectCommodity && !data.symbol) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["symbol"],
+          message: "Commodity metal symbol is required.",
+        });
+      }
+
+      if (
+        isDirectCommodity &&
+        data.valuationType === "MARKET_PRICE" &&
+        !data.providerSymbol
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["providerSymbol"],
+          message: "Commodity benchmark provider symbol is required.",
+        });
+      }
+
+      if (
+        isDirectCommodity &&
+        data.valuationType === "MANUAL" &&
+        data.manualPrice == null
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["manualPrice"],
+          message: "Provider buyback price per gram is required.",
+        });
+      }
+
+      if (isDirectCommodity && !data.marketCurrencyCode) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["marketCurrencyCode"],
+          message: "Commodity price currency is required.",
         });
       }
     }
