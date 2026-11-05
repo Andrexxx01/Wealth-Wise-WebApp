@@ -12,6 +12,7 @@ import FormInput from "@/components/form/form-input";
 import FormSelect from "@/components/form/form-select";
 import FormTextarea from "@/components/form/form-textarea";
 import CommodityBenchmarkField from "@/features/investments/components/commodity-benchmark-field";
+import CommodityMarketBenchmarkField from "@/features/investments/components/commodity-market-benchmark-field";
 import ForexSearchField from "@/features/investments/components/forex-search-field";
 import StockSearchField from "@/features/investments/components/stock-search-field";
 
@@ -191,6 +192,8 @@ export default function InvestmentV2NewAssetFields({
 
   const isDigitalCommodity = instrumentType === "DIGITAL_COMMODITY";
 
+  const isCommodityBenchmark = instrumentType === "COMMODITY_BENCHMARK";
+
   const isDirectCommodity = isPhysicalCommodity || isDigitalCommodity;
 
   const isManualCommodityValuation =
@@ -201,7 +204,8 @@ export default function InvestmentV2NewAssetFields({
   const usesAutomaticInstrumentSearch = usesListedSecuritySearch || isForex;
 
   const usesResolvedInstrumentSelection =
-    usesAutomaticInstrumentSearch || (isCommodity && isDirectCommodity);
+    usesAutomaticInstrumentSearch ||
+    (isCommodity && (isDirectCommodity || isCommodityBenchmark));
 
   const isBuyTransaction = initialTransactionType === "BUY";
 
@@ -537,6 +541,24 @@ export default function InvestmentV2NewAssetFields({
                 </>
               ) : null}
 
+              {isCommodityBenchmark ? (
+                <>
+                  <input type="hidden" {...register("name")} />
+                  <input type="hidden" {...register("symbol")} />
+                  <input type="hidden" {...register("providerSymbol")} />
+                  <input type="hidden" {...register("exchange")} />
+                  <input type="hidden" {...register("marketCurrencyCode")} />
+                  <input type="hidden" {...register("unit")} />
+                  <input type="hidden" {...register("pricingUnit")} />
+
+                  <CommodityMarketBenchmarkField
+                    symbol={symbol}
+                    setValue={setValue}
+                    error={errors.symbol?.message ?? errors.name?.message}
+                  />
+                </>
+              ) : null}
+
               {isDirectCommodity ? (
                 <>
                   <input type="hidden" {...register("name")} />
@@ -648,7 +670,13 @@ export default function InvestmentV2NewAssetFields({
                   ? "Base Currency Amount"
                   : isDirectCommodity
                     ? "Holding Amount (g)"
-                    : "Quantity"
+                    : isCommodityBenchmark
+                      ? symbol === "CL"
+                        ? "Benchmark Amount (bbl)"
+                        : symbol === "HG"
+                          ? "Benchmark Amount (kg)"
+                          : "Benchmark Quantity"
+                      : "Quantity"
               }
               type="number"
               min="0"

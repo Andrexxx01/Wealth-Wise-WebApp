@@ -286,6 +286,12 @@ export function transformInvestmentAssetV2FormValues(
       values.instrumentType === "PHYSICAL_COMMODITY" ||
       values.instrumentType === "DIGITAL_COMMODITY";
 
+    if (values.instrumentType === "COMMODITY_BENCHMARK") {
+      exchange = normalizeOptionalText(values.exchange);
+      unit = normalizeOptionalUppercaseText(values.unit);
+      pricingUnit = normalizeOptionalUppercaseText(values.pricingUnit);
+    }
+
     if (isDirectCommodity) {
       exchange = normalizeOptionalText(values.exchange);
       issuer = normalizeOptionalText(values.issuer);

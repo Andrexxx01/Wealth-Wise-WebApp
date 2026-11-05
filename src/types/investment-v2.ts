@@ -19,6 +19,7 @@ export type InvestmentInstrumentType =
   | "FOREIGN_CURRENCY"
   | "PHYSICAL_COMMODITY"
   | "DIGITAL_COMMODITY"
+  | "COMMODITY_BENCHMARK"
   | "OTHER";
 
 export type InvestmentValuationType =

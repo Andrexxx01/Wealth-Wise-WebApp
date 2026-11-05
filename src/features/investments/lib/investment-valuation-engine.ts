@@ -626,7 +626,8 @@ export function calculateInvestmentValuation({
   const isDirectCommodityMarketValuation =
     holding.category === "COMMODITY" &&
     (holding.instrumentType === "PHYSICAL_COMMODITY" ||
-      holding.instrumentType === "DIGITAL_COMMODITY") &&
+      holding.instrumentType === "DIGITAL_COMMODITY" ||
+      holding.instrumentType === "COMMODITY_BENCHMARK") &&
     holding.valuationType === "MARKET_PRICE";
 
   let marketQuantity = quantity;
@@ -649,6 +650,20 @@ export function calculateInvestmentValuation({
         normalizedPricingUnit === "G")
     ) {
       marketQuantity = quantity * 31.1034768;
+    } else if (
+      (normalizedHoldingUnit === "KILOGRAM" ||
+        normalizedHoldingUnit === "KG") &&
+      (normalizedPricingUnit === "POUND" ||
+        normalizedPricingUnit === "LB")
+    ) {
+      marketQuantity = quantity * 2.20462262185;
+    } else if (
+      (normalizedHoldingUnit === "POUND" ||
+        normalizedHoldingUnit === "LB") &&
+      (normalizedPricingUnit === "KILOGRAM" ||
+        normalizedPricingUnit === "KG")
+    ) {
+      marketQuantity = quantity / 2.20462262185;
     } else {
       return createUnavailableValuation({
         holding,

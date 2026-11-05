@@ -49,6 +49,7 @@ export const createInvestmentAssetV2Schema = z
       "FOREIGN_CURRENCY",
       "PHYSICAL_COMMODITY",
       "DIGITAL_COMMODITY",
+      "COMMODITY_BENCHMARK",
       "OTHER",
     ]),
 
@@ -214,14 +215,18 @@ export const createInvestmentAssetV2Schema = z
         data.instrumentType === "PHYSICAL_COMMODITY" ||
         data.instrumentType === "DIGITAL_COMMODITY";
 
-      const validInstrument = isDirectCommodity || data.instrumentType === "ETF";
+      const isCommodityBenchmark =
+        data.instrumentType === "COMMODITY_BENCHMARK";
+
+      const validInstrument =
+        isDirectCommodity || isCommodityBenchmark || data.instrumentType === "ETF";
 
       if (!validInstrument) {
         ctx.addIssue({
           code: "custom",
           path: ["instrumentType"],
           message:
-            "Commodity investments must use Physical Commodity, Digital Commodity, or ETF.",
+            "Commodity investments must use Physical Commodity, Digital Commodity, Commodity Benchmark, or ETF.",
         });
       }
 
@@ -230,6 +235,14 @@ export const createInvestmentAssetV2Schema = z
           code: "custom",
           path: ["valuationType"],
           message: "Commodity ETFs must use MARKET_PRICE valuation.",
+        });
+      }
+
+      if (isCommodityBenchmark && data.valuationType !== "MARKET_PRICE") {
+        ctx.addIssue({
+          code: "custom",
+          path: ["valuationType"],
+          message: "Commodity benchmarks must use MARKET_PRICE valuation.",
         });
       }
 
@@ -246,7 +259,7 @@ export const createInvestmentAssetV2Schema = z
         });
       }
 
-      if (isDirectCommodity && !data.symbol) {
+      if ((isDirectCommodity || isCommodityBenchmark) && !data.symbol) {
         ctx.addIssue({
           code: "custom",
           path: ["symbol"],
@@ -255,7 +268,7 @@ export const createInvestmentAssetV2Schema = z
       }
 
       if (
-        isDirectCommodity &&
+        (isDirectCommodity || isCommodityBenchmark) &&
         data.valuationType === "MARKET_PRICE" &&
         !data.providerSymbol
       ) {
@@ -278,7 +291,7 @@ export const createInvestmentAssetV2Schema = z
         });
       }
 
-      if (isDirectCommodity && !data.marketCurrencyCode) {
+      if ((isDirectCommodity || isCommodityBenchmark) && !data.marketCurrencyCode) {
         ctx.addIssue({
           code: "custom",
           path: ["marketCurrencyCode"],

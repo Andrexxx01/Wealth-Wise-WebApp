@@ -1,0 +1,1 @@
+ALTER TYPE "InvestmentInstrumentType" ADD VALUE 'COMMODITY_BENCHMARK';

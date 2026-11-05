@@ -133,7 +133,8 @@ export async function GET() {
                   holding.instrumentType === "ETF") ||
                 (holding.category === "COMMODITY" &&
                   (holding.instrumentType === "PHYSICAL_COMMODITY" ||
-                    holding.instrumentType === "DIGITAL_COMMODITY"))
+                    holding.instrumentType === "DIGITAL_COMMODITY" ||
+                    holding.instrumentType === "COMMODITY_BENCHMARK"))
               ) &&
               (holding.providerSymbol !== null || holding.symbol !== null),
           )
@@ -324,7 +325,8 @@ export async function GET() {
             holding.instrumentType === "ETF") ||
           (holding.category === "COMMODITY" &&
             (holding.instrumentType === "PHYSICAL_COMMODITY" ||
-              holding.instrumentType === "DIGITAL_COMMODITY"))
+              holding.instrumentType === "DIGITAL_COMMODITY" ||
+              holding.instrumentType === "COMMODITY_BENCHMARK"))
         ) &&
         providerSymbol !== null
       ) {

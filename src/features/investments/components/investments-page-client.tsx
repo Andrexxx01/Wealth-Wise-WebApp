@@ -870,12 +870,19 @@ export default function InvestmentsPageClient() {
                     const positionUnit =
                       asset.category === "COMMODITY" &&
                       (asset.instrumentType === "PHYSICAL_COMMODITY" ||
-                        asset.instrumentType === "DIGITAL_COMMODITY")
+                        asset.instrumentType === "DIGITAL_COMMODITY" ||
+                        asset.instrumentType === "COMMODITY_BENCHMARK")
                         ? asset.unit === "GRAM"
                           ? "g"
                           : asset.unit === "TROY_OUNCE"
                             ? "oz t"
-                            : asset.unit ?? asset.symbol ?? "units"
+                            : asset.unit === "BARREL"
+                              ? "bbl"
+                              : asset.unit === "KILOGRAM"
+                                ? "kg"
+                                : asset.unit === "POUND"
+                                  ? "lb"
+                                  : asset.unit ?? asset.symbol ?? "units"
                         : asset.symbol ?? asset.unit ?? "units";
 
                     const positionValue =
@@ -1028,9 +1035,21 @@ export default function InvestmentsPageClient() {
                       asset.positionKind === "QUANTITY" &&
                       asset.category === "COMMODITY" &&
                       (asset.instrumentType === "PHYSICAL_COMMODITY" ||
-                        asset.instrumentType === "DIGITAL_COMMODITY") &&
+                        asset.instrumentType === "DIGITAL_COMMODITY" ||
+                        asset.instrumentType === "COMMODITY_BENCHMARK") &&
                       asset.valuationType === "MARKET_PRICE" &&
                       !asset.isClosed;
+
+                    const commodityPricingUnitLabel =
+                      isCommodityBenchmarkValuation
+                        ? asset.pricingUnit === "TROY_OUNCE"
+                          ? "Troy oz"
+                          : asset.pricingUnit === "BARREL"
+                            ? "Barrel"
+                            : asset.pricingUnit === "POUND"
+                              ? "lb"
+                              : asset.pricingUnit ?? "Unit"
+                        : null;
 
                     const isAutomaticMarketValuation =
                       asset.positionKind === "QUANTITY" &&
@@ -1360,7 +1379,7 @@ export default function InvestmentsPageClient() {
                                   {isForexMarketValuation
                                     ? "Current Rate"
                                     : isCommodityBenchmarkValuation
-                                      ? "Current Price / Troy oz"
+                                      ? `Current Price / ${commodityPricingUnitLabel ?? "Unit"}`
                                       : "Current Price / Unit"}
                                 </p>
                                 <p className="mt-1 text-sm font-bold text-slate-900">

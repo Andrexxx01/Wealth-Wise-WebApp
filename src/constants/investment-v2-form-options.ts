@@ -240,6 +240,11 @@ export const INVESTMENT_V2_CATEGORY_CONFIG: Record<
         valuationType: "MANUAL",
       },
       {
+        value: "COMMODITY_BENCHMARK",
+        label: "Commodity Benchmark (Oil / Copper)",
+        valuationType: "MARKET_PRICE",
+      },
+      {
         value: "ETF",
         label: "Commodity ETF",
         valuationType: "MARKET_PRICE",
