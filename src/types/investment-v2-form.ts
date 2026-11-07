@@ -80,7 +80,12 @@ export type EditInvestmentAssetV2FormValues = {
   notes: string;
 };
 
-export type InvestmentEventV2FormType = "INTEREST" | "COUPON" | "MATURITY";
+export type InvestmentEventV2FormType =
+  | "DIVIDEND"
+  | "INTEREST"
+  | "COUPON"
+  | "DISTRIBUTION"
+  | "MATURITY";
 
 export type CreateInvestmentEventV2FormValues = {
   type: InvestmentEventV2FormType;

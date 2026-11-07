@@ -390,7 +390,11 @@ export function transformInvestmentTransactionV2FormValues(
 export function transformInvestmentEventV2FormValues(
   values: CreateInvestmentEventV2FormValues,
 ): CreateInvestmentEventV2Payload {
-  const isCashEvent = values.type === "INTEREST" || values.type === "COUPON";
+  const isCashEvent =
+    values.type === "DIVIDEND" ||
+    values.type === "INTEREST" ||
+    values.type === "COUPON" ||
+    values.type === "DISTRIBUTION";
 
   return {
     type: values.type,

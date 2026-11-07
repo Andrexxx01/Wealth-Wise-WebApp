@@ -66,6 +66,13 @@ function getDefaultEventType(
   }
 
   if (
+    asset?.instrumentType === "COMMON_STOCK" ||
+    asset?.instrumentType === "ETF"
+  ) {
+    return "DIVIDEND";
+  }
+
+  if (
     asset &&
     isFullySettledDeposit(asset) &&
     asset.maturityDate !== null &&
@@ -129,7 +136,11 @@ export default function AddInvestmentEventV2Dialog({
     name: "type",
   });
 
-  const isCashEvent = eventType === "INTEREST" || eventType === "COUPON";
+  const isCashEvent =
+    eventType === "DIVIDEND" ||
+    eventType === "INTEREST" ||
+    eventType === "COUPON" ||
+    eventType === "DISTRIBUTION";
 
   // =====================================================
   // LOAD ASSET DEFAULTS
@@ -200,6 +211,10 @@ export default function AddInvestmentEventV2Dialog({
   const isDeposit = asset?.instrumentType === "DEPOSIT";
 
   const isBond = asset?.instrumentType === "BOND";
+
+  const isStock = asset?.instrumentType === "COMMON_STOCK";
+
+  const isEtf = asset?.instrumentType === "ETF";
 
   const depositIsFullySettled = isFullySettledDeposit(asset);
 
@@ -293,7 +308,18 @@ export default function AddInvestmentEventV2Dialog({
                 <option value="MATURITY">Maturity</option>
               </>
             ) : null}
-          </select>
+
+            {isStock ? (
+              <option value="DIVIDEND">Dividend</option>
+            ) : null}
+
+            {isEtf ? (
+              <>
+                <option value="DIVIDEND">Dividend</option>
+                <option value="DISTRIBUTION">Distribution</option>
+              </>
+            ) : null}
+</select>
 
           {errors.type ? (
             <p className="text-xs font-medium text-red-600">

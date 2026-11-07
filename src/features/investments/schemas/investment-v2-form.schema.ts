@@ -664,7 +664,13 @@ export const editInvestmentAssetV2FormSchema = z.object({
 
 export const createInvestmentEventV2FormSchema = z
   .object({
-    type: z.enum(["INTEREST", "COUPON", "MATURITY"]),
+    type: z.enum([
+      "DIVIDEND",
+      "INTEREST",
+      "COUPON",
+      "DISTRIBUTION",
+      "MATURITY",
+    ]),
 
     grossAmount: z.string(),
 
@@ -679,7 +685,11 @@ export const createInvestmentEventV2FormSchema = z
     notes: z.string().trim().max(500, "Notes must be 500 characters or fewer."),
   })
   .superRefine((data, ctx) => {
-    const isCashEvent = data.type === "INTEREST" || data.type === "COUPON";
+    const isCashEvent =
+      data.type === "DIVIDEND" ||
+      data.type === "INTEREST" ||
+      data.type === "COUPON" ||
+      data.type === "DISTRIBUTION";
 
     if (!isCashEvent) {
       return;

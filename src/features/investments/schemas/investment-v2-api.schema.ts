@@ -443,7 +443,11 @@ export const createInvestmentEventV2Schema = z
     notes: z.string().trim().max(500).optional().nullable(),
   })
   .superRefine((data, ctx) => {
-    const isCashEvent = data.type === "INTEREST" || data.type === "COUPON";
+    const isCashEvent =
+      data.type === "DIVIDEND" ||
+      data.type === "INTEREST" ||
+      data.type === "COUPON" ||
+      data.type === "DISTRIBUTION";
 
     if (
       isCashEvent &&

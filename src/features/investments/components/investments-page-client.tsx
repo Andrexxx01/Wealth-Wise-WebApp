@@ -861,7 +861,9 @@ export default function InvestmentsPageClient() {
 
                     const supportsInvestmentEvents =
                       asset.instrumentType === "DEPOSIT" ||
-                      asset.instrumentType === "BOND";
+                      asset.instrumentType === "BOND" ||
+                      asset.instrumentType === "COMMON_STOCK" ||
+                      asset.instrumentType === "ETF";
 
                     const categoryLabel = formatInvestmentV2Category(
                       asset.category,
