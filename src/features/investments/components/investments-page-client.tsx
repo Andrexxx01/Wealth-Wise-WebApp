@@ -350,7 +350,7 @@ export default function InvestmentsPageClient() {
     !investmentContributionsV2Error &&
     contributionFxRates !== null &&
     hasInvestmentContributions;
-  
+
   const recentInvestmentTransactions = investmentTransactionsV2.slice(0, 10);
 
   async function handleDeleteTransaction(
@@ -863,7 +863,9 @@ export default function InvestmentsPageClient() {
                       asset.instrumentType === "DEPOSIT" ||
                       asset.instrumentType === "BOND" ||
                       asset.instrumentType === "COMMON_STOCK" ||
-                      asset.instrumentType === "ETF";
+                      asset.instrumentType === "ETF" ||
+                      asset.instrumentType === "OPEN_END_FUND" ||
+                      asset.instrumentType === "INDEX_FUND";
 
                     const categoryLabel = formatInvestmentV2Category(
                       asset.category,
@@ -1147,7 +1149,7 @@ export default function InvestmentsPageClient() {
                       asset.marketPriceAsOf !== null &&
                       new Date(asset.marketPriceAsOf).getTime() >=
                         new Date(asset.maturityDate).getTime();
-                    
+
                     const hasOutstandingDepositInterest =
                       isDeposit &&
                       (asset.depositUnpaidAccruedInterest ?? 0) > 0.000001;

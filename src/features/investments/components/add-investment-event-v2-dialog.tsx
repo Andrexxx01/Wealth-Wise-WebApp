@@ -73,6 +73,13 @@ function getDefaultEventType(
   }
 
   if (
+    asset?.instrumentType === "OPEN_END_FUND" ||
+    asset?.instrumentType === "INDEX_FUND"
+  ) {
+    return "DISTRIBUTION";
+  }
+
+  if (
     asset &&
     isFullySettledDeposit(asset) &&
     asset.maturityDate !== null &&
@@ -216,6 +223,10 @@ export default function AddInvestmentEventV2Dialog({
 
   const isEtf = asset?.instrumentType === "ETF";
 
+  const isFund =
+    asset?.instrumentType === "OPEN_END_FUND" ||
+    asset?.instrumentType === "INDEX_FUND";
+
   const depositIsFullySettled = isFullySettledDeposit(asset);
 
   const showDepositInterestOption = isDeposit && !depositIsFullySettled;
@@ -318,6 +329,10 @@ export default function AddInvestmentEventV2Dialog({
                 <option value="DIVIDEND">Dividend</option>
                 <option value="DISTRIBUTION">Distribution</option>
               </>
+            ) : null}
+
+            {isFund ? (
+              <option value="DISTRIBUTION">Distribution</option>
             ) : null}
 </select>
 

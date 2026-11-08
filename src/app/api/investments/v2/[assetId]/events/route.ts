@@ -92,6 +92,16 @@ export async function POST(request: Request, context: RouteContext) {
 
     const isBond = asset.instrumentType === "BOND";
 
+    const isStock = asset.instrumentType === "COMMON_STOCK";
+
+    const isEtf = asset.instrumentType === "ETF";
+
+    const isOpenEndFund = asset.instrumentType === "OPEN_END_FUND";
+
+    const isIndexFund = asset.instrumentType === "INDEX_FUND";
+
+    const isFund = isOpenEndFund || isIndexFund;
+
     if (
       isDeposit &&
       parsedBody.type !== "INTEREST" &&
@@ -126,7 +136,55 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    if (!isDeposit && !isBond) {
+    if (isStock && parsedBody.type !== "DIVIDEND") {
+      return NextResponse.json(
+        {
+          message: "Stock assets currently support only DIVIDEND events.",
+          code: "UNSUPPORTED_INVESTMENT_EVENT",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      isEtf &&
+      parsedBody.type !== "DIVIDEND" &&
+      parsedBody.type !== "DISTRIBUTION"
+    ) {
+      return NextResponse.json(
+        {
+          message:
+            "ETF assets currently support only DIVIDEND and DISTRIBUTION events.",
+          code: "UNSUPPORTED_INVESTMENT_EVENT",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (isFund && parsedBody.type !== "DISTRIBUTION") {
+      return NextResponse.json(
+        {
+          message:
+            "Fund assets currently support only DISTRIBUTION events.",
+          code: "UNSUPPORTED_INVESTMENT_EVENT",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    if (
+      !isDeposit &&
+      !isBond &&
+      !isStock &&
+      !isEtf &&
+      !isFund
+    ) {
       return NextResponse.json(
         {
           message:
