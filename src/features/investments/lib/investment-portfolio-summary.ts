@@ -106,15 +106,7 @@ export function calculateInvestmentPortfolioSummary({
     // history walaupun Coinbase/provider harga gagal.
     // ===================================================
 
-    const convertedCostBasis = convertHoldingAmount({
-      amount: valuation.remainingCostBasis,
-
-      transactionCurrencyCode: valuation.transactionCurrencyCode,
-
-      displayCurrency,
-
-      fxRates,
-    });
+    const convertedCostBasis = valuation.costBasisInDisplayCurrency;
 
     if (convertedCostBasis !== null) {
       totalCostBasis += convertedCostBasis;
@@ -128,15 +120,7 @@ export function calculateInvestmentPortfolioSummary({
     // market price.
     // ===================================================
 
-    const convertedRealizedGainLoss = convertHoldingAmount({
-      amount: valuation.realizedGainLoss,
-
-      transactionCurrencyCode: valuation.transactionCurrencyCode,
-
-      displayCurrency,
-
-      fxRates,
-    });
+    const convertedRealizedGainLoss = valuation.realizedGainLossInDisplayCurrency;
 
     if (convertedRealizedGainLoss !== null) {
       totalRealizedGainLoss += convertedRealizedGainLoss;

@@ -350,7 +350,8 @@ function calculatePrincipalHolding(
     remainingCostBasis: principalBalance,
     averageCostPerUnit: null,
 
-    realizedGainLoss: 0,
+    // Principal is returned at par; transaction fees are a realized expense.
+    realizedGainLoss: -totalFees,
 
     totalFees,
 

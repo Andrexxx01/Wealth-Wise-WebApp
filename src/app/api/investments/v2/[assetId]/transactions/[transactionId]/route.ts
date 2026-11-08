@@ -296,6 +296,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: result.transaction,
     });
   } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
+      return NextResponse.json({
+        message: "This investment changed concurrently. Refresh and retry the operation.",
+        code: "INVESTMENT_WRITE_CONFLICT",
+      }, { status: 409 });
+    }
     console.error(
       "PATCH /api/investments/v2/[assetId]/transactions/[transactionId] error:",
       error,
@@ -503,6 +509,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
       },
     });
   } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
+      return NextResponse.json({
+        message: "This investment changed concurrently. Refresh and retry the operation.",
+        code: "INVESTMENT_WRITE_CONFLICT",
+      }, { status: 409 });
+    }
     console.error(
       "DELETE /api/investments/v2/[assetId]/transactions/[transactionId] error:",
       error,

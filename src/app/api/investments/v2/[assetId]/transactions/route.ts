@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 
@@ -37,221 +38,260 @@ export async function POST(request: Request, context: RouteContext) {
 
     const parsedBody = createInvestmentTransactionV2Schema.parse(body);
 
-    // =====================================================
-    // 2. LOAD ASSET + CURRENT TRANSACTIONS
-    // =====================================================
+    return await prisma.$transaction(async (database) => {
+      // =====================================================
+      // 2. LOAD ASSET + CURRENT TRANSACTIONS
+      // =====================================================
 
-    const asset = await prisma.investmentAsset.findFirst({
-      where: {
-        id: assetId,
-        userId,
-      },
-
-      include: {
-        transactions: true,
-        events: true,
-      },
-    });
-
-    if (!asset) {
-      return NextResponse.json(
-        {
-          message: "Investment asset not found.",
+      const asset = await database.investmentAsset.findFirst({
+        where: {
+          id: assetId,
+          userId,
         },
-        {
-          status: 404,
+
+        include: {
+          transactions: true,
+          events: true,
         },
-      );
-    }
+      });
 
-    // =====================================================
-    // 3. CALCULATE CURRENT HOLDING
-    // =====================================================
+      if (!asset) {
+        return NextResponse.json(
+          {
+            message: "Investment asset not found.",
+          },
+          {
+            status: 404,
+          },
+        );
+      }
 
-    const serializedAsset = serializeInvestmentAssetWithTransactions(asset);
+      // =====================================================
+      // 3. CALCULATE CURRENT HOLDING
+      // =====================================================
 
-    const currentHolding = calculateInvestmentHolding(serializedAsset);
+      const serializedAsset = serializeInvestmentAssetWithTransactions(asset);
 
-    // =====================================================
-    // 4. VALIDATE TRANSACTION TYPE
-    // =====================================================
+      const currentHolding = calculateInvestmentHolding(serializedAsset);
 
-    if (
-      currentHolding.positionKind === "QUANTITY" &&
-      parsedBody.type !== "BUY" &&
-      parsedBody.type !== "SELL"
-    ) {
-      return NextResponse.json(
-        {
-          message:
-            "Quantity-based investments only support BUY and SELL transactions.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
+      // =====================================================
+      // 4. VALIDATE TRANSACTION TYPE
+      // =====================================================
 
-    if (
-      currentHolding.positionKind === "PRINCIPAL" &&
-      parsedBody.type !== "OPEN" &&
-      parsedBody.type !== "CLOSE"
-    ) {
-      return NextResponse.json(
-        {
-          message:
-            "Principal-based investments only support OPEN and CLOSE transactions.",
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    // =====================================================
-    // 5. PREVENT MIXED TRANSACTION CURRENCIES
-    // =====================================================
-
-    const normalizedCurrencyCode = parsedBody.currencyCode.trim().toUpperCase();
-
-    if (
-      currentHolding.transactionCurrencyCode !== null &&
-      currentHolding.transactionCurrencyCode !== normalizedCurrencyCode
-    ) {
-      return NextResponse.json(
-        {
-          message: `This investment currently uses ${currentHolding.transactionCurrencyCode}. Mixed transaction currencies are not supported yet.`,
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    // =====================================================
-    // 6. PREVENT OVERSELL
-    // =====================================================
-
-    if (parsedBody.type === "SELL") {
-      const currentQuantity = currentHolding.quantity ?? 0;
-
-      const sellQuantity = parsedBody.quantity ?? 0;
-
-      if (sellQuantity > currentQuantity) {
+      if (
+        currentHolding.positionKind === "QUANTITY" &&
+        parsedBody.type !== "BUY" &&
+        parsedBody.type !== "SELL"
+      ) {
         return NextResponse.json(
           {
             message:
-              "Sell quantity cannot exceed the current holding quantity.",
-
-            data: {
-              currentQuantity,
-              requestedQuantity: sellQuantity,
-            },
+              "Quantity-based investments only support BUY and SELL transactions.",
           },
           {
             status: 400,
           },
         );
       }
-    }
 
-    // =====================================================
-    // 7. PREVENT OVER-CLOSE
-    // =====================================================
-
-    if (parsedBody.type === "CLOSE") {
-      const currentPrincipal = currentHolding.principalBalance ?? 0;
-
-      if (parsedBody.grossAmount > currentPrincipal) {
+      if (
+        currentHolding.positionKind === "PRINCIPAL" &&
+        parsedBody.type !== "OPEN" &&
+        parsedBody.type !== "CLOSE"
+      ) {
         return NextResponse.json(
           {
             message:
-              "Close amount cannot exceed the current principal balance.",
-
-            data: {
-              currentPrincipal,
-              requestedAmount: parsedBody.grossAmount,
-            },
+              "Principal-based investments only support OPEN and CLOSE transactions.",
           },
           {
             status: 400,
           },
         );
       }
-    }
 
-    // =====================================================
-    // 8. FREE / PRO PLAN LIMIT
-    // =====================================================
+      // =====================================================
+      // 5. PREVENT MIXED TRANSACTION CURRENCIES
+      // =====================================================
 
-    const limitResponse = await enforceFinanceRecordLimit(userId, "investment");
+      const normalizedCurrencyCode = parsedBody.currencyCode.trim().toUpperCase();
 
-    if (limitResponse) {
-      return limitResponse;
-    }
+      if (
+        currentHolding.transactionCurrencyCode !== null &&
+        currentHolding.transactionCurrencyCode !== normalizedCurrencyCode
+      ) {
+        return NextResponse.json(
+          {
+            message: `This investment currently uses ${currentHolding.transactionCurrencyCode}. Mixed transaction currencies are not supported yet.`,
+          },
+          {
+            status: 400,
+          },
+        );
+      }
 
-    // =====================================================
-    // 9. CREATE TRANSACTION
-    // =====================================================
+      // =====================================================
+      // 6. PREVENT OVERSELL
+      // =====================================================
 
-    const createdTransaction = await prisma.investmentTransaction.create({
-      data: {
-        userId,
+      if (parsedBody.type === "SELL") {
+        const currentQuantity = currentHolding.quantity ?? 0;
 
-        assetId,
+        const sellQuantity = parsedBody.quantity ?? 0;
 
-        type: parsedBody.type,
+        if (sellQuantity > currentQuantity) {
+          return NextResponse.json(
+            {
+              message:
+                "Sell quantity cannot exceed the current holding quantity.",
 
-        quantity: parsedBody.quantity ?? null,
+              data: {
+                currentQuantity,
+                requestedQuantity: sellQuantity,
+              },
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+      }
 
-        grossAmount: parsedBody.grossAmount,
+      // =====================================================
+      // 7. PREVENT OVER-CLOSE
+      // =====================================================
 
-        feeAmount: parsedBody.feeAmount,
+      if (parsedBody.type === "CLOSE") {
+        const currentPrincipal = currentHolding.principalBalance ?? 0;
 
-        currencyCode: normalizedCurrencyCode,
+        if (parsedBody.grossAmount > currentPrincipal) {
+          return NextResponse.json(
+            {
+              message:
+                "Close amount cannot exceed the current principal balance.",
 
-        transactedAt: new Date(parsedBody.transactedAt),
+              data: {
+                currentPrincipal,
+                requestedAmount: parsedBody.grossAmount,
+              },
+            },
+            {
+              status: 400,
+            },
+          );
+        }
+      }
 
-        notes: parsedBody.notes ?? null,
-      },
-    });
+      // =====================================================
+      // 8. FREE / PRO PLAN LIMIT
+      // =====================================================
 
-    return NextResponse.json(
-      {
+      const limitResponse = await enforceFinanceRecordLimit(userId, "investment");
+
+      if (limitResponse) {
+        return limitResponse;
+      }
+
+      // =====================================================
+      // 9. CREATE TRANSACTION
+      // =====================================================
+
+      const transactionId = randomUUID();
+      const createdAt = new Date();
+
+      try {
+        calculateInvestmentHolding({
+          ...serializedAsset,
+          transactions: [...serializedAsset.transactions, {
+            id: transactionId,
+            userId,
+            assetId,
+            type: parsedBody.type,
+            quantity: parsedBody.quantity ?? null,
+            grossAmount: parsedBody.grossAmount,
+            feeAmount: parsedBody.feeAmount,
+            currencyCode: normalizedCurrencyCode,
+            transactedAt: parsedBody.transactedAt,
+            notes: parsedBody.notes ?? null,
+            createdAt: createdAt.toISOString(),
+            updatedAt: createdAt.toISOString(),
+          }],
+        });
+      } catch (error) {
+        return NextResponse.json({
+          message: "This transaction would make the investment history invalid.",
+          code: "INVALID_INVESTMENT_TRANSACTION_CHAIN",
+          data: { reason: error instanceof Error ? error.message : "Invalid transaction history." },
+        }, { status: 400 });
+      }
+
+      const createdTransaction = await database.investmentTransaction.create({
         data: {
-          id: createdTransaction.id,
+          id: transactionId,
+          createdAt,
+          userId,
 
-          assetId: createdTransaction.assetId,
+          assetId,
 
-          userId: createdTransaction.userId,
+          type: parsedBody.type,
 
-          type: createdTransaction.type,
+          quantity: parsedBody.quantity ?? null,
 
-          quantity:
-            createdTransaction.quantity === null
-              ? null
-              : Number(createdTransaction.quantity),
+          grossAmount: parsedBody.grossAmount,
 
-          grossAmount: Number(createdTransaction.grossAmount),
+          feeAmount: parsedBody.feeAmount,
 
-          feeAmount: Number(createdTransaction.feeAmount),
+          currencyCode: normalizedCurrencyCode,
 
-          currencyCode: createdTransaction.currencyCode,
+          transactedAt: new Date(parsedBody.transactedAt),
 
-          transactedAt: createdTransaction.transactedAt.toISOString(),
-
-          notes: createdTransaction.notes,
-
-          createdAt: createdTransaction.createdAt.toISOString(),
-
-          updatedAt: createdTransaction.updatedAt.toISOString(),
+          notes: parsedBody.notes ?? null,
         },
-      },
-      {
-        status: 201,
-      },
-    );
+      });
+
+      return NextResponse.json(
+        {
+          data: {
+            id: createdTransaction.id,
+
+            assetId: createdTransaction.assetId,
+
+            userId: createdTransaction.userId,
+
+            type: createdTransaction.type,
+
+            quantity:
+              createdTransaction.quantity === null
+                ? null
+                : Number(createdTransaction.quantity),
+
+            grossAmount: Number(createdTransaction.grossAmount),
+
+            feeAmount: Number(createdTransaction.feeAmount),
+
+            currencyCode: createdTransaction.currencyCode,
+
+            transactedAt: createdTransaction.transactedAt.toISOString(),
+
+            notes: createdTransaction.notes,
+
+            createdAt: createdTransaction.createdAt.toISOString(),
+
+            updatedAt: createdTransaction.updatedAt.toISOString(),
+          },
+        },
+        {
+          status: 201,
+        },
+      );
+    }, { isolationLevel: "Serializable" });
   } catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
+      return NextResponse.json({
+        message: "This investment changed concurrently. Refresh and retry the operation.",
+        code: "INVESTMENT_WRITE_CONFLICT",
+      }, { status: 409 });
+    }
     console.error(
       "POST /api/investments/v2/[assetId]/transactions error:",
       error,
