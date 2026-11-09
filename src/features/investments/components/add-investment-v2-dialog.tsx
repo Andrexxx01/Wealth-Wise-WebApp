@@ -13,6 +13,7 @@ import {
 } from "@/constants/investment-v2-form-defaults";
 
 import { useFinance } from "@/features/finance/components/finance-provider";
+import { InvestmentV2ApiError } from "@/features/investments/api/investment-v2-api";
 
 import InvestmentV2ExistingTransactionFields from "@/features/investments/components/investment-v2-existing-transaction-fields";
 import InvestmentV2ModeSelector from "@/features/investments/components/investment-v2-mode-selector";
@@ -195,6 +196,29 @@ export default function AddInvestmentV2Dialog({
 
       onOpenChange(false);
     } catch (error) {
+      if (error instanceof InvestmentV2ApiError) {
+        if (error.code === "INVALID_INVESTMENT_TRANSACTION_CHAIN") {
+          if (values.type === "SELL") {
+            setSubmitError(
+              "This sale would leave too few units in the transaction history. Review the sale date and quantity.",
+            );
+            return;
+          }
+
+          if (values.type === "CLOSE") {
+            setSubmitError(
+              "This withdrawal would leave too little principal in the transaction history. Review the withdrawal date and amount.",
+            );
+            return;
+          }
+        }
+
+        if (error.status >= 400 && error.status < 500) {
+          setSubmitError(error.message);
+          return;
+        }
+      }
+
       console.error("Failed to add investment transaction:", error);
 
       setSubmitError(
@@ -244,7 +268,10 @@ export default function AddInvestmentV2Dialog({
         <InvestmentV2ModeSelector mode={mode} onModeChange={handleModeChange} />
 
         {submitError ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3"
+          >
             <p className="text-sm font-medium text-red-700">{submitError}</p>
           </div>
         ) : null}
