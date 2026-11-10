@@ -10,6 +10,7 @@ import {
 
 import { createInvestmentTransactionV2Schema } from "@/features/investments/schemas/investment-v2-api.schema";
 
+import { isInvestmentWriteConflict } from "@/features/investments/lib/investment-write-conflict";
 import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
 
@@ -296,7 +297,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: result.transaction,
     });
   } catch (error) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
+    if (isInvestmentWriteConflict(error)) {
       return NextResponse.json({
         message: "This investment changed concurrently. Refresh and retry the operation.",
         code: "INVESTMENT_WRITE_CONFLICT",
@@ -509,7 +510,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       },
     });
   } catch (error) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
+    if (isInvestmentWriteConflict(error)) {
       return NextResponse.json({
         message: "This investment changed concurrently. Refresh and retry the operation.",
         code: "INVESTMENT_WRITE_CONFLICT",

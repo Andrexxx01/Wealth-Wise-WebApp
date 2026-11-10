@@ -6,6 +6,7 @@ import { calculateInvestmentHolding } from "@/features/investments/lib/investmen
 import { serializeInvestmentAssetWithTransactions } from "@/features/investments/lib/investment-v2-serializer";
 import { createInvestmentTransactionV2Schema } from "@/features/investments/schemas/investment-v2-api.schema";
 
+import { isInvestmentWriteConflict } from "@/features/investments/lib/investment-write-conflict";
 import { getAuthenticatedUserId } from "@/lib/api-auth";
 import { enforceFinanceRecordLimit } from "@/lib/finance-plan-limit";
 import { prisma } from "@/lib/prisma";
@@ -286,7 +287,7 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }, { isolationLevel: "Serializable" });
   } catch (error) {
-    if (error && typeof error === "object" && "code" in error && error.code === "P2034") {
+    if (isInvestmentWriteConflict(error)) {
       return NextResponse.json({
         message: "This investment changed concurrently. Refresh and retry the operation.",
         code: "INVESTMENT_WRITE_CONFLICT",
