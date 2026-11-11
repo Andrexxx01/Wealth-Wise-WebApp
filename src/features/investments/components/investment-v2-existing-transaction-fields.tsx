@@ -46,18 +46,31 @@ export default function InvestmentV2ExistingTransactionFields({
 
   const transactionType = watch("type");
 
-  const selectedAsset =
-    valuations.find((valuation) => valuation.assetId === assetId) ?? null;
-
-  const assetOptions = valuations.map((valuation) => ({
-    value: valuation.assetId,
-
-    label: valuation.symbol
-      ? `${valuation.name} (${valuation.symbol})`
-      : valuation.name,
-  }));
-
   const isEditMode = mode === "EDIT";
+
+  const availableAssets = valuations.filter(
+    (valuation) =>
+      isEditMode ||
+      valuation.instrumentType !== "DEPOSIT" ||
+      (valuation.principalBalance ?? 0) > 0,
+  );
+
+  const selectedAsset =
+    availableAssets.find((valuation) => valuation.assetId === assetId) ?? null;
+
+  const assetOptions = availableAssets.map((valuation) => {
+    const name = valuation.symbol
+      ? `${valuation.name} (${valuation.symbol})`
+      : valuation.name;
+
+    return {
+      value: valuation.assetId,
+      label:
+        !isEditMode && valuation.isClosed && valuation.positionKind === "QUANTITY"
+          ? `${name} — Closed · Buy again`
+          : name,
+    };
+  });
 
   const isQuantityPosition = selectedAsset?.positionKind === "QUANTITY";
 
@@ -84,7 +97,7 @@ export default function InvestmentV2ExistingTransactionFields({
     ? [
         {
           value: "BUY",
-          label: "Buy",
+          label: !isEditMode && selectedAsset?.isClosed ? "Buy again" : "Buy",
         },
 
         ...(isEditMode || hasQuantity
@@ -131,6 +144,10 @@ export default function InvestmentV2ExistingTransactionFields({
 
   useEffect(() => {
     if (!selectedAsset) {
+      if (!isEditMode && assetId) {
+        setValue("assetId", "");
+      }
+
       return;
     }
 
@@ -166,7 +183,7 @@ export default function InvestmentV2ExistingTransactionFields({
         shouldValidate: true,
       });
     }
-  }, [selectedAsset, setValue, isEditMode]);
+  }, [selectedAsset, setValue, isEditMode, assetId]);
 
   // =====================================================
   // TRANSACTION TYPE CHANGE
@@ -227,6 +244,10 @@ export default function InvestmentV2ExistingTransactionFields({
             <FormSelect
               label="Asset"
               options={assetOptions}
+              placeholder={
+                assetOptions.length > 0 ? "Select an asset" : "No available assets"
+              }
+              disabled={assetOptions.length === 0}
               error={errors.assetId?.message}
               registration={register("assetId")}
             />
@@ -242,6 +263,14 @@ export default function InvestmentV2ExistingTransactionFields({
           </div>
         )}
 
+        {!isEditMode && availableAssets.length < valuations.length ? (
+          <p className="mt-3 text-sm leading-6 text-slate-500">
+            Deposits with no remaining principal are hidden here. Choose Add New
+            Asset to open a new deposit. Use Record Event on the original deposit
+            to record any outstanding interest payment.
+          </p>
+        ) : null}
+
         {selectedAsset ? (
           <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-900">
@@ -254,6 +283,13 @@ export default function InvestmentV2ExistingTransactionFields({
 
               {isQuantityPosition ? (
                 <p>Current quantity: {selectedAsset.quantity ?? 0}</p>
+              ) : null}
+
+              {!isEditMode && isQuantityPosition && selectedAsset.isClosed ? (
+                <p>
+                  A new purchase will reopen this position and retain its
+                  transaction history and realized profit or loss.
+                </p>
               ) : null}
 
               {isPrincipalPosition ? (

@@ -75,6 +75,20 @@ export async function POST(request: Request, context: RouteContext) {
 
       const currentHolding = calculateInvestmentHolding(serializedAsset);
 
+      if (
+        asset.instrumentType === "DEPOSIT" &&
+        currentHolding.principalBalance === 0
+      ) {
+        return NextResponse.json(
+          {
+            message:
+              "This deposit has no remaining principal. Create a new asset to open another deposit, or use Record Event to record outstanding interest.",
+            code: "DEPOSIT_PRINCIPAL_CLOSED",
+          },
+          { status: 409 },
+        );
+      }
+
       // =====================================================
       // 4. VALIDATE TRANSACTION TYPE
       // =====================================================
