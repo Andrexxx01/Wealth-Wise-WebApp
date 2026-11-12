@@ -203,7 +203,14 @@ export default function AddInvestmentEventV2Dialog({
 
       onOpenChange(false);
     } catch (error) {
-      console.error("Failed to create investment event:", error);
+      const isExpectedRejection =
+        error instanceof InvestmentV2ApiError &&
+        error.status >= 400 &&
+        error.status < 500;
+
+      if (!isExpectedRejection) {
+        console.error("Failed to create investment event:", error);
+      }
 
       setSubmitError(getInvestmentEventErrorMessage(error));
     }
@@ -260,7 +267,10 @@ export default function AddInvestmentEventV2Dialog({
         ================================================= */}
 
         {submitError ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <div
+            role="alert"
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3"
+          >
             <p className="text-sm font-medium text-red-700">{submitError}</p>
           </div>
         ) : null}
