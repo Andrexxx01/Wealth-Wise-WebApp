@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import InvestmentPerformanceSummary from "@/features/investments/components/investment-performance-summary";
 import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 import {
   buildCashFlowChartData,
@@ -113,6 +114,8 @@ export default function DashboardPageClient() {
           />
         ))}
       </section>
+
+      <InvestmentPerformanceSummary />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.3fr_0.7fr]">
         <ChartCard

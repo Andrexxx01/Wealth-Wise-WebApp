@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useFinance } from "@/features/finance/components/finance-provider";
 import { useFinanceSummary } from "@/features/finance/hooks/use-finance-summary";
+import InvestmentPerformanceSummary from "@/features/investments/components/investment-performance-summary";
 import {
   buildFinancialHealthHighlights,
   buildFinancialInsights,
@@ -121,6 +122,8 @@ export default function AnalysisPageClient() {
         title="Understand your financial health more clearly"
         description="WealthWise turns your income, expenses, investments, and loans into a clearer financial story so you can make smarter decisions with more confidence."
       />
+
+      <InvestmentPerformanceSummary />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">

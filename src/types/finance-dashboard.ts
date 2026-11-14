@@ -2,6 +2,14 @@ import type { ExpenseItem } from "@/types/expense";
 import type { IncomeItem } from "@/types/income";
 import type { UserCurrency } from "@/types/user-subscription";
 import type { DashboardListItemTone } from "@/types/ui";
+import type { InvestmentPortfolioSummaryItem } from "@/types/investment-v2";
+
+export type BuildInvestmentPerformanceCardsParams = {
+  summary: InvestmentPortfolioSummaryItem | null;
+  currency: UserCurrency;
+  isLoading: boolean;
+  error: string | null;
+};
 
 export type QuickSnapshotItem = {
   id: string;

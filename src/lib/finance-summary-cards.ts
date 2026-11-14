@@ -1,6 +1,40 @@
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
 import type { UserCurrency } from "@/types/user-subscription";
+import type { BuildInvestmentPerformanceCardsParams } from "@/types/finance-dashboard";
+
+export function buildInvestmentPerformanceCards({
+  summary,
+  currency,
+  isLoading,
+  error,
+}: BuildInvestmentPerformanceCardsParams): SummaryCardProps[] {
+  const isReady =
+    !isLoading && !error && summary !== null && summary.displayCurrency === currency;
+
+  return [
+    {
+      label: "Capital Gain/Loss",
+      amount: summary?.totalGainLoss ?? 0,
+      helper: "Realized plus unrealized gains and losses",
+    },
+    {
+      label: "Net Realized Income",
+      amount: summary?.totalNetRealizedIncome ?? 0,
+      helper: "Dividends, interest, coupons, and distributions after fees and tax",
+    },
+    {
+      label: "Total Investment Return",
+      amount: summary?.totalInvestmentReturn ?? 0,
+      helper: "Capital gain/loss plus net realized investment income",
+    },
+  ].map<SummaryCardProps>(({ label, amount, helper }) => ({
+    label,
+    value: isReady ? formatCurrency(amount, currency) : "—",
+    helper,
+    tone: !isReady || amount === 0 ? "default" : amount > 0 ? "positive" : "danger",
+  }));
+}
 
 type BuildIncomeSummaryCardsParams = {
   totalIncome: number;
