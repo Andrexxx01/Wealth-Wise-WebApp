@@ -4,6 +4,7 @@ import type { UserCurrency } from "@/types/user-subscription";
 export type FinanceInsightTone = "positive" | "warning" | "neutral";
 
 type BuildAnalysisDataParams = {
+  isNetWorthReady?: boolean;
   totalIncome: number;
   totalExpenses: number;
   monthlySurplus: number;
@@ -22,6 +23,7 @@ export function buildHealthMetrics({
   savingsRate,
   debtToIncomeRatio,
   netWorth,
+  isNetWorthReady = true,
   portfolioValue,
   investmentReturnRate,
   currency,
@@ -30,6 +32,7 @@ export function buildHealthMetrics({
   | "totalIncome"
   | "savingsRate"
   | "debtToIncomeRatio"
+  | "isNetWorthReady"
   | "netWorth"
   | "portfolioValue"
   | "investmentReturnRate"
@@ -57,8 +60,8 @@ export function buildHealthMetrics({
     },
     {
       label: "Net Worth",
-      value: formatCurrency(netWorth, currency),
-      helper: "Surplus + investments - loan balance",
+      value: isNetWorthReady ? formatCurrency(netWorth, currency) : "—",
+      helper: "Recorded cash + investments − debt; zero opening cash assumed",
     },
     {
       label: "Investment Return",

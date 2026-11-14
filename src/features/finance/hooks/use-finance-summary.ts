@@ -15,7 +15,6 @@ import {
   calculateLifestyleSpending,
   calculateMonthlyLoanPayment,
   calculateMonthlySurplus,
-  calculateNetWorth,
   calculateProjectedAnnualIncome,
   calculateRecurringIncome,
   calculateSavingsRate,
@@ -24,6 +23,8 @@ import {
   calculateTotalLoanBalance,
   calculateTotalPaidOff,
 } from "@/lib/finance-calculations";
+
+import { calculateRecordedNetWorth } from "@/lib/finance-recorded-net-worth";
 
 import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
 import { filterItemsByReferenceMonth } from "@/lib/finance-period";
@@ -78,6 +79,12 @@ export function useFinanceSummary() {
    * Investment source of truth sekarang V2.
    */
   const {
+    incomeItems: recordedIncomeItems,
+    expenseItems: recordedExpenseItems,
+    loanItems: recordedLoanItems,
+    isIncomeLoading, incomeError,
+    isExpenseLoading, expenseError,
+    isLoanLoading, loanError,
     investmentPortfolioV2,
     investmentTransactionsV2,
     investmentContributionsV2,
@@ -157,7 +164,8 @@ export function useFinanceSummary() {
     const isPortfolioValuationReady =
       !isInvestmentPortfolioV2Loading &&
       !investmentPortfolioV2Error &&
-      portfolioSummary !== null;
+      portfolioSummary !== null &&
+      portfolioSummary.displayCurrency === displayCurrency;
 
     /*
      * COMPLETE berarti semua asset berhasil
@@ -475,18 +483,21 @@ export function useFinanceSummary() {
      * belum berhasil divaluasi.
      */
 
+    const recordedNetWorth = calculateRecordedNetWorth({
+      incomeItems: recordedIncomeItems,
+      expenseItems: recordedExpenseItems,
+      loanItems: recordedLoanItems,
+      portfolio: investmentPortfolioV2,
+      displayCurrency,
+    });
     const isNetWorthReady =
-      isCurrencyConversionReady &&
-      isPortfolioValuationComplete &&
-      isInvestmentCashFlowReady;
+      !isIncomeLoading && !incomeError &&
+      !isExpenseLoading && !expenseError &&
+      !isLoanLoading && !loanError &&
+      isPortfolioValuationComplete && recordedNetWorth !== null;
 
-    const netWorth = isNetWorthReady
-      ? calculateNetWorth({
-          availableCash,
-          portfolioValue,
-          totalLoanBalance,
-        })
-      : 0;
+    const netWorth = isNetWorthReady ? recordedNetWorth.netWorth : 0;
+    const recordedAvailableCash = isNetWorthReady ? recordedNetWorth.availableCash : 0;
 
     /*
      * =========================================================
@@ -575,6 +586,7 @@ export function useFinanceSummary() {
        * Cash
        */
       availableCash,
+      recordedAvailableCash,
 
       /*
        * Loan
@@ -626,6 +638,9 @@ export function useFinanceSummary() {
       marketPriceAsOf: investmentPortfolioV2?.meta.marketPriceAsOf ?? null,
     };
   }, [
+    recordedIncomeItems, recordedExpenseItems, recordedLoanItems,
+    isIncomeLoading, incomeError, isExpenseLoading, expenseError,
+    isLoanLoading, loanError,
     incomeItems,
     expenseItems,
     loanItems,

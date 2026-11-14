@@ -70,6 +70,7 @@ type BuildLoanSummaryCardsParams = {
 };
 
 type BuildDashboardSummaryCardsParams = {
+  isNetWorthReady?: boolean;
   netWorth: number;
   totalIncome: number;
   totalExpenses: number;
@@ -217,6 +218,7 @@ export function buildLoanSummaryCards({
 
 export function buildDashboardSummaryCards({
   netWorth,
+  isNetWorthReady = true,
   totalIncome,
   totalExpenses,
   portfolioValue,
@@ -225,9 +227,9 @@ export function buildDashboardSummaryCards({
   return [
     {
       label: "Net Worth",
-      value: formatCurrency(netWorth, currency),
-      helper: "Assets minus liabilities",
-      tone: netWorth >= 0 ? "positive" : "danger",
+      value: isNetWorthReady ? formatCurrency(netWorth, currency) : "—",
+      helper: "Recorded cash + investments − debt; zero opening cash assumed",
+      tone: !isNetWorthReady ? "default" : netWorth >= 0 ? "positive" : "danger",
     },
     {
       label: "Monthly Income",

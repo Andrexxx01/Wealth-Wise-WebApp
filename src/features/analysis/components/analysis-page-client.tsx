@@ -62,6 +62,7 @@ export default function AnalysisPageClient() {
     totalLoanBalance,
     debtToIncomeRatio,
     netWorth,
+    isNetWorthReady,
     financialHealthScore,
     displayCurrency,
   } = useFinanceSummary();
@@ -81,6 +82,7 @@ export default function AnalysisPageClient() {
     savingsRate,
     debtToIncomeRatio,
     netWorth,
+    isNetWorthReady,
     portfolioValue,
     investmentReturnRate,
     currency: displayCurrency,

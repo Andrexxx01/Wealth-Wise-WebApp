@@ -46,6 +46,7 @@ export default function DashboardPageClient() {
     netGain,
     totalLoanBalance,
     netWorth,
+    isNetWorthReady,
     recurringIncome,
     essentialSpending,
     recentActivity,
@@ -76,6 +77,7 @@ export default function DashboardPageClient() {
 
   const summaryCards = buildDashboardSummaryCards({
     netWorth,
+    isNetWorthReady,
     totalIncome,
     totalExpenses,
     portfolioValue,
