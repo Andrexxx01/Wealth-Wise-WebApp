@@ -161,18 +161,18 @@ export default function DashboardPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="Financial Health Score"
-              title={`${financialHealthScore.score}%`}
+              title={financialHealthScore.scoreLabel}
               description={financialHealthScore.label}
             />
 
             {hasAnyFinanceData ? (
               <>
-                <div className="rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-6 text-white">
+                <div className={`rounded-[28px] p-6 ${financialHealthScore.isAvailable ? "bg-linear-to-r from-emerald-500 to-green-600 text-white" : "bg-slate-100 text-slate-700"}`}>
                   <h3 className="text-5xl font-bold">
-                    {financialHealthScore.score}%
+                    {financialHealthScore.scoreLabel}
                   </h3>
 
-                  <p className="mt-3 text-sm text-emerald-50">
+                  <p className="mt-3 text-sm text-inherit">
                     {financialHealthScore.summary}
                   </p>
                 </div>
@@ -217,7 +217,7 @@ export default function DashboardPageClient() {
             ) : (
               <EmptyState
                 title="No financial score yet"
-                description="Add income, expenses, investments, or loans so WealthWise can calculate your financial health score."
+                description="Start with income for the current month so WealthWise can calculate your financial health score."
                 action={
                   <Button
                     asChild

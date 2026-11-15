@@ -266,6 +266,7 @@ export function calculateFinancialHealthScore({
   portfolioValue,
   investmentReturnRate,
   hasMonthlyIncome,
+  isDataReady = true,
   hasOpenInvestmentPosition,
 }: {
   savingsRate: number;
@@ -274,8 +275,21 @@ export function calculateFinancialHealthScore({
   portfolioValue: number;
   investmentReturnRate: number;
   hasMonthlyIncome: boolean;
+  isDataReady?: boolean;
   hasOpenInvestmentPosition: boolean;
 }) {
+  if (!isDataReady || !hasMonthlyIncome) {
+    return {
+      score: null,
+      scoreLabel: "—",
+      isAvailable: false,
+      label: !isDataReady ? "Score unavailable" : "Insufficient data",
+      summary: !isDataReady
+        ? "Waiting for complete financial data. If this persists, refresh the page or check your records."
+        : "Add income for the current month to calculate your financial health score. A missing income record does not mean your financial health is poor.",
+    };
+  }
+
   const savingsScore = hasMonthlyIncome
     ? savingsRate >= 20
       ? 30
@@ -337,6 +351,8 @@ export function calculateFinancialHealthScore({
 
   return {
     score,
+    scoreLabel: `${score}%`,
+    isAvailable: true,
     label,
     summary,
   };

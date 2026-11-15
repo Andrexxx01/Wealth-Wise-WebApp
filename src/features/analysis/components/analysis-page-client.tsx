@@ -132,18 +132,18 @@ export default function AnalysisPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="Financial Health Score"
-              title={`${financialHealthScore.score}%`}
+              title={financialHealthScore.scoreLabel}
               description={financialHealthScore.summary}
             />
 
             {hasAnyFinanceData ? (
               <>
-                <div className="rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-8 text-white">
+                <div className={`rounded-[28px] p-8 ${financialHealthScore.isAvailable ? "bg-linear-to-r from-emerald-500 to-green-600 text-white" : "bg-slate-100 text-slate-700"}`}>
                   <h2 className="text-6xl font-bold tracking-tight">
-                    {financialHealthScore.score}%
+                    {financialHealthScore.scoreLabel}
                   </h2>
 
-                  <p className="mt-3 text-base text-emerald-50">
+                  <p className="mt-3 text-base text-inherit">
                     {financialHealthScore.summary}
                   </p>
                 </div>
@@ -157,17 +157,17 @@ export default function AnalysisPageClient() {
 
                   <DashboardListItem
                     title="Biggest Strength"
-                    value={financialHealthHighlights.biggestStrength}
+                    value={financialHealthScore.isAvailable ? financialHealthHighlights.biggestStrength : "—"}
                     tone={getInsightListTone(
-                      financialHealthHighlights.biggestStrengthTone,
+                      financialHealthScore.isAvailable ? financialHealthHighlights.biggestStrengthTone : "neutral",
                     )}
                     className="border-none bg-slate-50 p-4"
                   />
 
                   <DashboardListItem
                     title="Main Watch Area"
-                    value={financialHealthHighlights.mainWatchArea}
-                    tone="warning"
+                    value={financialHealthScore.isAvailable ? financialHealthHighlights.mainWatchArea : "Complete monthly records"}
+                    tone={financialHealthScore.isAvailable ? "warning" : "default"}
                     className="border-none bg-slate-50 p-4"
                   />
                 </div>

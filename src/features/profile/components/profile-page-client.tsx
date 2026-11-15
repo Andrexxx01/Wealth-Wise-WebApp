@@ -192,12 +192,12 @@ export default function ProfilePageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="Financial Health"
-              title={`${financialHealthScore.score}%`}
+              title={financialHealthScore.scoreLabel}
               description={financialHealthScore.summary}
             />
 
-            <div className="rounded-[28px] bg-linear-to-r from-emerald-500 to-green-600 p-6 text-white">
-              <p className="text-sm font-semibold text-emerald-50">
+            <div className={`rounded-[28px] p-6 ${financialHealthScore.isAvailable ? "bg-linear-to-r from-emerald-500 to-green-600 text-white" : "bg-slate-100 text-slate-700"}`}>
+              <p className="text-sm font-semibold text-inherit">
                 Current Assessment
               </p>
 
@@ -205,7 +205,7 @@ export default function ProfilePageClient() {
                 {financialHealthScore.label}
               </h3>
 
-              <p className="mt-3 text-sm leading-6 text-emerald-50">
+              <p className="mt-3 text-sm leading-6 text-inherit">
                 {financialHealthScore.summary}
               </p>
             </div>

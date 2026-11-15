@@ -510,7 +510,14 @@ export function useFinanceSummary() {
     const hasOpenInvestmentPosition =
       isPortfolioValuationReady && (portfolioSummary?.openAssets ?? 0) > 0;
 
+    const isFinancialHealthDataReady =
+      !isIncomeLoading && !incomeError &&
+      !isExpenseLoading && !expenseError &&
+      !isLoanLoading && !loanError &&
+      isCurrencyConversionReady && isPortfolioValuationComplete;
+
     const financialHealthScore = calculateFinancialHealthScore({
+      isDataReady: isFinancialHealthDataReady,
       savingsRate,
       debtToIncomeRatio,
       monthlySurplus,
