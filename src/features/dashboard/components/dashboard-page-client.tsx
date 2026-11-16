@@ -285,19 +285,23 @@ export default function DashboardPageClient() {
                     key={`${item.type}-${item.id}`}
                     title={item.title}
                     subtitle={item.type}
-                    value={`${item.amount >= 0 ? "+" : ""}${formatCurrency(
-                      item.amount,
-                      displayCurrency,
-                    )}`}
+                    value={
+                      item.amount === null
+                        ? "—"
+                        : `${item.amount > 0 ? "+" : ""}${formatCurrency(
+                            item.amount,
+                            displayCurrency,
+                          )}`
+                    }
                     meta={formatDate(item.date)}
-                    tone={item.amount >= 0 ? "positive" : "default"}
+                    tone={item.amount !== null && item.amount > 0 ? "positive" : "default"}
                   />
                 ))}
               </div>
             ) : (
               <EmptyState
                 title="No recent activity yet"
-                description="Your latest income and expense records will appear here after you start tracking transactions."
+                description="Your latest income, expense, and investment transactions will appear here."
                 action={
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Button

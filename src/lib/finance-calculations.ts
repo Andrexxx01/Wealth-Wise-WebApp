@@ -6,8 +6,8 @@ import type { ExpenseCategory, ExpenseItem } from "@/types/expense";
 export type FinanceActivityItem = {
   id: string;
   title: string;
-  type: "Income" | "Expense";
-  amount: number;
+  type: "Income" | "Expense" | "Buy" | "Sell" | "Open" | "Close";
+  amount: number | null;
   date: string;
 };
 

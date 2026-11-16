@@ -6,7 +6,6 @@ import { useFinance } from "@/features/finance/components/finance-provider";
 import { useConvertedFinanceItems } from "@/features/finance/hooks/use-converted-finance-items";
 
 import {
-  buildRecentFinancialActivity,
   calculateAvailableCash,
   calculateDebtToIncomeRatio,
   calculateEssentialSpending,
@@ -25,6 +24,7 @@ import {
 } from "@/lib/finance-calculations";
 
 import { calculateRecordedNetWorth } from "@/lib/finance-recorded-net-worth";
+import { buildRecentActivityWithInvestments } from "@/lib/finance-recent-activity";
 
 import { convertCurrencyWithUsdRates } from "@/lib/currency-conversion";
 import { filterItemsByReferenceMonth } from "@/lib/finance-period";
@@ -541,9 +541,20 @@ export function useFinanceSummary() {
      * integrasikan pada tahap berikutnya.
      */
 
-    const recentActivity = buildRecentFinancialActivity({
+    const recentActivity = buildRecentActivityWithInvestments({
       incomeItems,
       expenseItems,
+      investmentTransactions: investmentTransactionsV2,
+      convertAmount: (amount, currencyCode) => {
+        if (currencyCode === displayCurrency) return amount;
+        if (!isPortfolioValuationReady) return null;
+        return convertInvestmentV2Amount({
+          amount,
+          currencyCode,
+          displayCurrency,
+          fxRates: investmentFxRates,
+        });
+      },
       limit: 5,
     });
 
