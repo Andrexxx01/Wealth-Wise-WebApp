@@ -1,3 +1,4 @@
+import type { ThemePreference } from "@/types/user-preferences";
 import type {
   SubscriptionStatus,
   UserCurrency,
@@ -11,5 +12,6 @@ export type CurrentUser = {
   image: string | null;
   plan: UserPlan;
   currency: UserCurrency;
+  theme: ThemePreference;
   subscriptionStatus: SubscriptionStatus;
 };

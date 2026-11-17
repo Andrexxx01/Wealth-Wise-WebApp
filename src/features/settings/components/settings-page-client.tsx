@@ -14,6 +14,7 @@ import PlanBadge from "@/features/subscription/components/plan-badge";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
 import type { SubscriptionStatus } from "@/types/user-subscription";
+import PreferencesForm from "@/features/settings/components/preferences-form";
 import AccountUsageSection from "@/features/subscription/components/account-usage-section";
 
 function formatSubscriptionStatus(status: SubscriptionStatus) {
@@ -234,25 +235,13 @@ export default function SettingsPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="App Preferences"
-              title="Current display preferences"
-              description="These are the current application defaults. Editable preferences can be added in a later phase."
+              title="Display preferences"
+              description="Choose your currency and appearance, then save your account preferences."
             />
 
+            <PreferencesForm key={`${currentUser.id}-${currentUser.currency}-${currentUser.theme}`} />
+
             <div className="space-y-4">
-              <DashboardListItem
-                title="Theme"
-                value="Light Mode"
-                meta="Dark mode is planned for a later phase"
-                className="border-none bg-slate-50 p-5"
-              />
-
-              <DashboardListItem
-                title="Currency"
-                value={currentUser.currency}
-                meta="Your account currency preference"
-                className="border-none bg-slate-50 p-5"
-              />
-
               <DashboardListItem
                 title="Account Mode"
                 value={

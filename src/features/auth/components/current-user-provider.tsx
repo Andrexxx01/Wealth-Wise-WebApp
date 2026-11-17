@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import type { CurrentUser } from "@/types/current-user";
 
 type CurrentUserContextValue = {
@@ -18,6 +18,19 @@ export default function CurrentUserProvider({
   currentUser,
   children,
 }: CurrentUserProviderProps) {
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    function applyTheme() {
+      const dark = currentUser.theme === "DARK" ||
+        (currentUser.theme === "SYSTEM" && media.matches);
+      document.documentElement.classList.toggle("dark", dark);
+      document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    }
+    applyTheme();
+    media.addEventListener("change", applyTheme);
+    return () => media.removeEventListener("change", applyTheme);
+  }, [currentUser.theme]);
+
   return (
     <CurrentUserContext.Provider value={{ currentUser }}>
       {children}

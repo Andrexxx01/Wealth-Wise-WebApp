@@ -1,3 +1,4 @@
+import type { ThemePreference } from "@/types/user-preferences";
 import type { DefaultSession } from "next-auth";
 import type {
   SubscriptionStatus,
@@ -11,6 +12,7 @@ declare module "next-auth" {
       id: string;
       plan: UserPlan;
       currency: UserCurrency;
+      theme: ThemePreference;
       subscriptionStatus: SubscriptionStatus;
     } & DefaultSession["user"];
   }

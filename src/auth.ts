@@ -88,6 +88,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         select: {
           plan: true,
           currency: true,
+          theme: true,
           subscriptionStatus: true,
         },
       });
@@ -95,6 +96,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.id = token.sub;
       session.user.plan = databaseUser?.plan ?? "FREE";
       session.user.currency = databaseUser?.currency ?? "USD";
+      session.user.theme = databaseUser?.theme ?? "LIGHT";
       session.user.subscriptionStatus =
         databaseUser?.subscriptionStatus ?? "NONE";
 
