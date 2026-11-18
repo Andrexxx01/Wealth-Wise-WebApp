@@ -1,5 +1,6 @@
 "use client";
 
+import ProfileDetailsForm from "@/features/profile/components/profile-details-form";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
 import SectionHeader from "@/components/dashboard/section-header";
@@ -140,6 +141,8 @@ export default function ProfilePageClient() {
                 {accountDescription}
               </p>
             </div>
+
+            <ProfileDetailsForm key={`${currentUser.id}-${currentUser.name}`} />
 
             <div className="mt-8 space-y-4">
               <DashboardListItem
