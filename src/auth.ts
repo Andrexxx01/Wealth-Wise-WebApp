@@ -73,6 +73,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.sub = user.id;
       }
 
+      // Avatars are loaded from the database; never put image data in the JWT cookie.
+      delete token.picture;
       return token;
     },
 
@@ -87,6 +89,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         },
         select: {
           name: true,
+          image: true,
           plan: true,
           currency: true,
           theme: true,
@@ -96,6 +99,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (databaseUser) {
         session.user.name = databaseUser.name;
+        session.user.image = databaseUser.image;
       }
 
       session.user.id = token.sub;

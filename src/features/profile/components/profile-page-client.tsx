@@ -1,5 +1,6 @@
 "use client";
 
+import ProfileAvatarForm from "@/features/profile/components/profile-avatar-form";
 import ProfileDetailsForm from "@/features/profile/components/profile-details-form";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
 import DashboardListItem from "@/components/dashboard/dashboard-list-item";
@@ -141,6 +142,8 @@ export default function ProfilePageClient() {
                 {accountDescription}
               </p>
             </div>
+
+            <ProfileAvatarForm key={`${currentUser.id}-${currentUser.image ? "photo" : "initials"}`} />
 
             <ProfileDetailsForm key={`${currentUser.id}-${currentUser.name}`} />
 

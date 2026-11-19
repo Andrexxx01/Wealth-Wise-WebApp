@@ -197,8 +197,11 @@ export default function DashboardNavbar({
             <div className="rounded-[24px] bg-white p-3">
               <div className="mb-3 flex items-center justify-between gap-3 rounded-2xl bg-slate-50 p-3">
                 <div className="flex min-w-0 items-center gap-3">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-600 text-sm font-black text-white">
-                    {initials}
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-emerald-600 text-sm font-black text-white">
+                    {userImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={userImage} alt={fullName} className="h-full w-full object-cover" />
+                    ) : initials}
                   </div>
 
                   <div className="min-w-0">
