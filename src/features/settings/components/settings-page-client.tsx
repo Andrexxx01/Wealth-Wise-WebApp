@@ -14,6 +14,7 @@ import PlanBadge from "@/features/subscription/components/plan-badge";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
 import type { SubscriptionStatus } from "@/types/user-subscription";
+import PasswordForm from "@/features/settings/components/password-form";
 import PreferencesForm from "@/features/settings/components/preferences-form";
 import AccountUsageSection from "@/features/subscription/components/account-usage-section";
 
@@ -229,6 +230,19 @@ export default function SettingsPageClient() {
       </section>
 
       <AccountUsageSection />
+
+      <section>
+        <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
+          <CardContent className="max-w-2xl p-6">
+            <DashboardCardHeader
+              eyebrow="Security"
+              title="Change password"
+              description="Verify your current password before choosing a new one."
+            />
+            <PasswordForm />
+          </CardContent>
+        </Card>
+      </section>
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
