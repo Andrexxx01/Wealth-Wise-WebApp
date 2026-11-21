@@ -14,6 +14,7 @@ import PlanBadge from "@/features/subscription/components/plan-badge";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
 import type { SubscriptionStatus } from "@/types/user-subscription";
+import DataExport from "@/features/settings/components/data-export";
 import PasswordForm from "@/features/settings/components/password-form";
 import PreferencesForm from "@/features/settings/components/preferences-form";
 import AccountUsageSection from "@/features/subscription/components/account-usage-section";
@@ -230,6 +231,19 @@ export default function SettingsPageClient() {
       </section>
 
       <AccountUsageSection />
+
+      <section>
+        <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
+          <CardContent className="p-6">
+            <DashboardCardHeader
+              eyebrow="Your Data"
+              title="Export financial data"
+              description="Download all recorded income, expenses, investment assets, transactions, events, and loans in one JSON file."
+            />
+            <DataExport />
+          </CardContent>
+        </Card>
+      </section>
 
       <section>
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
