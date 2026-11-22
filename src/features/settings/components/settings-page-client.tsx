@@ -238,7 +238,7 @@ export default function SettingsPageClient() {
             <DashboardCardHeader
               eyebrow="Your Data"
               title="Export financial data"
-              description="Download all recorded income, expenses, investment assets, transactions, events, and loans in one JSON file."
+              description="Download all records as JSON, or choose a category to open as CSV in a spreadsheet."
             />
             <DataExport />
           </CardContent>
