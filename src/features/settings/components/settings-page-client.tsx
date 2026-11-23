@@ -14,6 +14,7 @@ import PlanBadge from "@/features/subscription/components/plan-badge";
 import { formatCurrency, formatPercentage } from "@/lib/formatters";
 import type { SummaryCardProps } from "@/types/ui";
 import type { SubscriptionStatus } from "@/types/user-subscription";
+import MonthlyReportForm from "@/features/settings/components/monthly-report-form";
 import DataExport from "@/features/settings/components/data-export";
 import PasswordForm from "@/features/settings/components/password-form";
 import PreferencesForm from "@/features/settings/components/preferences-form";
@@ -231,6 +232,19 @@ export default function SettingsPageClient() {
       </section>
 
       <AccountUsageSection />
+
+      <section>
+        <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
+          <CardContent className="p-6">
+            <DashboardCardHeader
+              eyebrow="Reports"
+              title="Monthly cash flow report"
+              description="Review monthly income and expenses in a print-ready report."
+            />
+            <MonthlyReportForm />
+          </CardContent>
+        </Card>
+      </section>
 
       <section>
         <Card className="rounded-[32px] border-slate-200 bg-white shadow-none">
