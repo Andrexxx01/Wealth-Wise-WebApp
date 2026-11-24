@@ -76,8 +76,21 @@ function money(amount: bigint): string {
 }
 
 export function renderMonthlyReport(report: MonthlyFinancialReport): string {
+  const isYearly = report.periodKind === "yearly";
+  const periodName = isYearly ? "year" : "month";
+  const title = isYearly ? "Annual cash flow" : "Monthly cash flow";
+  function monthlyBreakdown(): string {
+    if (!isYearly || !report.monthlyTotals?.length || !report.totals.length) return "";
+    const rows = report.monthlyTotals.flatMap((monthly) => report.totals.map((currency) => {
+      const total = monthly.totals.find((item) => item.currency === currency.currency);
+      const label = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "short" })
+        .format(new Date(`${monthly.month}-01T12:00:00Z`));
+      return `<tr><td>${escapeHtml(label)}</td><td>${escapeHtml(currency.currency)}</td><td class="amount">${money(total?.income ?? BigInt(0))}</td><td class="amount">${money(total?.expenses ?? BigInt(0))}</td><td class="amount">${money(total?.surplus ?? BigInt(0))}</td></tr>`;
+    })).join("");
+    return `<section><h2>Monthly breakdown</h2><table><colgroup><col style="width:13%"><col style="width:12%"><col style="width:25%"><col style="width:25%"><col style="width:25%"></colgroup><thead><tr><th>Month</th><th>Currency</th><th class="amount">Income</th><th class="amount">Expenses</th><th class="amount">Surplus / deficit</th></tr></thead><tbody>${rows}</tbody></table><p class="category">Zero means no income or expense was recorded for that month and currency.</p></section>`;
+  }
   function table(label: string, rows: MonthlyReportRow[]): string {
-    if (rows.length === 0) return `<section><h2>${label}</h2><p class="empty">No ${label.toLowerCase()} recorded for this month.</p></section>`;
+    if (rows.length === 0) return `<section><h2>${label}</h2><p class="empty">No ${label.toLowerCase()} recorded for this ${periodName}.</p></section>`;
     return `<section><h2>${label} <span>${rows.length} records</span></h2>
       <table class="details"><colgroup><col style="width:16%"><col style="width:49%"><col style="width:10%"><col style="width:25%"></colgroup>
       <thead><tr><th>Date</th><th>Description</th><th>Currency</th><th class="amount">Amount</th></tr></thead><tbody>
@@ -113,11 +126,12 @@ export function renderMonthlyReport(report: MonthlyFinancialReport): string {
       @media screen and (max-width:600px) { main { margin:0; padding:20px 12px; } th,td { padding:8px 4px; } h1 { font-size:24px; } }
     </style></head><body>
     <div class="toolbar"><button id="print-report" type="button">Print / Save PDF</button><span>Choose Save as PDF in the print dialog.</span></div>
-    <main><div class="brand">WEALTHWISE</div><h1>Monthly cash flow</h1>
+    <main><div class="brand">WEALTHWISE</div><h1>${title}</h1>
     <div class="period">${escapeHtml(report.monthLabel)} | Calendar timezone: ${escapeHtml(report.timeZone)}</div>
     <div class="scope">Recorded income and expenses only. Investment activity, investment income events, and loan movements are excluded unless separately recorded as income or expenses. Amounts stay in their original currencies; totals are not combined across currencies.</div>
     <h2>Summary by currency</h2>
-    ${report.totals.length ? `<table><colgroup><col style="width:16%"><col style="width:28%"><col style="width:28%"><col style="width:28%"></colgroup><thead><tr><th>Currency</th><th class="amount">Income</th><th class="amount">Expenses</th><th class="amount">Surplus / deficit</th></tr></thead><tbody>${report.totals.map((total) => `<tr><td>${escapeHtml(total.currency)}</td><td class="amount">${money(total.income)}</td><td class="amount">${money(total.expenses)}</td><td class="amount">${money(total.surplus)}</td></tr>`).join("")}</tbody></table>` : '<p class="empty">No income or expenses recorded for this month.</p>'}
+    ${report.totals.length ? `<table><colgroup><col style="width:16%"><col style="width:28%"><col style="width:28%"><col style="width:28%"></colgroup><thead><tr><th>Currency</th><th class="amount">Income</th><th class="amount">Expenses</th><th class="amount">Surplus / deficit</th></tr></thead><tbody>${report.totals.map((total) => `<tr><td>${escapeHtml(total.currency)}</td><td class="amount">${money(total.income)}</td><td class="amount">${money(total.expenses)}</td><td class="amount">${money(total.surplus)}</td></tr>`).join("")}</tbody></table>` : `<p class="empty">No income or expenses recorded for this ${periodName}.</p>`}
+    ${monthlyBreakdown()}
     ${table("Income", report.incomes)}${table("Expenses", report.expenses)}
     <div class="report-footer">Prepared from recorded WealthWise data. This report is not a bank statement. Dates follow the timezone shown above.</div>
     </main></body></html>`;

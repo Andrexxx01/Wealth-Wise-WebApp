@@ -238,8 +238,8 @@ export default function SettingsPageClient() {
           <CardContent className="p-6">
             <DashboardCardHeader
               eyebrow="Reports"
-              title="Monthly cash flow report"
-              description="Review monthly income and expenses in a print-ready report."
+              title="Cash flow reports"
+              description="Review monthly or yearly income and expenses in a print-ready report."
             />
             <MonthlyReportForm />
           </CardContent>

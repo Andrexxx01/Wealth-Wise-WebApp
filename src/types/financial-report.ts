@@ -14,7 +14,11 @@ export type MonthlyReportTotal = {
   surplus: bigint;
 };
 
+export type ReportPeriod = "monthly" | "yearly";
+
 export type MonthlyFinancialReport = {
+  periodKind?: ReportPeriod;
+  monthlyTotals?: { month: string; totals: MonthlyReportTotal[] }[];
   month: string;
   monthLabel: string;
   timeZone: string;
