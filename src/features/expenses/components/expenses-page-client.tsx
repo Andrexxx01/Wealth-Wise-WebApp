@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import BudgetSection from "@/features/budgets/components/budget-section";
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
 import ChartCard from "@/components/dashboard/chart-card";
 import DashboardCardHeader from "@/components/dashboard/dashboard-card-header";
@@ -112,6 +113,8 @@ export default function ExpensesPageClient() {
             />
           ))}
         </section>
+
+        <BudgetSection />
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-[1.25fr_0.75fr]">
           <ChartCard

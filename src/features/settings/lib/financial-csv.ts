@@ -1,4 +1,5 @@
 export const EXPORT_COLLECTIONS = [
+  { key: "budgets", label: "Monthly budgets", columns: ["id", "month", "category", "currency", "amount", "createdAt", "updatedAt"] },
   { key: "incomes", label: "Income", columns: ["id", "title", "category", "amount", "currency", "receivedAt", "frequency", "notes", "createdAt", "updatedAt"] },
   { key: "expenses", label: "Expenses", columns: ["id", "title", "category", "type", "amount", "currency", "spentAt", "notes", "createdAt", "updatedAt"] },
   { key: "investmentAssets", label: "Investment assets", columns: ["id", "name", "category", "instrumentType", "valuationType", "symbol", "providerSymbol", "exchange", "isin", "issuer", "underlyingIndex", "unit", "pricingUnit", "marketCurrencyCode", "manualPrice", "manualPriceUpdatedAt", "currentNav", "navUpdatedAt", "annualInterestRate", "couponRate", "faceValue", "maturityDate", "notes", "createdAt", "updatedAt"] },

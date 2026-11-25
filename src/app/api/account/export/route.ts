@@ -137,7 +137,11 @@ export async function GET() {
           updatedAt: true,
         },
       });
-      return { incomes, expenses, investmentAssets, investmentTransactions, investmentEvents, loans };
+      const budgets = await tx.budget.findMany({
+        where: { userId: auth.userId }, orderBy: { id: "asc" },
+        select: { id: true, month: true, category: true, currency: true, amount: true, createdAt: true, updatedAt: true },
+      });
+      return { incomes, expenses, investmentAssets, investmentTransactions, investmentEvents, loans, budgets };
     }, { isolationLevel: "RepeatableRead", timeout: 30000 });
 
     const exportedAt = new Date().toISOString();
@@ -159,6 +163,7 @@ export async function GET() {
         investmentTransactions: data.investmentTransactions.length,
         investmentEvents: data.investmentEvents.length,
         loans: data.loans.length,
+        budgets: data.budgets.length,
       },
       data,
     };
