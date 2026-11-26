@@ -80,13 +80,14 @@ export default function IncomePageClient() {
           title="Track your income clearly"
           description="Monitor salary, freelance payments, consulting revenue, and other income sources in one place so your financial analysis stays accurate."
           action={
-            <Button
-              type="button"
-              onClick={() => setIsAddIncomeOpen(true)}
-              className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700"
-            >
-              Add Income
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" className="h-12 rounded-2xl border-slate-300 bg-white px-6 font-semibold text-slate-900 hover:bg-slate-100">
+                <Link href="/income/history">Income History</Link>
+              </Button>
+              <Button type="button" onClick={() => setIsAddIncomeOpen(true)} className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+                Add Income
+              </Button>
+            </div>
           }
         />
 
@@ -175,15 +176,13 @@ export default function IncomePageClient() {
                   className="mb-0"
                 />
 
-                {recentIncome.length > 0 ? (
-                  <Button
+                <Button
                     asChild
                     variant="outline"
                     className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
                   >
-                    <Link href="/income/history">View All</Link>
+                    <Link href="/income/history">Income History</Link>
                   </Button>
-                ) : null}
               </div>
 
               {recentIncome.length > 0 ? (

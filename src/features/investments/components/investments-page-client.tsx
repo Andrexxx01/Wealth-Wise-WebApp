@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 
 import { BarChartMock } from "@/components/dashboard/bar-chart-mock";
@@ -430,13 +432,14 @@ export default function InvestmentsPageClient() {
           title="Track your investment activity"
           description="Record your investment purchases, transaction fees, asset quantities, and contribution history in one place."
           action={
-            <Button
-              type="button"
-              onClick={() => setIsAddInvestmentOpen(true)}
-              className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700"
-            >
-              Add Investment
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" className="h-12 rounded-2xl border-slate-300 bg-white px-6 font-semibold text-slate-900 hover:bg-slate-100">
+                <Link href="/investments/history">Investment History</Link>
+              </Button>
+              <Button type="button" onClick={() => setIsAddInvestmentOpen(true)} className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+                Add Investment
+              </Button>
+            </div>
           }
         />
 

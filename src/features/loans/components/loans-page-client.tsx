@@ -87,13 +87,14 @@ export default function LoansPageClient() {
           title="Manage debt with more clarity"
           description="Keep track of outstanding balances, monthly obligations, and payoff progress so your debt stays visible and under control."
           action={
-            <Button
-              type="button"
-              onClick={() => setIsAddLoanOpen(true)}
-              className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700"
-            >
-              Add Loan
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" className="h-12 rounded-2xl border-slate-300 bg-white px-6 font-semibold text-slate-900 hover:bg-slate-100">
+                <Link href="/loans/history">Loan History</Link>
+              </Button>
+              <Button type="button" onClick={() => setIsAddLoanOpen(true)} className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+                Add Loan
+              </Button>
+            </div>
           }
         />
 
@@ -209,15 +210,13 @@ export default function LoansPageClient() {
                   className="mb-0"
                 />
 
-                {upcomingPayments.length > 0 ? (
-                  <Button
+                <Button
                     asChild
                     variant="outline"
                     className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
                   >
-                    <Link href="/loans/history">View All</Link>
+                    <Link href="/loans/history">Loan History</Link>
                   </Button>
-                ) : null}
               </div>
 
               {upcomingPayments.length > 0 ? (

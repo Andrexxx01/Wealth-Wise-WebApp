@@ -92,13 +92,14 @@ export default function ExpensesPageClient() {
           title="Keep your spending under control"
           description="Track daily expenses, understand where your money goes, and build a clearer picture of your financial habits over time."
           action={
-            <Button
-              type="button"
-              onClick={() => setIsAddExpenseOpen(true)}
-              className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700"
-            >
-              Add Expense
-            </Button>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild variant="outline" className="h-12 rounded-2xl border-slate-300 bg-white px-6 font-semibold text-slate-900 hover:bg-slate-100">
+                <Link href="/expenses/history">Expense History</Link>
+              </Button>
+              <Button type="button" onClick={() => setIsAddExpenseOpen(true)} className="h-12 rounded-2xl bg-emerald-600 px-6 font-semibold text-white hover:bg-emerald-700">
+                Add Expense
+              </Button>
+            </div>
           }
         />
 
@@ -193,15 +194,13 @@ export default function ExpensesPageClient() {
                   className="mb-0"
                 />
 
-                {recentExpenses.length > 0 ? (
-                  <Button
+                <Button
                     asChild
                     variant="outline"
                     className="h-11 rounded-2xl border-slate-300 bg-white px-5 font-semibold text-slate-900 hover:bg-slate-100"
                   >
-                    <Link href="/expenses/history">View All</Link>
+                    <Link href="/expenses/history">Expense History</Link>
                   </Button>
-                ) : null}
               </div>
 
               {recentExpenses.length > 0 ? (
