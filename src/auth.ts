@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { loginSchema } from "@/features/auth/schemas/auth.schema";
 import { prisma } from "@/lib/prisma";
+import { getCredentialVersion } from "@/lib/credential-version";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -62,6 +63,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name,
           email: user.email,
           image: user.image,
+          credentialVersion: getCredentialVersion(user.passwordHash),
         };
       },
     }),
@@ -71,9 +73,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }) {
       if (user?.id) {
         token.sub = user.id;
+        token.credentialVersion = user.credentialVersion;
       }
 
-      // Avatars are loaded from the database; never put image data in the JWT cookie.
+      if (!token.sub || typeof token.credentialVersion !== "string") {
+        return null;
+      }
+
+      const account = await prisma.user.findUnique({
+        where: { id: token.sub },
+        select: { passwordHash: true },
+      });
+
+      if (
+        !account?.passwordHash ||
+        token.credentialVersion !== getCredentialVersion(account.passwordHash)
+      ) {
+        return null;
+      }
+
       delete token.picture;
       return token;
     },

@@ -60,7 +60,7 @@ export async function PATCH(request: Request) {
     if (updated.count !== 1) {
       return NextResponse.json({ message: "Your password changed during this request. Try again." }, { status: 409 });
     }
-    return NextResponse.json({ message: "Password updated. Use your new password the next time you sign in." });
+    return NextResponse.json({ message: "Password updated. All previous sessions are invalid. Please sign in again." });
   } catch {
     // Never log request data or password hashes.
     return NextResponse.json({ message: "Unable to update your password. Try again." }, { status: 500 });

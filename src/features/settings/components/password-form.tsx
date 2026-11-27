@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, type FormEvent } from "react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { changePasswordSchema } from "@/features/settings/lib/password-schema";
 
@@ -36,7 +37,9 @@ export default function PasswordForm() {
       const result = await response.json().catch(() => null);
       if (!response.ok) throw new Error(result?.message ?? "Unable to update your password.");
       setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-      setMessage(result?.message ?? "Password updated.");
+      setMessage("Password updated. Please sign in again.");
+      await signOut({ redirect: false }).catch(() => undefined);
+      window.location.assign("/login");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to update your password.");
     } finally {
@@ -48,7 +51,7 @@ export default function PasswordForm() {
   return (
     <form onSubmit={submit} className="space-y-5" aria-busy={pending}>
       <p id="password-help" className="text-sm leading-6 text-slate-500">
-        Use at least 8 characters and at most 72 bytes. Existing signed-in sessions remain active.
+        Use at least 8 characters and at most 72 bytes. Changing your password signs out all sessions.
       </p>
       <div>
         <label htmlFor="current-password" className="text-sm font-semibold text-slate-900">Current password</label>

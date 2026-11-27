@@ -7,6 +7,10 @@ import type {
 } from "@/types/user-subscription";
 
 declare module "next-auth" {
+  interface User {
+    credentialVersion?: string;
+  }
+
   interface Session {
     user: {
       id: string;
